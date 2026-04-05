@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memória: Capitais - BeLTA Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 2.5rem; text-shadow: 3px 3px 0 #333; color: #f1c40f; }
+
+        /* Container do Jogo */
+        #game-container {
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Barra de Status */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #eee;
+            color: #2c3e50;
+        }
+
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #764ba2; display: block; }
+        .stat-label { font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; }
+
+        /* Grid de Cartas */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            perspective: 1000px;
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .memory-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* A Carta */
+        .card {
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card.flipped { transform: rotateY(180deg); }
+        .card.matched { cursor: default; }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Verso da Carta (Escondido) */
+        .card-back {
+            background: #34495e;
+            color: #f1c40f;
+            font-size: 2.5rem;
+        }
+
+        /* Frente da Carta (Revelado) */
+        .card-front {
+            background: #fff;
+            color: #2c3e50;
+            transform: rotateY(180deg);
+            border: 3px solid #764ba2;
+        }
+
+        /* Cores diferentes para Estado e Capital */
+        .type-state { background: #e3f2fd; border-color: #2196f3; }
+        .type-capital { background: #f1f8e9; border-color: #4caf50; }
+
+        .matched .card-front {
+            background: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724;
+        }
+
+        /* Botões */
+        .controls { margin-top: 25px; display: flex; gap: 15px; }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn-reset { background: #e67e22; }
+        .btn-menu { background: #34495e; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🎮 BeLTA Games</h1>
+        <p>Combine o Estado com sua Capital!</p>
+    </div>
+
+    <div id="game-container">
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="moves">0</span>
+                <span class="stat-label">Movimentos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="timer">00:00</span>
+                <span class="stat-label">Tempo</span>
+            </div>
+        </div>
+
+        <div class="memory-grid" id="grid"></div>
+
+        <div class="controls">
+            <button class="btn btn-reset" onclick="initGame()">🔄 Reiniciar</button>
+            <a href="index.html" class="btn btn-menu">🏠 Menu Principal</a>
+        </div>
+    </div>
+
+    <script>
+        const statesData = [
+            { s: "Acre", c: "Rio Branco" }, { s: "Alagoas", c: "Maceió" },
+            { s: "Amapá", c: "Macapá" }, { s: "Amazonas", c: "Manaus" },
+            { s: "Bahia", c: "Salvador" }, { s: "Ceará", c: "Fortaleza" },
+            { s: "Distrito Federal", c: "Brasília" }, { s: "Espírito Santo", c: "Vitória" },
+            { s: "Goiás", c: "Goiânia" }, { s: "Maranhão", c: "São Luís" },
+            { s: "Mato Grosso", c: "Cuiabá" }, { s: "Mato Grosso do Sul", c: "Campo Grande" },
+            { s: "Minas Gerais", c: "Belo Horizonte" }, { s: "Pará", c: "Belém" },
+            { s: "Paraíba", c: "João Pessoa" }, { s: "Paraná", c: "Curitiba" },
+            { s: "Pernambuco", c: "Recife" }, { s: "Piauí", c: "Teresina" },
+            { s: "Rio de Janeiro", c: "Rio de Janeiro" }, { s: "Rio Grande do Norte", c: "Natal" },
+            { s: "Rio Grande do Sul", c: "Porto Alegre" }, { s: "Rondônia", c: "Porto Velho" },
+            { s: "Roraima", c: "Boa Vista" }, { s: "Santa Catarina", c: "Florianópolis" },
+            { s: "São Paulo", c: "São Paulo" }, { s: "Sergipe", c: "Aracaju" },
+            { s: "Tocantins", c: "Palmas" }
+        ];
+
+        let firstCard = null, secondCard = null;
+        let lockBoard = false, moves = 0, seconds = 0, timerInterval;
+        let matchedPairs = 0;
+        const PAIRS_TO_PLAY = 10; // 10 estados = 20 cartas
+
+        function initGame() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            moves = 0; seconds = 0; matchedPairs = 0;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('timer').textContent = '00:00';
+            if(timerInterval) clearInterval(timerInterval);
+            startTimer();
+
+            // Selecionar 10 estados aleatórios
+            const selected = [...statesData].sort(() => Math.random() - 0.5).slice(0, PAIRS_TO_PLAY);
+            
+            // Criar cartas (uma com nome do estado, outra com nome da capital)
+            let cards = [];
+            selected.forEach(item => {
+                cards.push({ text: item.s, match: item.c, type: 'state', id: item.s });
+                cards.push({ text: item.c, match: item.s, type: 'capital', id: item.s });
+            });
+
+            // Embaralhar cartas
+            cards.sort(() => Math.random() - 0.5);
+
+            // Renderizar cartas
+            cards.forEach(cardData => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.dataset.id = cardData.id;
+                
+                cardEl.innerHTML = `
+                    <div class="card-face card-back">?</div>
+                    <div class="card-face card-front type-${cardData.type}">${cardData.text}</div>
+                `;
+                
+                cardEl.onclick = () => flipCard(cardEl);
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function flipCard(card) {
+            if (lockBoard || card === firstCard || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+
+            if (!firstCard) {
+                firstCard = card;
+                return;
+            }
+
+            secondCard = card;
+            moves++;
+            document.getElementById('moves').textContent = moves;
+            checkMatch();
+        }
+
+        function checkMatch() {
+            let isMatch = firstCard.dataset.id === secondCard.dataset.id;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            matchedPairs++;
+            resetBoard();
+            
+            if (matchedPairs === PAIRS_TO_PLAY) {
+                clearInterval(timerInterval);
+                setTimeout(() => alert(`🎉 PARABÉNS!\nVocê completou o jogo da memória em ${moves} movimentos!`), 500);
+            }
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1000);
+        }
+
+        function resetBoard() {
+            [firstCard, secondCard] = [null, null];
+            lockBoard = false;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                seconds++;
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // Iniciar ao carregar
+        window.onload = initGame;
+    </script>
+</body>
+</html>
