@@ -2,493 +2,131 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Super Arcade Kids</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeLTA Games - Início</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            font-family: 'Comic Sans MS', sans-serif;
             background: linear-gradient(135deg, #8e44ad, #3498db);
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px 20px;
         }
+        .header { text-align: center; margin-bottom: 50px; }
+        h1 { font-size: 3.5rem; text-shadow: 4px 4px 0 #333; color: #f1c40f; }
         
-        .header { text-align: center; margin-bottom: 30px; }
-        h1 { font-size: 2.8rem; margin-bottom: 10px; text-shadow: 3px 3px 0 #333; color: #f1c40f; }
-        
-        .game-menu { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
-        .game-btn {
-            padding: 18px 35px;
-            font-size: 1.3rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 15px;
-            background: linear-gradient(145deg, #f1c40f, #f39c12);
-            color: #d35400;
-            transition: all 0.3s ease;
-        }
-        .game-btn:hover { transform: translateY(-5px); }
-        
-        #game-container {
-            background: white;
-            color: #2c3e50;
-            padding: 30px;
-            border-radius: 25px;
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
             width: 100%;
-            max-width: 800px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            min-height: 500px;
         }
         
-        /* Puzzle 15 */
-        .puzzle-stats { display: flex; justify-content: space-around; background: #ecf0f1; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-        .board-15 { display: grid; grid-template-columns: repeat(4, 90px); grid-template-rows: repeat(4, 90px); gap: 8px; background: #34495e; padding: 10px; border-radius: 12px; margin: 0 auto 25px; }
-        .tile-15 {
-            width: 90px; height: 90px;
-            background: linear-gradient(145deg, #3498db, #2980b9);
-            color: white;
+        .game-card {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            color: #2c3e50;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-decoration: none;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            cursor: pointer;
-            border-radius: 10px;
-            user-select: none;
-            transition: all 0.2s ease;
+            justify-content: space-between;
         }
-        .tile-15.empty { background: transparent; cursor: default; }
-        .tile-15:not(.empty):hover { background: linear-gradient(145deg, #1abc9c, #16a085); transform: scale(1.05); }
         
-        /* Quiz */
-        .quiz-stats { display: flex; justify-content: space-between; background: #ecf0f1; padding: 15px; border-radius: 15px; margin-bottom: 25px; }
-        .quiz-question { font-size: 1.8rem; margin-bottom: 30px; color: #2c3e50; line-height: 1.4; }
-        .quiz-options { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; }
-        .quiz-btn-option {
-            padding: 20px;
-            font-size: 1.4rem;
-            background: linear-gradient(145deg, #27ae60, #219653);
+        .game-card:hover { 
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+        
+        .game-icon { font-size: 60px; margin-bottom: 15px; }
+        .game-card h2 { margin-bottom: 10px; color: #8e44ad; font-size: 1.6rem; }
+        .game-card p { font-size: 1.1rem; color: #7f8c8d; margin-bottom: 20px; flex-grow: 1; }
+        
+        .play-btn {
+            background: #f1c40f;
+            color: #d35400;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .game-card:hover .play-btn {
+            background: #27ae60;
             color: white;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
-        .quiz-btn-option:hover { transform: translateY(-3px); }
-        
-        .control-btn { padding: 15px 30px; font-size: 1.2rem; background: #e74c3c; color: white; border: none; border-radius: 12px; cursor: pointer; margin: 10px; }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <h1>🎮 Super Arcade Kids</h1>
-        <div>Dois jogos incríveis para aprender e se divertir!</div>
+        <h1>🎮 BeLTA Games</h1>
+        <p style="font-size: 1.5rem; margin-top: 10px;">Onde aprender é a maior diversão!</p>
     </div>
     
-    <div class="game-menu">
-        <button class="game-btn" onclick="loadGame('puzzle')">🧩 Puzzle 15</button>
-        <button class="game-btn" onclick="loadGame('quiz')">🧠 Quiz Educativo</button>
-    </div>
-    
-    <div id="game-container">
-        <div id="game-content">
-            <h2>Escolha um jogo para começar!</h2>
-            <p>Clique em um dos botões acima para jogar</p>
-        </div>
-    </div>
+    <!-- Este container será preenchido automaticamente pelo JavaScript -->
+    <div class="games-grid" id="games-container"></div>
 
     <script>
-        // ============== CONFIGURAÇÕES ==============
-        const container = document.getElementById('game-container');
-        const gameContent = document.getElementById('game-content');
-        
-        // ============== BANCO DE 100+ PERGUNTAS ==============
-       
- const questionBank = [
-            // MATEMÁTICA (20 perguntas)
-            {q: "Quanto é 2 + 2?", a: ["3", "4", "5", "6"], c: "4"},
-            {q: "Quanto é 5 + 3?", a: ["6", "7", "8", "9"], c: "8"},
-            {q: "Quanto é 10 - 5?", a: ["3", "4", "5", "6"], c: "5"},
-            {q: "Quanto é 3 × 3?", a: ["6", "9", "12", "15"], c: "9"},
-            {q: "Quanto é 8 ÷ 2?", a: ["2", "3", "4", "5"], c: "4"},
-            {q: "Qual é o dobro de 7?", a: ["12", "14", "16", "18"], c: "14"},
-            {q: "Qual é a metade de 20?", a: ["8", "10", "12", "14"], c: "10"},
-            {q: "Quanto é 4 × 5?", a: ["16", "18", "20", "22"], c: "20"},
-            {q: "Quanto é 15 ÷ 3?", a: ["3", "4", "5", "6"], c: "5"},
-            {q: "Qual número vem depois do 99?", a: ["98", "99", "100", "101"], c: "100"},
-            {q: "Quantos lados tem um triângulo?", a: ["2", "3", "4", "5"], c: "3"},
-            {q: "Quantos lados tem um quadrado?", a: ["3", "4", "5", "6"], c: "4"},
-            {q: "Quanto é 25 + 25?", a: ["40", "45", "50", "55"], c: "50"},
-            {q: "Quanto é 100 - 30?", a: ["60", "70", "80", "90"], c: "70"},
-            {q: "Qual é o dobro de 12?", a: ["22", "24", "26", "28"], c: "24"},
-            {q: "Quanto é 6 × 4?", a: ["20", "22", "24", "26"], c: "24"},
-            {q: "Quanto é 36 ÷ 6?", a: ["4", "5", "6", "7"], c: "6"},
-            {q: "Qual número é maior: 45 ou 54?", a: ["45", "54", "São iguais"], c: "54"},
-            {q: "Quantos minutos tem uma hora?", a: ["50", "60", "70", "80"], c: "60"},
-            {q: "Quantos dias tem uma semana?", a: ["5", "6", "7", "8"], c: "7"},
-            
-            
-            // CIÊNCIAS E NATUREZA (25 perguntas)
-            {q: "Qual é a cor do céu em um dia sem nuvens?", a: ["Verde", "Azul", "Amarelo", "Vermelho"], c: "Azul"},
-            {q: "Qual animal faz 'Miau'?", a: ["Cachorro", "Gato", "Vaca", "Galinha"], c: "Gato"},
-            {q: "Qual é o maior animal do mundo?", a: ["Elefante", "Girafa", "Baleia Azul", "Tubarão"], c: "Baleia Azul"},
-            {q: "Que animal é conhecido como 'rei da selva'?", a: ["Elefante", "Leão", "Tigre", "Gorila"], c: "Leão"},
-            {q: "Quantas patas tem um cachorro?", a: ["2", "3", "4", "5"], c: "4"},
-            {q: "Que cor tem a grama?", a: ["Azul", "Verde", "Vermelho", "Amarelo"], c: "Verde"},
-            {q: "Qual fruta é vermelha e tem sementes na casca?", a: ["Banana", "Maçã", "Morango", "Laranja"], c: "Morango"},
-            {q: "Qual é a fruta favorita dos macacos?", a: ["Maçã", "Banana", "Uva", "Pera"], c: "Banana"},
-            {q: "Qual destes animais voa?", a: ["Cachorro", "Gato", "Pássaro", "Peixe"], c: "Pássaro"},
-            {q: "O que as plantas precisam para crescer?", a: ["Água", "Fogo", "Gelo", "Plástico"], c: "Água"},
-            {q: "Quantas estações tem o ano?", a: ["2", "3", "4", "5"], c: "4"},
-            {q: "Qual é a estação mais quente?", a: ["Primavera", "Verão", "Outono", "Inverno"], c: "Verão"},
-            {q: "O que o sol nos dá?", a: ["Água", "Luz e calor", "Gelo", "Vento"], c: "Luz e calor"},
-            {q: "Quantas cores tem o arco-íris?", a: ["5", "6", "7", "8"], c: "7"},
-            {q: "Qual planeta é conhecido como 'planeta vermelho'?", a: ["Terra", "Marte", "Júpiter", "Saturno"], c: "Marte"},
-            {q: "Qual é o planeta mais próximo do Sol?", a: ["Vênus", "Terra", "Marte", "Mercúrio"], c: "Mercúrio"},
-            {q: "Qual destes vive na água?", a: ["Gato", "Coelho", "Peixe", "Cachorro"], c: "Peixe"},
-            {q: "Que animal produz leite?", a: ["Galinha", "Vaca", "Porco", "Cavalo"], c: "Vaca"},
-            {q: "O que é a neve?", a: ["Água quente", "Água congelada", "Terra", "Fogo"], c: "Água congelada"},
-            {q: "Qual destes é um inseto?", a: ["Gato", "Cachorro", "Borboleta", "Peixe"], c: "Borboleta"},
-            {q: "Que fruta é laranja e tem vitamina C?", a: ["Maçã", "Banana", "Laranja", "Uva"], c: "Laranja"},
-            {q: "Quantas asas tem uma borboleta?", a: ["1", "2", "3", "4"], c: "4"},
-            {q: "O que as árvores produzem que nós respiramos?", a: ["Dióxido de carbono", "Oxigênio", "Água", "Fumaça"], c: "Oxigênio"},
-            {q: "Qual destes é um mamífero marinho?", a: ["Águia", "Golfinho", "Cobra", "Rã"], c: "Golfinho"},
-            {q: "Que animal tem uma concha?", a: ["Cachorro", "Gato", "Caracol", "Pássaro"], c: "Caracol"},
-                      
-            // GEOGRAFIA (20 perguntas)
-            {q: "Qual é a capital do Brasil?", a: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"], c: "Brasília"},
-            {q: "Em que continente fica o Brasil?", a: ["Ásia", "Europa", "América do Sul", "África"], c: "América do Sul"},
-            {q: "Qual oceano banha o litoral brasileiro?", a: ["Pacífico", "Atlântico", "Índico", "Ártico"], c: "Atlântico"},
-            {q: "Qual é o maior país do mundo?", a: ["China", "Estados Unidos", "Rússia", "Brasil"], c: "Rússia"},
-            {q: "Qual é a capital da França?", a: ["Londres", "Berlim", "Paris", "Madri"], c: "Paris"},
-            {q: "Em que país fica a Torre Eiffel?", a: ["Itália", "França", "Espanha", "Alemanha"], c: "França"},
-            {q: "Qual é a capital dos Estados Unidos?", a: ["Nova York", "Los Angeles", "Washington D.C.", "Chicago"], c: "Washington D.C."},
-            {q: "Qual é o maior deserto do mundo?", a: ["Deserto do Saara", "Deserto da Arábia", "Deserto de Gobi", "Deserto do Atacama"], c: "Deserto do Saara"},
-            {q: "Qual é o rio mais longo do mundo?", a: ["Rio Amazonas", "Rio Nilo", "Rio Yangtzé", "Rio Mississippi"], c: "Rio Nilo"},
-            {q: "Quantos estados tem o Brasil?", a: ["25", "26", "27", "28"], c: "26"},
-            {q: "Qual é a língua oficial do Brasil?", a: ["Espanhol", "Inglês", "Português", "Francês"], c: "Português"},
-            {q: "Que país tem formato de bota?", a: ["França", "Espanha", "Itália", "Portugal"], c: "Itália"},
-            {q: "Qual é a capital da Argentina?", a: ["Buenos Aires", "Santiago", "Lima", "Montevidéu"], c: "Buenos Aires"},
-            {q: "Qual continente é conhecido como 'berço da humanidade'?", a: ["Ásia", "Europa", "África", "América"], c: "África"},
-            {q: "Que país é famoso pela Torre de Pisa?", a: ["França", "Itália", "Espanha", "Grécia"], c: "Itália"},
-            {q: "Em que país fica a Muralha da China?", a: ["Japão", "China", "Coreia", "Vietnã"], c: "China"},
-            {q: "Qual é a capital do Japão?", a: ["Pequim", "Seul", "Tóquio", "Bangkok"], c: "Tóquio"},
-            {q: "Que país tem a bandeira vermelha com uma estrela amarela?", a: ["China", "Japão", "Coreia", "Vietnã"], c: "China"},
-            {q: "Qual é o menor país do mundo?", a: ["Mônaco", "Vaticano", "San Marino", "Liechtenstein"], c: "Vaticano"},
-            {q: "Que continente é a Austrália?", a: ["Ásia", "Europa", "Oceania", "América"], c: "Oceania"},
-            
-            // PORTUGUÊS (20 perguntas)
-            {q: "Quantas vogais tem o alfabeto português?", a: ["4", "5", "6", "7"], c: "5"},
-            {q: "Qual a primeira letra do alfabeto?", a: ["B", "C", "A", "D"], c: "A"},
-            {q: "Qual a última letra do alfabeto?", a: ["X", "Y", "Z", "W"], c: "Z"},
-            {q: "Complete: O ____ está quente. (Sol/Sal)", a: ["Sol", "Sal", "Sul", "Sel"], c: "Sol"},
-            {q: "Qual é o plural de 'casa'?", a: ["Casas", "Caso", "Casos", "Casa"], c: "Casas"},
-            {q: "Qual é o antônimo de 'grande'?", a: ["Médio", "Gigante", "Pequeno", "Alto"], c: "Pequeno"},
-            {q: "Qual é o sinônimo de 'feliz'?", a: ["Triste", "Alegre", "Bravo", "Cansado"], c: "Alegre"},
-            {q: "Quantas sílabas tem a palavra 'escola'?", a: ["2", "3", "4", "5"], c: "3"},
-            {q: "Qual destas é uma vogal?", a: ["B", "C", "E", "D"], c: "E"},
-            {q: "Qual destas é uma consoante?", a: ["A", "E", "I", "M"], c: "M"},
-            {q: "Como se escreve o número 7 por extenso?", a: ["Sete", "Seta", "Cete", "Seti"], c: "Sete"},
-            {q: "Qual é o aumentativo de 'casa'?", a: ["Casebre", "Casinha", "Casarão", "Casota"], c: "Casarão"},
-            {q: "Qual é o diminutivo de 'gato'?", a: ["Gatão", "Gatuno", "Gatinho", "Gatal"], c: "Gatinho"},
-            {q: "Complete: Eu _____ para escola. (vou/voou)", a: ["Vou", "Voou", "Vão", "Vem"], c: "Vou"},
-            {q: "Quantas letras tem a palavra 'borboleta'?", a: ["8", "9", "10", "11"], c: "9"},
-            {q: "Qual destas palavras está escrita corretamente?", a: ["Cazal", "Cachorro", "Caxorro", "Caza"], c: "Cachorro"},
-            {q: "O que é uma 'rima'?", a: ["Números iguais", "Palavras com sons parecidos", "Cores iguais", "Formas iguais"], c: "Palavras com sons parecidos"},
-            {q: "Qual é o gênero de 'menino'?", a: ["Feminino", "Masculino", "Neutro"], c: "Masculino"},
-            {q: "Qual é o feminino de 'rei'?", a: ["Reia", "Rainha", "Reizinho", "Realeza"], c: "Rainha"},
-            {q: "O que é uma 'silaba'?", a: ["Uma letra", "Um som", "Um pedaço de palavra", "Um ponto"], c: "Um pedaço de palavra"},
-            
-            // CULTURA GERAL (20 perguntas)
-            {q: "Quantos meses tem um ano?", a: ["10", "11", "12", "13"], c: "12"},
-            {q: "Que forma tem uma bola de futebol?", a: ["Quadrada", "Redonda", "Triangular", "Retangular"], c: "Redonda"},
-            {q: "Quem escreveu 'O Pequeno Príncipe'?", a: ["Monteiro Lobato", "Machado de Assis", "Antoine de Saint-Exupéry", "José de Alencar"], c: "Antoine de Saint-Exupéry"},
-            {q: "Quantos times jogam em uma partida de futebol?", a: ["1", "2", "3", "4"], c: "2"},
-            {q: "Qual é a cor do semáforo que significa 'pare'?", a: ["Verde", "Amarelo", "Vermelho", "Azul"], c: "Vermelho"},
-            {q: "Que instrumento musical tem cordas e é tocado com arco?", a: ["Piano", "Violino", "Flauta", "Bateria"], c: "Violino"},
-            {q: "Quantas cores tem a bandeira do Brasil?", a: ["3", "4", "5", "6"], c: "4"},
-            {q: "Que dia é comemorado o Natal?", a: ["25 de dezembro", "31 de dezembro", "1 de janeiro", "6 de janeiro"], c: "25 de dezembro"},
-            {q: "Quantas horas tem um dia?", a: ["12", "24", "36", "48"], c: "24"},
-            {q: "Que ferramenta usamos para cortar papel?", a: ["Martelo", "Tesoura", "Chave de fenda", "Serra"], c: "Tesoura"},
-            {q: "Que fruto usamos para fazer azeite?", a: ["Maçã", "Laranja", "Azeitona", "Uva"], c: "Azeitona"},
-            {q: "Que bebida é feita de leite fermentado?", a: ["Suco", "Refrigerante", "Iogurte", "Café"], c: "Iogurte"},
-            {q: "Qual é o oposto do dia?", a: ["Manhã", "Tarde", "Noite", "Madrugada"], c: "Noite"},
-            {q: "Que parte do corpo usamos para ouvir?", a: ["Olhos", "Orelhas", "Boca", "Nariz"], c: "Orelhas"},
-            {q: "Que veículo tem duas rodas e guidão?", a: ["Carro", "Ônibus", "Bicicleta", "Caminhão"], c: "Bicicleta"},
-            {q: "O que usamos para escrever no papel?", a: ["Pincel", "Lápis", "Martelo", "Tesoura"], c: "Lápis"},
-            {q: "Que objeto usamos para ver as horas?", a: ["Rádio", "Relógio", "Telefone", "Livro"], c: "Relógio"},
-            {q: "Que alimento é feito de trigo e comemos com manteiga?", a: ["Arroz", "Feijão", "Pão", "Batata"], c: "Pão"},
-            {q: "Que brinquedo voa no ar com uma linha?", a: ["Bola", "Pipa", "Carrinho", "Boneca"], c: "Pipa"},
-            {q: "Que dia da semana vem depois da terça-feira?", a: ["Segunda", "Quarta", "Quinta", "Sexta"], c: "Quarta"}
+        // ==========================================================
+        // CONFIGURAÇÃO DOS JOGOS (ADICIONE NOVOS JOGOS AQUI ABAIXO)
+        // ==========================================================
+        const meusJogos = [
+            {
+                titulo: "Quiz - Nível 10 Anos",
+                descricao: "Teste seus conhecimentos em Matemática, Ciências, Português e muito mais!",
+                icone: "🧠",
+                link: "quiz.html"
+            },
+            {
+                titulo: "Puzzle 15",
+                descricao: "Desafio de raciocínio lógico! Organize os números o mais rápido possível.",
+                icone: "🧩",
+                link: "puzzle.html"
+            },
+            {
+                titulo: "Mapa do Brasil",
+                descricao: "Aprenda sobre os estados brasileiros montando este quebra-cabeça incrível!",
+                icone: "🗺️",
+                link: "mapa-brasil.html"
+            }
+            // Para adicionar um novo jogo, basta copiar o bloco acima, 
+            // colocar uma vírgula após a "}" e preencher os novos dados.
         ];
-        
-        // ============== QUIZ FUNCIONAL ==============
-        let quizScore = 0, currentQuestionIndex = 0, selectedQuestions = [];
-        
-        function startQuiz() {
-            // Seleciona 10 perguntas aleatórias SEM REPETIR do banco de 100+
-            selectedQuestions = [];
-            const tempQuestions = [...questionBank];
+
+        // ==========================================================
+        // FUNÇÃO PARA CRIAR OS CARDS NA TELA
+        // ==========================================================
+        function carregarJogos() {
+            const container = document.getElementById('games-container');
             
-            // Embaralha usando Fisher-Yates
-            for (let i = tempQuestions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [tempQuestions[i], tempQuestions[j]] = [tempQuestions[j], tempQuestions[i]];
-            }
-            
-            // Pega as primeiras 10
-            selectedQuestions = tempQuestions.slice(0, 10);
-            
-            quizScore = 0;
-            currentQuestionIndex = 0;
-            renderQuiz();
-        }
-        
-        function renderQuiz() {
-            if (currentQuestionIndex >= selectedQuestions.length) {
-                showQuizResult();
-                return;
-            }
-            
-            const question = selectedQuestions[currentQuestionIndex];
-            gameContent.innerHTML = `
-                <h2>🧠 Quiz Educativo</h2>
-                <div class="quiz-stats">
-                    <div>Pergunta ${currentQuestionIndex + 1} de 10</div>
-                    <div>Pontos: ${quizScore}</div>
-                </div>
-                <div class="quiz-question">${question.q}</div>
-                <div class="quiz-options" id="quiz-options"></div>
-                <button class="control-btn" onclick="startQuiz()">🔄 Novo Jogo</button>
-            `;
-            
-            const optionsContainer = document.getElementById('quiz-options');
-            // Embaralha as opções de resposta
-            const shuffledOptions = [...question.a].sort(() => Math.random() - 0.5);
-            
-            shuffledOptions.forEach(option => {
-                const button = document.createElement('button');
-                button.className = 'quiz-btn-option';
-                button.textContent = option;
-                button.onclick = () => {
-                    if (option === question.c) {
-                        quizScore++;
-                        button.style.background = 'linear-gradient(145deg, #2ecc71, #27ae60)';
-                    } else {
-                        button.style.background = 'linear-gradient(145deg, #e74c3c, #c0392b)';
-                    }
-                    
-                    // Desabilita todos os botões após resposta
-                    document.querySelectorAll('.quiz-btn-option').forEach(btn => {
-                        btn.disabled = true;
-                        if (btn.textContent === question.c) {
-                            btn.style.background = 'linear-gradient(145deg, #2ecc71, #27ae60)';
-                        }
-                    });
-                    
-                    setTimeout(() => {
-                        currentQuestionIndex++;
-                        renderQuiz();
-                    }, 1500);
-                };
-                optionsContainer.appendChild(button);
-            });
-        }
-        
-        function showQuizResult() {
-            let message = '';
-            if (quizScore === 10) message = '🎉 PERFEITO! Você é um gênio!';
-            else if (quizScore >= 8) message = '👏 EXCELENTE! Muito inteligente!';
-            else if (quizScore >= 6) message = '👍 MUITO BOM! Continue estudando!';
-            else if (quizScore >= 4) message = '💪 FOI BEM! Pode melhorar ainda mais!';
-            else message = '😊 TENTE NOVAMENTE! Você vai conseguir!';
-            
-            gameContent.innerHTML = `
-                <div style="text-align: center; padding: 30px;">
-                    <h2>Quiz Concluído!</h2>
-                    <div style="font-size: 4rem; color: #e74c3c; margin: 20px 0;">${quizScore}/10</div>
-                    <div style="font-size: 1.5rem; color: #7f8c8d; margin-bottom: 30px;">${message}</div>
-                    <button class="control-btn" onclick="startQuiz()">🔄 Jogar Novamente</button>
-                    <button class="control-btn" onclick="loadGame('menu')">🏠 Voltar ao Menu</button>
-                </div>
-            `;
-        }
-        
-        // ============== PUZZLE 15 CORRIGIDO ==============
-        let puzzleBoard = [];
-        let emptyIndex = 15; // Posição da peça vazia (0-15)
-        let movesCount = 0;
-        let timerSeconds = 0;
-        let timerInterval = null;
-        
-        function startPuzzle() {
-            // Inicializa o tabuleiro ordenado
-            puzzleBoard = [];
-            for (let i = 1; i <= 15; i++) puzzleBoard.push(i);
-            puzzleBoard.push(null);
-            
-            movesCount = 0;
-            timerSeconds = 0;
-            emptyIndex = 15;
-            
-            // Embaralha corretamente
-            shufflePuzzle();
-            
-            // Timer
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timerSeconds++;
-                updatePuzzleDisplay();
-            }, 1000);
-            
-            renderPuzzle();
-        }
-        
-        function shufflePuzzle() {
-            // Faz 300 movimentos válidos para embaralhar
-            for (let i = 0; i < 300; i++) {
-                const adjacent = getAdjacentPositions(emptyIndex);
-                const randomMove = adjacent[Math.floor(Math.random() * adjacent.length)];
-                swapTiles(randomMove, emptyIndex);
-                emptyIndex = randomMove;
-            }
-            movesCount = 0;
-        }
-        
-        function renderPuzzle() {
-            gameContent.innerHTML = `
-                <h2>🧩 Puzzle 15</h2>
-                <div class="puzzle-stats">
-                    <div>
-                        <div style="font-size: 2.2rem; font-weight: bold;">${movesCount}</div>
-                        <div>Movimentos</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 2.2rem; font-weight: bold;" id="timer-display">00:00</div>
-                        <div>Tempo</div>
-                    </div>
-                </div>
-                <div class="board-15" id="puzzle-board"></div>
-                <div>
-                    <button class="control-btn" onclick="shufflePuzzle()">🔀 Embaralhar</button>
-                    <button class="control-btn" onclick="startPuzzle()">🔄 Reiniciar</button>
-                    <button class="control-btn" onclick="loadGame('menu')">🏠 Menu</button>
-                </div>
-            `;
-            
-            createPuzzleTiles();
-            updatePuzzleDisplay();
-        }
-        
-        function createPuzzleTiles() {
-            const board = document.getElementById('puzzle-board');
-            board.innerHTML = '';
-            
-            puzzleBoard.forEach((value, index) => {
-                const tile = document.createElement('div');
-                tile.className = value === null ? 'tile-15 empty' : 'tile-15';
-                tile.textContent = value || '';
-                tile.onclick = () => handleTileClick(index);
-                board.appendChild(tile);
-            });
-        }
-        
-        function handleTileClick(clickedIndex) {
-            // Verifica se a peça clicada é adjacente à vazia
-            if (isAdjacent(clickedIndex, emptyIndex)) {
-                swapTiles(clickedIndex, emptyIndex);
-                emptyIndex = clickedIndex;
-                movesCount++;
-                
-                createPuzzleTiles();
-                updatePuzzleDisplay();
-                
-                // Verifica vitória
-                if (checkPuzzleWin()) {
-                    clearInterval(timerInterval);
-                    setTimeout(() => {
-                        alert(`🎉 Parabéns! Você completou em ${movesCount} movimentos e ${formatTime(timerSeconds)}!`);
-                    }, 300);
-                }
-            }
-        }
-        
-        function isAdjacent(index1, index2) {
-            const row1 = Math.floor(index1 / 4);
-            const col1 = index1 % 4;
-            const row2 = Math.floor(index2 / 4);
-            const col2 = index2 % 4;
-            
-            // Mesma linha e coluna adjacente OU mesma coluna e linha adjacente
-            return (row1 === row2 && Math.abs(col1 - col2) === 1) ||
-                   (col1 === col2 && Math.abs(row1 - row2) === 1);
-        }
-        
-        function getAdjacentPositions(position) {
-            const adjacent = [];
-            const row = Math.floor(position / 4);
-            const col = position % 4;
-            
-            if (row > 0) adjacent.push(position - 4); // Cima
-            if (row < 3) adjacent.push(position + 4); // Baixo
-            if (col > 0) adjacent.push(position - 1); // Esquerda
-            if (col < 3) adjacent.push(position + 1); // Direita
-            
-            return adjacent;
-        }
-        
-        function swapTiles(index1, index2) {
-            [puzzleBoard[index1], puzzleBoard[index2]] = [puzzleBoard[index2], puzzleBoard[index1]];
-        }
-        
-        function checkPuzzleWin() {
-            // Verifica se todos os números estão em ordem
-            for (let i = 0; i < 15; i++) {
-                if (puzzleBoard[i] !== i + 1) return false;
-            }
-            return puzzleBoard[15] === null; // Última deve ser vazia
-        }
-        
-        function updatePuzzleDisplay() {
-            const timerElement = document.getElementById('timer-display');
-            if (timerElement) {
-                const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-                const secs = (timerSeconds % 60).toString().padStart(2, '0');
-                timerElement.textContent = `${mins}:${secs}`;
-            }
-        }
-        
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        // ============== GERENCIADOR DE JOGOS ==============
-        function loadGame(game) {
-            if (game === 'puzzle') {
-                startPuzzle();
-            } else if (game === 'quiz') {
-                startQuiz();
-            } else {
-                gameContent.innerHTML = `
-                    <h2>🎮 Super Arcade Kids</h2>
-                    <p style="font-size: 1.3rem; margin-top: 20px; color: #7f8c8d;">
-                        Escolha um jogo para começar!
-                    </p>
-                    <div style="margin-top: 40px; font-size: 1.1rem;">
-                        <p>🧩 <strong>Puzzle 15</strong> - Organize os números na ordem correta</p>
-                        <p>🧠 <strong>Quiz Educativo</strong> - 100+ perguntas diferentes a cada jogo</p>
-                    </div>
+            meusJogos.forEach(jogo => {
+                const cardHtml = `
+                    <a href="${jogo.link}" class="game-card">
+                        <div>
+                            <div class="game-icon">${jogo.icone}</div>
+                            <h2>${jogo.titulo}</h2>
+                            <p>${jogo.descricao}</p>
+                        </div>
+                        <span class="play-btn">Jogar Agora</span>
+                    </a>
                 `;
-            }
+                container.innerHTML += cardHtml;
+            });
         }
-        
-        // Inicializa com menu
-        loadGame('menu');
+
+        // Executa a função ao carregar a página
+        window.onload = carregarJogos;
     </script>
 </body>
 </html>
