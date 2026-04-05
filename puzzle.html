@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle 15 - BeLTA Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 2.5rem; text-shadow: 3px 3px 0 #333; color: #f1c40f; }
+
+        #game-container {
+            background: white;
+            color: #2c3e50;
+            padding: 30px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 500px; /* Ajustado para o tamanho do tabuleiro */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        /* Puzzle 15 Estilos */
+        .puzzle-stats { 
+            display: flex; 
+            justify-content: space-around; 
+            background: #ecf0f1; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+        }
+
+        .board-15 { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            background: #34495e; 
+            padding: 10px; 
+            border-radius: 12px; 
+            margin: 0 auto 25px;
+            width: 320px;
+            height: 320px;
+        }
+
+        .tile-15 {
+            width: 70px; 
+            height: 70px;
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            border-radius: 10px;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .tile-15.empty { background: transparent; cursor: default; box-shadow: none; }
+        .tile-15:not(.empty):hover { 
+            background: linear-gradient(145deg, #1abc9c, #16a085); 
+            transform: scale(1.05); 
+        }
+
+        .control-btn { 
+            padding: 12px 25px; 
+            font-size: 1rem; 
+            background: #e74c3c; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            margin: 5px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .control-btn:hover { background: #c0392b; transform: translateY(-2px); }
+        .btn-yellow { background: #f1c40f; color: #d35400; }
+        .btn-yellow:hover { background: #f39c12; }
+
+        h2 { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>BeLTA Games</h1>
+    </div>
+
+    <div id="game-container">
+        <div id="game-content">
+            <!-- O conteúdo do jogo será injetado aqui pelo JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const gameContent = document.getElementById('game-content');
+        
+        // ============== PUZZLE 15 LÓGICA (BASEADA NO SEU CÓDIGO) ==============
+        let puzzleBoard = [];
+        let emptyIndex = 15; 
+        let movesCount = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        
+        function startPuzzle() {
+            // Inicializa o tabuleiro ordenado
+            puzzleBoard = [];
+            for (let i = 1; i <= 15; i++) puzzleBoard.push(i);
+            puzzleBoard.push(null);
+            
+            movesCount = 0;
+            timerSeconds = 0;
+            emptyIndex = 15;
+            
+            // Embaralha corretamente
+            shufflePuzzle();
+            
+            // Timer
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updatePuzzleDisplay();
+            }, 1000);
+            
+            renderPuzzle();
+        }
+        
+        function shufflePuzzle() {
+            // Reseta antes de embaralhar para garantir que o tabuleiro base está limpo
+            puzzleBoard = [];
+            for (let i = 1; i <= 15; i++) puzzleBoard.push(i);
+            puzzleBoard.push(null);
+            emptyIndex = 15;
+
+            // Faz 300 movimentos válidos para embaralhar e garantir que tenha solução
+            for (let i = 0; i < 300; i++) {
+                const adjacent = getAdjacentPositions(emptyIndex);
+                const randomMove = adjacent[Math.floor(Math.random() * adjacent.length)];
+                swapTiles(randomMove, emptyIndex);
+                emptyIndex = randomMove;
+            }
+            movesCount = 0;
+            if (document.getElementById('timer-display')) renderPuzzle(); 
+        }
+        
+        function renderPuzzle() {
+            gameContent.innerHTML = `
+                <h2>🧩 Puzzle 15</h2>
+                <div class="puzzle-stats">
+                    <div>
+                        <div style="font-size: 1.8rem; font-weight: bold;">${movesCount}</div>
+                        <div>Movimentos</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.8rem; font-weight: bold;" id="timer-display">00:00</div>
+                        <div>Tempo</div>
+                    </div>
+                </div>
+                <div class="board-15" id="puzzle-board"></div>
+                <div>
+                    <button class="control-btn btn-yellow" onclick="shufflePuzzle()">🔀 Embaralhar</button>
+                    <button class="control-btn btn-yellow" onclick="startPuzzle()">🔄 Reiniciar</button>
+                    <br>
+                    <a href="index.html" class="control-btn">🏠 Voltar ao Menu</a>
+                </div>
+            `;
+            
+            createPuzzleTiles();
+            updatePuzzleDisplay();
+        }
+        
+        function createPuzzleTiles() {
+            const board = document.getElementById('puzzle-board');
+            if (!board) return;
+            board.innerHTML = '';
+            
+            puzzleBoard.forEach((value, index) => {
+                const tile = document.createElement('div');
+                tile.className = value === null ? 'tile-15 empty' : 'tile-15';
+                tile.textContent = value || '';
+                tile.onclick = () => handleTileClick(index);
+                board.appendChild(tile);
+            });
+        }
+        
+        function handleTileClick(clickedIndex) {
+            if (isAdjacent(clickedIndex, emptyIndex)) {
+                swapTiles(clickedIndex, emptyIndex);
+                emptyIndex = clickedIndex;
+                movesCount++;
+                
+                createPuzzleTiles();
+                // Atualiza apenas o texto de movimentos para não renderizar tudo
+                renderPuzzleStatsOnly();
+                
+                if (checkPuzzleWin()) {
+                    clearInterval(timerInterval);
+                    setTimeout(() => {
+                        alert(`🎉 Parabéns! Você completou em ${movesCount} movimentos e ${formatTime(timerSeconds)}!`);
+                    }, 300);
+                }
+            }
+        }
+
+        // Função auxiliar para atualizar stats sem reconstruir o board todo durante o clique
+        function renderPuzzleStatsOnly() {
+            const movesDisplay = document.querySelector('.puzzle-stats div:first-child div');
+            if (movesDisplay) movesDisplay.textContent = movesCount;
+        }
+        
+        function isAdjacent(index1, index2) {
+            const row1 = Math.floor(index1 / 4);
+            const col1 = index1 % 4;
+            const row2 = Math.floor(index2 / 4);
+            const col2 = index2 % 4;
+            
+            return (row1 === row2 && Math.abs(col1 - col2) === 1) ||
+                   (col1 === col2 && Math.abs(row1 - row2) === 1);
+        }
+        
+        function getAdjacentPositions(position) {
+            const adjacent = [];
+            const row = Math.floor(position / 4);
+            const col = position % 4;
+            
+            if (row > 0) adjacent.push(position - 4); 
+            if (row < 3) adjacent.push(position + 4); 
+            if (col > 0) adjacent.push(position - 1); 
+            if (col < 3) adjacent.push(position + 1); 
+            
+            return adjacent;
+        }
+        
+        function swapTiles(index1, index2) {
+            [puzzleBoard[index1], puzzleBoard[index2]] = [puzzleBoard[index2], puzzleBoard[index1]];
+        }
+        
+        function checkPuzzleWin() {
+            for (let i = 0; i < 15; i++) {
+                if (puzzleBoard[i] !== i + 1) return false;
+            }
+            return puzzleBoard[15] === null;
+        }
+        
+        function updatePuzzleDisplay() {
+            const timerElement = document.getElementById('timer-display');
+            if (timerElement) {
+                timerElement.textContent = formatTime(timerSeconds);
+            }
+        }
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        // Iniciar o jogo automaticamente ao carregar a página
+        window.onload = startPuzzle;
+    </script>
+</body>
+</html>

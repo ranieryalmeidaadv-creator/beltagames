@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Educativo - BeLTA Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #game-container {
+            background: white;
+            color: #2c3e50;
+            padding: 30px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        /* Topo: Tempo e Pontos */
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #ecf0f1;
+            font-weight: bold;
+        }
+
+        .timer-display { color: #e74c3c; font-size: 1.2rem; }
+
+        .question-text {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        /* Botão de Opção (Estado Normal) */
+        .quiz-btn-option {
+            padding: 18px;
+            font-size: 1.2rem;
+            background: #f1c40f; /* Amarelo */
+            color: #333;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        /* RESPOSTA CORRETA (Verde) */
+        .quiz-btn-option.correct {
+            background: #27ae60 !important; 
+            color: white !important;
+            transform: scale(1.02);
+        }
+
+        /* RESPOSTAS ERRADAS (Vermelho) */
+        .quiz-btn-option.wrong {
+            background: #e74c3c !important; 
+            color: white !important;
+            opacity: 0.8;
+        }
+
+        .control-btn {
+            padding: 12px 25px;
+            background: #34495e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #result-screen { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1 style="margin-bottom: 20px; color: #f1c40f; text-shadow: 2px 2px 0 #000;">BeLTA Games</h1>
+
+    <div id="game-container">
+        <!-- Tela de Perguntas -->
+        <div id="quiz-screen">
+            <div class="quiz-stats">
+                <span>Questão: <span id="q-current">1</span>/10</span>
+                <span class="timer-display">⏱ <span id="timer">00:00</span></span>
+                <span>Pontos: <span id="score">0</span></span>
+            </div>
+            
+            <div class="question-text" id="q-text">Carregando...</div>
+            
+            <div class="options-grid" id="options-box"></div>
+        </div>
+
+        <!-- Tela Final -->
+        <div id="result-screen">
+            <h2 style="font-size: 2rem;">Quiz Finalizado!</h2>
+            <div style="font-size: 4rem; color: #27ae60; margin: 20px 0;" id="final-score">0/10</div>
+            <p id="final-time" style="margin-bottom: 20px;"></p>
+            <button class="control-btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+            <a href="index.html" class="control-btn">🏠 Menu Principal</a>
+        </div>
+    </div>
+
+    <!-- 1. Carrega o banco de perguntas externo do GitHub -->
+    <script src="perguntas.js"></script>
+
+    <script>
+        let selectedQuestions = [];
+        let currentIdx = 0;
+        let score = 0;
+        let timerSeconds = 0;
+        let timerInterval;
+
+        function initQuiz() {
+            // Sorteia 10 perguntas do banco carregado do perguntas.js
+            selectedQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 10);
+            
+            renderQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+                const secs = (timerSeconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            if (currentIdx >= selectedQuestions.length) {
+                showResults();
+                return;
+            }
+
+            const q = selectedQuestions[currentIdx];
+            document.getElementById('q-current').textContent = currentIdx + 1;
+            document.getElementById('score').textContent = score;
+            document.getElementById('q-text').textContent = q.q;
+
+            const optionsBox = document.getElementById('options-box');
+            optionsBox.innerHTML = '';
+
+            // Embaralha as alternativas da pergunta atual
+            const shuffledOptions = [...q.a].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-btn-option';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt, q.c);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            const allButtons = document.querySelectorAll('.quiz-btn-option');
+            
+            // Trava os botões para evitar múltiplos cliques
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (selected === correct) {
+                score++;
+            }
+
+            // A LÓGICA DE CORES SOLICITADA:
+            allButtons.forEach(btn => {
+                if (btn.textContent === correct) {
+                    btn.classList.add('correct'); // Fundo Verde para a certa
+                } else {
+                    btn.classList.add('wrong');   // Fundo Vermelho para as outras
+                }
+            });
+
+            // Espera 1.5 segundos para o aluno ver o gabarito e muda de questão
+            setTimeout(() => {
+                currentIdx++;
+                renderQuestion();
+            }, 1500);
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('final-score').textContent = `${score}/10`;
+            document.getElementById('final-time').textContent = `Tempo total: ${document.getElementById('timer').textContent}`;
+        }
+
+        // Inicia o jogo
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
