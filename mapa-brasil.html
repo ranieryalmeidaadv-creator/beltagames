@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mapa do Brasil - BeLTA Games</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+      color: #2c3e50;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header { text-align: center; }
+    .title { font-size: 2.2rem; font-weight: 900; color: #2c3e50; text-shadow: 0 2px 0 rgba(255,255,255,.9); }
+
+    .main {
+      width: 100%;
+      max-width: 1200px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 18px 36px rgba(0,0,0,.12);
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+    }
+    @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } }
+
+    .left { display: grid; gap: 16px; align-content: start; }
+    .stats {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;
+      background: #f8f9fa; border: 2px solid #edf0f2; border-radius: 16px; padding: 14px;
+    }
+    .statbox { text-align: center; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; color: #20bf6b; display: block; }
+    .stat-label { font-size: .8rem; letter-spacing: .1em; color: #7f8c8d; text-transform: uppercase; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 110px);
+      grid-template-rows: repeat(5, 110px);
+      width: 550px; height: 550px;
+      background: #fff url('mapa-Brasil-Cinza.png') no-repeat center/550px 550px;
+      border-radius: 14px; border: 5px solid #243b53;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+      overflow: hidden;
+      place-self: center start;
+    }
+    @media (max-width: 620px) { .board { transform: scale(.9); transform-origin: top left; } }
+
+    .slot { width:110px; height:110px; border:1px solid rgba(0,0,0,.05); transition:background .25s ease; }
+    .slot.inactive { background:#fff; border:none; pointer-events:none; }
+
+    .right {
+      background:#f3f5f7; border:2px solid #e3e7ea; border-radius:18px; padding:16px;
+      display:grid; grid-auto-rows:max-content; gap:14px; max-height:586px; overflow:auto;
+    }
+    .pool { display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; }
+
+    .piece {
+      width:110px; height:110px;
+      background-image:url('Mapa-Brasil.png'); background-size:550px 550px;
+      border-radius:10px; border:1px solid rgba(255,255,255,.6);
+      box-shadow:0 5px 12px rgba(0,0,0,.18);
+      cursor:pointer; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      transform:scale(.9);
+    }
+    .piece:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0,0,.25); }
+    .piece.selected { border:4px solid #f1c40f; box-shadow:0 0 16px #f1c40f; transform:scale(1); }
+    .slot .piece { width:100%; height:100%; border-radius:0; border:none; box-shadow:none; cursor:default; transform:scale(1)!important; }
+
+    .controls { display:flex; gap:14px; justify-content:center; }
+    .btn { appearance:none; border:none; border-radius:12px; padding:12px 22px; font-weight:800; color:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 0 rgba(0,0,0,.12); }
+    .btn:active { transform: translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.12); }
+    .btn-orange { background:#e67e22; }
+    .btn-blue   { background:#34495e; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="header"><div class="title">🎮 BeLTA Games</div></div>
+
+  <div class="main">
+    <div class="left">
+      <div class="stats">
+        <div class="statbox"><span class="stat-value" id="moves-count">0</span><span class="stat-label">Movimentos</span></div>
+        <div class="statbox"><span class="stat-value" id="timer-text">00:00</span><span class="stat-label">Tempo</span></div>
+      </div>
+
+      <div class="board" id="game-board"></div>
+
+      <div class="controls">
+        <button class="btn btn-orange" id="btn-reset">🔄 Reiniciar</button>
+        <a class="btn btn-blue" href="index.html">🏠 Menu Principal</a>
+      </div>
+    </div>
+
+    <div class="right">
+      <div style="font-weight:800;color:#52606d;text-transform:uppercase;font-size:.85rem;letter-spacing:.08em;">Peças</div>
+      <div class="pool" id="pieces-pool"></div>
+    </div>
+  </div>
+
+  <script>
+    const GRID = 5, TILE = 110, CANVAS_SIZE = 550;
+    const IMG_COLOR = 'Mapa-Brasil.png';
+    const boardEl = document.getElementById('game-board');
+    const poolEl  = document.getElementById('pieces-pool');
+    const movesEl = document.getElementById('moves-count');
+    const timerEl = document.getElementById('timer-text');
+    const btnReset = document.getElementById('btn-reset');
+
+    let selectedPiece = null, moves = 0, seconds = 0, timerInterval = null;
+
+    // Limiares (mais permissivos para garantir peças)
+    const MIN_CONTENT = 0.02;  // 2% de pixels não brancos
+    const MIN_BLACK   = 0.002; // 0,2% de pixels escuros
+
+    // Fallback manual (úsado se análise falhar ou achar 0 peças)
+    const FALLBACK_ACTIVE = [1,2,3,5,6,7,8,9,10,11,12,13,14,16,17,18,21,22,23,24];
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        seconds++;
+        const m = Math.floor(seconds/60).toString().padStart(2,'0');
+        const s = (seconds%60).toString().padStart(2,'0');
+        timerEl.textContent = `${m}:${s}`;
+      }, 1000);
+    }
+    function stopTimer(){ if (timerInterval) clearInterval(timerInterval); }
+
+    function selectPiece(piece){
+      if (piece.parentElement.classList.contains('slot')) return;
+      if (selectedPiece) selectedPiece.classList.remove('selected');
+      selectedPiece = piece; piece.classList.add('selected');
+    }
+
+    function placePiece(slot){
+      if (!selectedPiece || slot.firstChild || slot.classList.contains('inactive')) return;
+      if (selectedPiece.dataset.id === slot.dataset.index){
+        slot.appendChild(selectedPiece);
+        selectedPiece.classList.remove('selected');
+        selectedPiece = null;
+        moves++; movesEl.textContent = moves;
+        checkWin();
+      } else {
+        slot.style.background = 'rgba(231,76,60,.35)';
+        setTimeout(()=>slot.style.background='transparent', 300);
+        moves++; movesEl.textContent = moves;
+      }
+    }
+
+    function checkWin(){
+      const placed = boardEl.querySelectorAll('.slot .piece').length;
+      const need = Number(boardEl.dataset.activeCount || 0);
+      if (placed === need && need > 0){
+        stopTimer();
+        setTimeout(()=>alert(`🏆 Parabéns! Você montou o Mapa do Brasil!\nMovimentos: ${moves}\nTempo: ${timerEl.textContent}`), 250);
+      }
+    }
+
+    function loadImage(src){
+      return new Promise((resolve,reject)=>{
+        const img = new Image();
+        img.crossOrigin = 'anonymous'; // segura em hospedagens
+        img.onload = ()=>resolve(img);
+        img.onerror = (e)=>reject(e);
+        img.src = src + '?v=' + Date.now(); // evita cache duro
+      });
+    }
+
+    async function detectActiveFromImage(){
+      const img = await loadImage(IMG_COLOR);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = CANVAS_SIZE; canvas.height = CANVAS_SIZE;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+      const active = [];
+      for (let i=0;i<GRID*GRID;i++){
+        const r = Math.floor(i/GRID), c = i%GRID;
+        const x = c*TILE, y = r*TILE;
+
+        let data;
+        try {
+          data = ctx.getImageData(x,y,TILE,TILE).data;
+        } catch(err){
+          // Segurança de canvas (CORS). Cai direto no fallback.
+          return [];
+        }
+
+        let nonWhite=0, blackish=0;
+        for (let p=0; p<data.length; p+=8){ // amostragem
+          const R=data[p], G=data[p+1], B=data[p+2];
+          const whiteish = (R>245 && G>245 && B>245);
+          if(!whiteish) nonWhite++;
+          if (R<50 && G<50 && B<50) blackish++;
+        }
+        const samples=(TILE*TILE)/2; // por causa do p+=8
+        const keep = (nonWhite/samples>=MIN_CONTENT) || (blackish/samples>=MIN_BLACK);
+        if (keep) active.push(i);
+      }
+      return active;
+    }
+
+    function buildUI(activeIdx){
+      boardEl.innerHTML = '';
+      poolEl.innerHTML = '';
+
+      const pieces = [];
+      for (let i=0;i<GRID*GRID;i++){
+        const slot = document.createElement('div');
+        const keep = activeIdx.includes(i);
+        slot.className = keep ? 'slot' : 'slot inactive';
+        slot.dataset.index = i;
+        if (keep) slot.onclick = ()=>placePiece(slot);
+        boardEl.appendChild(slot);
+
+        if (keep){
+          const r=Math.floor(i/GRID), c=i%GRID;
+          const piece=document.createElement('div');
+          piece.className='piece';
+          piece.dataset.id=i;
+          piece.style.backgroundPosition = `-${c*TILE}px -${r*TILE}px`;
+          piece.onclick = (e)=>{ e.stopPropagation(); selectPiece(piece); };
+          pieces.push(piece);
+        }
+      }
+      pieces.sort(()=>Math.random()-0.5);
+      pieces.forEach(p=>poolEl.appendChild(p));
+      boardEl.dataset.activeCount = activeIdx.length;
+    }
+
+    async function resetGame(){
+      stopTimer();
+      moves=0; seconds=0; selectedPiece=null;
+      movesEl.textContent='0'; timerEl.textContent='00:00';
+      startTimer();
+
+      let activeIdx = [];
+      try {
+        activeIdx = await detectActiveFromImage();
+      } catch(e){
+        activeIdx = [];
+      }
+
+      // Fallback se não encontrou nada (ou muito pouco)
+      if (!activeIdx.length || activeIdx.length < 12){
+        activeIdx = FALLBACK_ACTIVE.slice();
+      }
+
+      buildUI(activeIdx);
+    }
+
+    window.addEventListener('load', resetGame);
+    document.getElementById('btn-reset').addEventListener('click', resetGame);
+  </script>
+</body>
+</html>
