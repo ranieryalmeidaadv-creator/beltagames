@@ -3,12 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "SEU_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCERKownSh35zadwoGQR55HsNweLXMwMHQ",
+  authDomain: "belta-games.firebaseapp.com",
+  projectId: "belta-games",
+  storageBucket: "belta-games.appspot.com",
+  messagingSenderId: "belta-games",
+  appId: "77950108717"
 };
 
 // Inicializa o Firebase
