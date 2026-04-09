@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// COLE AQUI OS DADOS QUE VOCÊ COPIOU DO FIREBASE NO PASSO 1
 const firebaseConfig = {
   apiKey: "AIzaSyCERKownSh35zadwoGQR55HsNweLXMwMHQ",
   authDomain: "belta-games.firebaseapp.com",
@@ -11,41 +12,61 @@ const firebaseConfig = {
   appId: "77950108717"
 };
 
-// Inicialização
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// --- FUNÇÕES EXPOSTAS PARA O SITE ---
-
-// 1. Fazer Login
+// FUNÇÕES QUE O SITE VAI USAR
 window.loginGoogle = () => signInWithPopup(auth, provider);
-
-// 2. Fazer Logout
 window.logout = () => signOut(auth);
+window.observarUsuario = (callback) => onAuthStateChanged(auth, callback);
 
-// 3. Monitorar usuário (vê se ele entrou ou saiu)
-window.observarUsuario = (callback) => {
-    onAuthStateChanged(auth, callback);
-};
-
-// 4. Salvar Pontuação no Ranking
-window.salvarPontos = async (nomeJogo, pontos) => {
-    const user = auth.currentUser;
-    if (user) {
-        await addDoc(collection(db, "rankings"), {
-            uid: user.uid,
-            nome: user.displayName,
-            foto: user.photoURL,
-            jogo: nomeJogo,
-            pontos: pontos,
-            data: new Date()
-        });
+// Verifica e cria o Nickname (SÓ NO PRIMEIRO ACESSO)
+window.verificarOuCriarPerfil = async (user) => {
+    const userRef = doc(db, "usuarios", user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+        return userSnap.data();
+    } else {
+        return null; // Usuário novo, precisa de Nickname
     }
 };
 
-// 5. Buscar Ranking Top 10
+window.salvarNovoNickname = async (nickname) => {
+    const user = auth.currentUser;
+    const dados = {
+        uid: user.uid,
+        nickname: nickname,
+        nomeReal: user.displayName,
+        foto: user.photoURL,
+        criadoEm: new Date()
+    };
+    await setDoc(doc(db, "usuarios", user.uid), dados);
+    return dados;
+};
+
+// Salva pontuação usando o Nickname imutável
+window.salvarPontos = async (nomeJogo, pontos) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    const userRef = doc(db, "usuarios", user.uid);
+    const userSnap = await getDoc(userRef);
+    const nick = userSnap.exists() ? userSnap.data().nickname : "Anônimo";
+
+    await addDoc(collection(db, "rankings"), {
+        uid: user.uid,
+        nickname: nick,
+        foto: user.photoURL,
+        jogo: nomeJogo,
+        pontos: pontos,
+        data: new Date()
+    });
+};
+
+// Busca o Top 10 para o Ranking
 window.obterRanking = async (nomeJogo) => {
     const q = query(
         collection(db, "rankings"),
