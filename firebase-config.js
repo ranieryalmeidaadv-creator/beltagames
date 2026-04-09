@@ -8,8 +8,9 @@ const firebaseConfig = {
   authDomain: "belta-games.firebaseapp.com",
   projectId: "belta-games",
   storageBucket: "belta-games.appspot.com",
-  messagingSenderId: "belta-games",
-  appId: "77950108717"
+  messagingSenderId: "77950108717",
+  appId: "1:77950108717:web:201d41190f7c0bde5fe4a4",
+  measurementId: "G-5E5K3WM1VK"
 };
 
 const app = initializeApp(firebaseConfig);
