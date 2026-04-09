@@ -50,7 +50,7 @@ window.salvarNovoNickname = async (nickname) => {
 
 // Salva pontuação usando o Nickname imutável
 window.salvarPontos = async (nomeJogo, pontos) => {
-    const user = auth.currentUser;
+   const user = auth.currentUser;
     if (!user) return;
     
     const userRef = doc(db, "usuarios", user.uid);
@@ -65,6 +65,14 @@ window.salvarPontos = async (nomeJogo, pontos) => {
         pontos: pontos,
         data: new Date()
     });
+   if (!nomeJogo || typeof pontos !== 'number') {
+        throw new Error("Parâmetros inválidos");
+    }
+  try {
+    } catch (error) {
+        console.error("Erro ao salvar pontos:", error);
+        throw error;
+    }  
 };
 
 // Busca o Top 10 para o Ranking
