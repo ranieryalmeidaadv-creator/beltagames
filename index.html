@@ -81,7 +81,7 @@
         // ==========================================================
         // CONFIGURAÇÃO DOS JOGOS (ADICIONE NOVOS JOGOS AQUI ABAIXO)
         // ==========================================================
-        const meusJogos = [
+		const meusJogos = [
             {
                 titulo: "Quiz - Nível 10 Anos",
                 descricao: "Teste seus conhecimentos em Matemática, Ciências, Português e muito mais!",
@@ -125,7 +125,12 @@
         // ==========================================================
         // FUNÇÃO PARA CRIAR OS CARDS NA TELA
         // ==========================================================
-        function carregarJogos() {
+        window.onload = () => {
+    if (!localStorage.getItem("belta_user")) {
+        let nome = prompt("Bem-vindo ao BeLTA Games! Qual é o seu nome de Herói?");
+        if (nome) localStorage.setItem("belta_user", nome);
+    }
+		function carregarJogos() {
             const container = document.getElementById('games-container');
             
             meusJogos.forEach(jogo => {
