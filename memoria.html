@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <!-- IMPORTANTE: Importar Firebase para ranking -->
+    <script type="module" src="firebase-config.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memória: Capitais - BeLTA Games</title>
@@ -18,8 +21,29 @@
             align-items: center;
         }
 
-        .header { text-align: center; margin-bottom: 20px; }
-        h1 { font-size: 2.5rem; text-shadow: 3px 3px 0 #333; color: #f1c40f; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        h1 { 
+            font-size: 2.5rem; 
+            text-shadow: 3px 3px 0 #333; 
+            color: #f1c40f; 
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #bdc3c7;
+            font-size: 1.1rem;
+        }
 
         /* Container do Jogo */
         #game-container {
@@ -34,22 +58,59 @@
             align-items: center;
         }
 
-        /* Barra de Status */
+        /* Barra de Status Aprimorada */
         .stats-bar {
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             width: 100%;
-            background: #f8f9fa;
-            padding: 15px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
             border-radius: 20px;
             margin-bottom: 20px;
-            border: 2px solid #eee;
-            color: #2c3e50;
+            border: 3px solid #f1c40f;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 1.8rem; font-weight: bold; color: #764ba2; display: block; }
-        .stat-label { font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; }
+        .stat-item { 
+            text-align: center; 
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-value { 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #f1c40f; 
+            display: block;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .stat-label { 
+            font-size: 0.8rem; 
+            color: #bdc3c7; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Sistema de Combo */
+        .combo-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 0 0 20px #f1c40f;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+        }
 
         /* Grid de Cartas */
         .memory-grid {
@@ -58,23 +119,45 @@
             gap: 12px;
             perspective: 1000px;
             width: 100%;
+            min-height: 500px;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .memory-grid { grid-template-columns: repeat(4, 1fr); }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
         }
 
-        /* A Carta */
+        @media (max-width: 480px) {
+            .memory-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* A Carta - Aprimorada */
         .card {
             height: 120px;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         }
 
         .card.flipped { transform: rotateY(180deg); }
-        .card.matched { cursor: default; }
+        .card.matched { 
+            cursor: default;
+            animation: matchedPulse 0.5s ease-in-out;
+        }
+
+        @keyframes matchedPulse {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+            100% { transform: rotateY(180deg) scale(1); }
+        }
 
         .card-face {
             position: absolute;
@@ -82,21 +165,22 @@
             height: 100%;
             backface-visibility: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 10px;
             border-radius: 15px;
             font-weight: bold;
-            font-size: 1rem;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         /* Verso da Carta (Escondido) */
         .card-back {
-            background: #34495e;
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
             color: #f1c40f;
             font-size: 2.5rem;
+            border: 3px solid #f1c40f;
         }
 
         /* Frente da Carta (Revelado) */
@@ -105,44 +189,208 @@
             color: #2c3e50;
             transform: rotateY(180deg);
             border: 3px solid #764ba2;
+            overflow: hidden;
         }
 
         /* Cores diferentes para Estado e Capital */
-        .type-state { background: #e3f2fd; border-color: #2196f3; }
-        .type-capital { background: #f1f8e9; border-color: #4caf50; }
+        .type-state { 
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-color: #2196f3; 
+        }
+        
+        .type-capital { 
+            background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+            border-color: #4caf50; 
+        }
 
         .matched .card-front {
-            background: #d4edda !important;
+            background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%) !important;
             border-color: #28a745 !important;
             color: #155724;
         }
 
-        /* Botões */
-        .controls { margin-top: 25px; display: flex; gap: 15px; }
+        /* Feedback de Pontuação */
+        .score-feedback {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2ecc71;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 100;
+            pointer-events: none;
+            animation: floatUp 1.5s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
+
+        /* Modal de Resultados */
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 4px solid #f1c40f;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        
+        .final-score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 3px 3px 0 #000;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #e74c3c;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .result-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #3498db;
+        }
+        
+        .result-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+        
+        /* Botões Aprimorados */
+        .controls { 
+            margin-top: 25px; 
+            display: flex; 
+            gap: 15px; 
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
         .btn {
-            padding: 12px 25px;
+            padding: 15px 30px;
             border: none;
-            border-radius: 12px;
+            border-radius: 15px;
             font-weight: bold;
             cursor: pointer;
             color: white;
             text-decoration: none;
-            transition: 0.3s;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            min-width: 180px;
         }
-        .btn-reset { background: #e67e22; }
-        .btn-menu { background: #34495e; }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-
+        
+        .btn-reset { 
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+        
+        .btn-menu { 
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        }
+        
+        .btn-ranking {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+        
+        .btn:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+        
+        /* Mensagem Firebase */
+        .firebase-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .success { 
+            background: rgba(46, 204, 113, 0.2); 
+            color: #2ecc71; 
+            border: 2px solid #27ae60; 
+        }
+        
+        .warning { 
+            background: rgba(243, 156, 18, 0.2); 
+            color: #f39c12; 
+            border: 2px solid #f39c12; 
+        }
+        
+        .error { 
+            background: rgba(231, 76, 60, 0.2); 
+            color: #e74c3c; 
+            border: 2px solid #e74c3c; 
+        }
+        
+        /* Efeito de Destaque */
+        .highlight {
+            animation: highlight 1s ease-in-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #f1c40f; color: #2c3e50; }
+            100% { background-color: transparent; color: inherit; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🎮 BeLTA Games</h1>
-        <p>Combine o Estado com sua Capital!</p>
+        <h1>🎮 Memória: Capitais do Brasil</h1>
+        <p class="subtitle">Encontre os pares estado-capital no menor tempo possível!</p>
     </div>
 
+    <!-- Display de Combo -->
+    <div class="combo-display" id="combo-display"></div>
+
     <div id="game-container">
+        <!-- Barra de Estatísticas Aprimorada -->
         <div class="stats-bar">
             <div class="stat-item">
                 <span class="stat-value" id="moves">0</span>
@@ -152,17 +400,97 @@
                 <span class="stat-value" id="timer">00:00</span>
                 <span class="stat-label">Tempo</span>
             </div>
+            <div class="stat-item">
+                <span class="stat-value" id="score">0</span>
+                <span class="stat-label">Pontos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="combo">1x</span>
+                <span class="stat-label">Multiplicador</span>
+            </div>
         </div>
 
+        <!-- Grid de Cartas -->
         <div class="memory-grid" id="grid"></div>
 
+        <!-- Controles -->
         <div class="controls">
-            <button class="btn btn-reset" onclick="initGame()">🔄 Reiniciar</button>
+            <button class="btn btn-reset" onclick="initGame()">🔄 Reiniciar Jogo</button>
+            <button class="btn" onclick="showInstructions()" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">📖 Como Pontuar</button>
             <a href="index.html" class="btn btn-menu">🏠 Menu Principal</a>
         </div>
     </div>
 
+    <!-- Modal de Resultados -->
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 style="color: #f1c40f; font-size: 2.5rem; margin-bottom: 10px;">🎉 Memória Completa!</h2>
+            <p style="color: #bdc3c7; margin-bottom: 20px;">Você dominou as capitais do Brasil!</p>
+            
+            <div class="final-score" id="final-score">0</div>
+            
+            <div class="stats-grid">
+                <div class="result-stat">
+                    <span class="result-value" id="final-time">00:00</span>
+                    <span class="result-label">TEMPO TOTAL</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="final-moves">0</span>
+                    <span class="result-label">MOVIMENTOS</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="bonus-tempo">0</span>
+                    <span class="result-label">BÔNUS TEMPO</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="bonus-combo">0</span>
+                    <span class="result-label">BÔNUS COMBO</span>
+                </div>
+            </div>
+            
+            <p style="margin: 20px 0; color: #2c3e50; font-weight: bold; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+                Sua pontuação será salva no ranking "Memória Capitais"
+            </p>
+            
+            <div id="firebase-message" class="firebase-message"></div>
+            
+            <div class="controls" style="margin-top: 30px;">
+                <button class="btn btn-reset" onclick="jogarNovamente()">🔄 Jogar Novamente</button>
+                <a href="ranking.html?jogo=Memória Capitais" class="btn btn-ranking">🏆 Ver Ranking</a>
+                <button id="btn-salvar" class="btn" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);" onclick="salvarPontuacao()">
+                    💾 Salvar Pontuação
+                </button>
+            </div>
+            
+            <a href="index.html" style="display: block; margin-top: 25px; color: #bdc3c7; text-decoration: none;">
+                ← Voltar ao Portal de Jogos
+            </a>
+        </div>
+    </div>
+
     <script>
+        // ===== CONFIGURAÇÕES DO JOGO =====
+        const NOME_DO_JOGO = "Memória Capitais";
+        const PAIRS_TO_PLAY = 10;
+        
+        // ===== VARIÁVEIS GLOBAIS =====
+        let firstCard = null, secondCard = null;
+        let lockBoard = false;
+        let moves = 0;
+        let seconds = 0;
+        let timerInterval;
+        let matchedPairs = 0;
+        let gameActive = false;
+        
+        // Sistema de Pontuação
+        let score = 0;
+        let currentCombo = 0;
+        let comboMultiplier = 1;
+        let highestCombo = 0;
+        let consecutiveMatches = 0;
+        let timeBonus = 0;
+        
+        // Estados do Brasil
         const statesData = [
             { s: "Acre", c: "Rio Branco" }, { s: "Alagoas", c: "Maceió" },
             { s: "Amapá", c: "Macapá" }, { s: "Amazonas", c: "Manaus" },
@@ -180,28 +508,54 @@
             { s: "Tocantins", c: "Palmas" }
         ];
 
-        let firstCard = null, secondCard = null;
-        let lockBoard = false, moves = 0, seconds = 0, timerInterval;
-        let matchedPairs = 0;
-        const PAIRS_TO_PLAY = 10; // 10 estados = 20 cartas
-
+        // ===== INICIALIZAÇÃO DO JOGO =====
         function initGame() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            moves = 0; seconds = 0; matchedPairs = 0;
+            
+            // Reset variáveis
+            moves = 0;
+            seconds = 0;
+            matchedPairs = 0;
+            score = 0;
+            currentCombo = 0;
+            comboMultiplier = 1;
+            highestCombo = 0;
+            consecutiveMatches = 0;
+            gameActive = true;
+            
+            // Atualizar UI
             document.getElementById('moves').textContent = '0';
             document.getElementById('timer').textContent = '00:00';
-            if(timerInterval) clearInterval(timerInterval);
+            document.getElementById('score').textContent = '0';
+            document.getElementById('combo').textContent = '1x';
+            
+            // Parar timer anterior
+            if (timerInterval) clearInterval(timerInterval);
+            
+            // Iniciar timer
             startTimer();
-
+            
             // Selecionar 10 estados aleatórios
             const selected = [...statesData].sort(() => Math.random() - 0.5).slice(0, PAIRS_TO_PLAY);
             
-            // Criar cartas (uma com nome do estado, outra com nome da capital)
+            // Criar cartas
             let cards = [];
             selected.forEach(item => {
-                cards.push({ text: item.s, match: item.c, type: 'state', id: item.s });
-                cards.push({ text: item.c, match: item.s, type: 'capital', id: item.s });
+                cards.push({ 
+                    text: item.s, 
+                    match: item.c, 
+                    type: 'state', 
+                    id: item.s,
+                    hint: item.c // Dica para mostrar no hover?
+                });
+                cards.push({ 
+                    text: item.c, 
+                    match: item.s, 
+                    type: 'capital', 
+                    id: item.s,
+                    hint: item.s // Dica para mostrar no hover?
+                });
             });
 
             // Embaralhar cartas
@@ -212,21 +566,55 @@
                 const cardEl = document.createElement('div');
                 cardEl.className = 'card';
                 cardEl.dataset.id = cardData.id;
+                cardEl.dataset.type = cardData.type;
                 
                 cardEl.innerHTML = `
                     <div class="card-face card-back">?</div>
-                    <div class="card-face card-front type-${cardData.type}">${cardData.text}</div>
+                    <div class="card-face card-front type-${cardData.type}">
+                        <div style="font-size: 1.1rem; font-weight: bold;">${cardData.text}</div>
+                        <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">
+                            ${cardData.type === 'state' ? 'ESTADO' : 'CAPITAL'}
+                        </div>
+                    </div>
                 `;
                 
                 cardEl.onclick = () => flipCard(cardEl);
                 grid.appendChild(cardEl);
             });
+            
+            // Esconder modal
+            document.getElementById('result-modal').style.display = 'none';
         }
 
+        // ===== TIMER =====
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                
+                seconds++;
+                const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${minutes}:${secs}`;
+                
+                // Penalidade por tempo (perde 1 ponto a cada 5 segundos)
+                if (seconds % 5 === 0 && score > 0) {
+                    score = Math.max(0, score - 1);
+                    updateScoreDisplay();
+                }
+            }, 1000);
+        }
+
+        // ===== LÓGICA DO JOGO =====
         function flipCard(card) {
-            if (lockBoard || card === firstCard || card.classList.contains('matched')) return;
+            if (!gameActive || lockBoard || card === firstCard || card.classList.contains('matched')) {
+                return;
+            }
 
             card.classList.add('flipped');
+            
+            // Efeito sonoro visual
+            card.classList.add('highlight');
+            setTimeout(() => card.classList.remove('highlight'), 300);
 
             if (!firstCard) {
                 firstCard = card;
@@ -240,29 +628,59 @@
         }
 
         function checkMatch() {
-            let isMatch = firstCard.dataset.id === secondCard.dataset.id;
-            isMatch ? disableCards() : unflipCards();
+            lockBoard = true;
+            
+            const isMatch = firstCard.dataset.id === secondCard.dataset.id;
+            
+            setTimeout(() => {
+                if (isMatch) {
+                    handleMatch();
+                } else {
+                    handleMismatch();
+                }
+            }, 500);
         }
 
-        function disableCards() {
+        function handleMatch() {
+            // Marcar cartas como combinadas
             firstCard.classList.add('matched');
             secondCard.classList.add('matched');
+            
             matchedPairs++;
+            consecutiveMatches++;
+            
+            // Calcular pontos para este par
+            const pairPoints = calculatePairPoints();
+            addPoints(pairPoints);
+            
+            // Atualizar combo
+            updateCombo(true);
+            
+            // Feedback visual
+            showMatchFeedback(firstCard, pairPoints);
+            
             resetBoard();
             
+            // Verificar se completou o jogo
             if (matchedPairs === PAIRS_TO_PLAY) {
-                clearInterval(timerInterval);
-                setTimeout(() => alert(`🎉 PARABÉNS!\nVocê completou o jogo da memória em ${moves} movimentos!`), 500);
+                gameCompleted();
             }
         }
 
-        function unflipCards() {
-            lockBoard = true;
-            setTimeout(() => {
-                firstCard.classList.remove('flipped');
-                secondCard.classList.remove('flipped');
-                resetBoard();
-            }, 1000);
+        function handleMismatch() {
+            // Desvirar cartas
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            
+            // Penalidade por erro
+            const penalty = Math.max(10, Math.floor(score * 0.05));
+            addPoints(-penalty);
+            
+            // Resetar combo
+            consecutiveMatches = 0;
+            updateCombo(false);
+            
+            resetBoard();
         }
 
         function resetBoard() {
@@ -270,16 +688,229 @@
             lockBoard = false;
         }
 
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                seconds++;
-                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const s = (seconds % 60).toString().padStart(2, '0');
-                document.getElementById('timer').textContent = `${m}:${s}`;
-            }, 1000);
+        // ===== SISTEMA DE PONTUAÇÃO =====
+        function calculatePairPoints() {
+            // Pontos base por par
+            let basePoints = 100;
+            
+            // Bônus por velocidade (quanto mais rápido, mais pontos)
+            const timeBonus = Math.max(0, 300 - seconds);
+            
+            // Bônus por combo
+            const comboBonus = consecutiveMatches * 25;
+            
+            // Bônus por eficiência (menos movimentos)
+            const efficiencyBonus = Math.max(0, 50 - moves);
+            
+            // Total para este par
+            const total = basePoints + timeBonus + comboBonus + efficiencyBonus;
+            
+            return Math.floor(total * comboMultiplier);
         }
 
-        // Iniciar ao carregar
+        function addPoints(points) {
+            const oldScore = score;
+            score = Math.max(0, score + points);
+            
+            // Feedback visual
+            if (points > 0) {
+                document.getElementById('score').classList.add('highlight');
+                setTimeout(() => {
+                    document.getElementById('score').classList.remove('highlight');
+                }, 300);
+            }
+            
+            updateScoreDisplay();
+            
+            return points;
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function updateCombo(isMatch) {
+            if (isMatch) {
+                currentCombo++;
+                
+                // Aumentar multiplicador a cada 2 acertos consecutivos
+                if (currentCombo >= 2 && currentCombo < 4) {
+                    comboMultiplier = 1.5;
+                } else if (currentCombo >= 4 && currentCombo < 6) {
+                    comboMultiplier = 2;
+                } else if (currentCombo >= 6) {
+                    comboMultiplier = 3;
+                }
+                
+                // Atualizar maior combo
+                if (currentCombo > highestCombo) {
+                    highestCombo = currentCombo;
+                }
+                
+                // Mostrar feedback de combo
+                if (currentCombo >= 2) {
+                    showComboDisplay(currentCombo);
+                }
+            } else {
+                currentCombo = 0;
+                comboMultiplier = 1;
+            }
+            
+            document.getElementById('combo').textContent = `${comboMultiplier}x`;
+            
+            // Destaque visual para combo alto
+            if (comboMultiplier >= 2) {
+                document.getElementById('combo').style.color = '#f1c40f';
+                document.getElementById('combo').style.textShadow = '0 0 10px #f1c40f';
+            } else {
+                document.getElementById('combo').style.color = '#f1c40f';
+                document.getElementById('combo').style.textShadow = 'none';
+            }
+        }
+
+        function showComboDisplay(comboCount) {
+            const display = document.getElementById('combo-display');
+            display.textContent = `${comboCount} COMBO!`;
+            display.style.opacity = '1';
+            display.style.transform = 'translate(-50%, -50%) scale(1)';
+            
+            setTimeout(() => {
+                display.style.opacity = '0';
+                display.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            }, 800);
+        }
+
+        function showMatchFeedback(card, points) {
+            const rect = card.getBoundingClientRect();
+            const gameContainer = document.getElementById('game-container').getBoundingClientRect();
+            
+            const feedback = document.createElement('div');
+            feedback.className = 'score-feedback';
+            feedback.textContent = `+${points}`;
+            feedback.style.left = (rect.left - gameContainer.left + rect.width / 2) + 'px';
+            feedback.style.top = (rect.top - gameContainer.top) + 'px';
+            
+            document.getElementById('game-container').appendChild(feedback);
+            
+            setTimeout(() => {
+                if (feedback.parentElement) feedback.remove();
+            }, 1500);
+        }
+
+        // ===== FIM DE JOGO =====
+        function gameCompleted() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            // Calcular pontuação final
+            const finalScore = calculateFinalScore();
+            
+            // Mostrar modal de resultados
+            showResultModal(finalScore);
+            
+            // Salvar automaticamente após 2 segundos
+            setTimeout(() => {
+                salvarPontuacao(finalScore.total);
+            }, 2000);
+        }
+
+        function calculateFinalScore() {
+            // 1. Pontos acumulados durante o jogo
+            const baseScore = score;
+            
+            // 2. Bônus por tempo (quanto mais rápido, mais bônus)
+            const timeBonus = Math.max(0, 1000 - (seconds * 5));
+            
+            // 3. Bônus por eficiência (menos movimentos)
+            const idealMoves = PAIRS_TO_PLAY * 2; // 20 movimentos ideais
+            const efficiencyBonus = Math.max(0, (idealMoves - moves) * 10);
+            
+            // 4. Bônus por combo máximo
+            const comboBonus = highestCombo * 50;
+            
+            // 5. Bônus por perfeição (sem erros)
+            const perfectionBonus = (moves === idealMoves) ? 500 : 0;
+            
+            // Total
+            const totalScore = baseScore + timeBonus + efficiencyBonus + comboBonus + perfectionBonus;
+            
+            return {
+                total: totalScore,
+                base: baseScore,
+                timeBonus: timeBonus,
+                efficiencyBonus: efficiencyBonus,
+                comboBonus: comboBonus,
+                perfectionBonus: perfectionBonus,
+                highestCombo: highestCombo
+            };
+        }
+
+        function showResultModal(finalScore) {
+            // Atualizar elementos do modal
+            document.getElementById('final-score').textContent = finalScore.total;
+            document.getElementById('final-time').textContent = document.getElementById('timer').textContent;
+            document.getElementById('final-moves').textContent = moves;
+            document.getElementById('bonus-tempo').textContent = finalScore.timeBonus;
+            document.getElementById('bonus-combo').textContent = finalScore.comboBonus + finalScore.perfectionBonus;
+            
+            // Mostrar modal
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        // ===== INTEGRAÇÃO COM FIREBASE =====
+        async function salvarPontuacao(pontos) {
+            console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
+            
+            try {
+                const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
+                
+                if (sucesso) {
+                    showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
+                    document.getElementById('btn-salvar').style.display = 'none';
+                    return true;
+                } else {
+                    showFirebaseMessage('⚠️ Faça login para salvar sua pontuação no ranking', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+                return false;
+            }
+        }
+
+        function showFirebaseMessage(text, type) {
+            const messageEl = document.getElementById('firebase-message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = `firebase-message ${type}`;
+                messageEl.style.display = 'block';
+            }
+        }
+
+        // ===== FUNÇÕES AUXILIARES =====
+        function jogarNovamente() {
+            document.getElementById('result-modal').style.display = 'none';
+            initGame();
+        }
+
+        function showInstructions() {
+            alert(`🏆 SISTEMA DE PONTUAÇÃO - MEMÓRIA CAPITAIS
+
+✅ Encontrar um par: +100 pontos base
+⏱️ Bônus por velocidade: Até 300 pontos (quanto mais rápido, mais pontos)
+🔥 Sistema de combo: Acertos consecutivos aumentam multiplicador (até 3x)
+🎯 Eficiência: Menos movimentos = mais pontos (bônus por economia)
+🏆 Bônus perfeição: 500 pontos extras (se acertar todos na primeira tentativa)
+
+❌ Penalidades:
+- Cada erro: -10 pontos (ou 5% da pontuação atual)
+- Tempo: Perde 1 ponto a cada 5 segundos
+
+DICA: Tente memorizar as posições e manter um combo alto para maximizar sua pontuação!`);
+        }
+
+        // ===== INICIALIZAÇÃO =====
         window.onload = initGame;
     </script>
 </body>
