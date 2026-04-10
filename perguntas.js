@@ -1,6 +1,7 @@
 // perguntas.js
 // ============== BANCO DE 100+ PERGUNTAS ==============     
-const questionBank = [
+if (typeof questionBank === 'undefined') {
+    var questionBank = [  // Use 'var' ou 'let' sem 'const'
             // MATEMÁTICA (20 perguntas)
             {q: "Quanto é 2 + 2?", a: ["3", "4", "5", "6"], c: "4"},
             {q: "Quanto é 5 + 3?", a: ["6", "7", "8", "9"], c: "8"},
@@ -117,3 +118,7 @@ const questionBank = [
             {q: "Que brinquedo voa no ar com uma linha?", a: ["Bola", "Pipa", "Carrinho", "Boneca"], c: "Pipa"},
             {q: "Que dia da semana vem depois da terça-feira?", a: ["Segunda", "Quarta", "Quinta", "Sexta"], c: "Quarta"}
         ];
+  console.log("✅ Banco de perguntas criado:", questionBank.length, "perguntas");
+} else {
+    console.warn("⚠️ questionBank já foi definido anteriormente");
+}
