@@ -114,27 +114,38 @@
 </head>
 <body>
 
-    <div class="auth-bar">
-        <div class="logo">
-            <span style="font-size: 1.2em; font-weight: bold;">🎮 BeLTA Games</span>
-        </div>
+   <div class="auth-bar">
+    <div class="logo">
+        <span style="font-size: 1.2em; font-weight: bold;">🎮 BeLTA Games</span>
+    </div>
+    
+    <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
         <!-- Link para Ranking -->
         <a href="ranking.html" 
            style="color: white; text-decoration: none; font-weight: bold; 
-                  background: rgba(255,255,255,0.2); padding: 5px 15px; 
-                  border-radius: 20px; transition: 0.3s;">
-           🏆 Ver Ranking
+                  background: rgba(255,255,255,0.2); padding: 8px 15px; 
+                  border-radius: 20px; transition: 0.3s; display: flex; 
+                  align-items: center; gap: 5px;"
+           onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+           onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+           🏆 Ranking
         </a>
-        <!-- Resto do código de login -->
+        
+        <!-- Botões de autenticação -->
         <div class="auth-buttons">
             <div id="user-logged" style="display: none; align-items: center; gap: 10px;">
                 <img id="user-pic" class="user-pic" src="" alt="Foto">
                 <span id="user-name" style="font-weight: bold;"></span>
-                <button id="btn-logout" onclick="logout()">Sair</button>
+                <button id="btn-logout" onclick="logout()" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Sair
+                </button>
             </div>
-            <button id="btn-login" onclick="loginGoogle()">Entrar com Google</button>
+            <button id="btn-login" onclick="loginGoogle()" style="padding: 8px 15px; background: #4285F4; color: white; border: none; border-radius: 20px; font-weight: bold; cursor: pointer;">
+                Entrar com Google
+            </button>
         </div>
     </div>
+</div>
 
     <div class="header">
         <h1 style="font-size: 2.5em; margin: 20px 0 10px 0;">Portal de Jogos Educativos</h1>
