@@ -1,7 +1,7 @@
 // perguntas.js
 // ============== BANCO DE 100+ PERGUNTAS ==============     
-if (typeof questionBank === 'undefined') {
-    var questionBank = [  // Use 'var' ou 'let' sem 'const'
+if (typeof window.questionBank === 'undefined') {
+    window.questionBank = [
             // MATEMÁTICA (20 perguntas)
             {q: "Quanto é 2 + 2?", a: ["3", "4", "5", "6"], c: "4"},
             {q: "Quanto é 5 + 3?", a: ["6", "7", "8", "9"], c: "8"},
