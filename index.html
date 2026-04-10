@@ -35,6 +35,12 @@
             text-align: center; 
             transition: 0.3s; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .game-card.active { 
+            opacity: 1;
+            pointer-events: auto;
         }
         .game-card:hover { 
             transform: translateY(-5px); 
@@ -104,10 +110,6 @@
             background: #e74c3c;
             color: white;
         }
-        .game-card.disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
     </style>
 </head>
 <body>
@@ -122,7 +124,7 @@
                 <span id="user-name" style="font-weight: bold;"></span>
                 <button id="btn-logout" onclick="logout()">Sair</button>
             </div>
-            <button id="btn-login" onclick="loginGoogle()" style="display: block;">Entrar com Google</button>
+            <button id="btn-login" onclick="loginGoogle()">Entrar com Google</button>
         </div>
     </div>
 
@@ -131,9 +133,7 @@
         <p style="font-size: 1.1em;">Aprenda brincando com nossos jogos incríveis!</p>
     </div>
 
-    <div class="games-grid" id="games-container">
-        <!-- Os jogos serão carregados aqui -->
-    </div>
+    <div class="games-grid" id="games-container"></div>
 
     <!-- Modal Nickname -->
     <div id="modal-nickname">
@@ -169,7 +169,7 @@
             meusJogos.forEach(jogo => {
                 const card = document.createElement('a');
                 card.href = jogo.link;
-                card.className = 'game-card disabled'; // Começa desabilitado
+                card.className = 'game-card'; // Inicialmente desabilitado
                 card.innerHTML = `
                     <div style="font-size: 50px; margin-bottom: 10px;">${jogo.icone}</div>
                     <h3 style="margin: 10px 0; color: #2c3e50;">${jogo.titulo}</h3>
@@ -179,53 +179,28 @@
             });
         }
 
-        // Observa mudanças no login
-        window.observarUsuario(async (estado) => {
-            const btnLogin = document.getElementById('btn-login');
-            const userLogged = document.getElementById('user-logged');
-            const modalNick = document.getElementById('modal-nickname');
-            const cards = document.querySelectorAll('.game-card');
-            
-            if (estado.autenticado) {
-                console.log("Usuário logado:", estado.user.email);
-                
-                // Esconde botão de login, mostra info do usuário
-                btnLogin.style.display = 'none';
-                userLogged.style.display = 'flex';
-                
-                // Se for novo usuário, mostra modal para nickname
-                if (estado.isNovoUsuario) {
-                    modalNick.style.display = 'flex';
-                    // Desabilita todos os jogos
-                    cards.forEach(card => card.classList.add('disabled'));
+        // Função de login - CRÍTICA: Recarrega a página após login
+        async function loginGoogle() {
+            console.log("🔄 Iniciando login...");
+            try {
+                const user = await window.loginGoogle();
+                if (user) {
+                    console.log("✅ Login realizado - recarregando página...");
+                    // Força a recarga da página para atualizar o estado
+                    setTimeout(() => location.reload(), 500);
                 } else {
-                    // Usuário já tem nickname, libera os jogos
-                    modalNick.style.display = 'none';
-                    document.getElementById('user-name').textContent = estado.perfil.nickname;
-                    document.getElementById('user-pic').src = estado.perfil.foto;
-                    
-                    // Habilita todos os jogos
-                    cards.forEach(card => {
-                        card.classList.remove('disabled');
-                        card.style.pointerEvents = 'auto';
-                        card.style.opacity = '1';
-                    });
+                    console.log("❌ Login falhou");
                 }
-            } else {
-                console.log("Usuário deslogado");
-                // Mostra botão de login, esconde info do usuário
-                btnLogin.style.display = 'block';
-                userLogged.style.display = 'none';
-                modalNick.style.display = 'none';
-                
-                // Desabilita todos os jogos
-                cards.forEach(card => {
-                    card.classList.add('disabled');
-                    card.style.pointerEvents = 'none';
-                    card.style.opacity = '0.5';
-                });
+            } catch (error) {
+                console.error("❌ Erro no login:", error);
             }
-        });
+        }
+
+        // Função de logout
+        async function logout() {
+            await window.logout();
+            location.reload();
+        }
 
         // Função para salvar nickname
         async function confirmarNick() {
@@ -234,20 +209,11 @@
             
             if (nickname.length < 3) {
                 alert("❌ O nickname precisa ter pelo menos 3 letras!");
-                nickInput.focus();
-                return;
-            }
-            
-            if (nickname.length > 15) {
-                alert("❌ O nickname não pode ter mais de 15 letras!");
-                nickInput.focus();
                 return;
             }
             
             const sucesso = await window.salvarNovoNickname(nickname);
             if (sucesso) {
-                // Fecha modal e recarrega para atualizar estado
-                document.getElementById('modal-nickname').style.display = 'none';
                 location.reload();
             }
         }
@@ -255,23 +221,46 @@
         // Inicialização
         window.onload = () => {
             carregarJogos();
+            
+            // Observa mudanças no login
+            window.observarUsuario((estado) => {
+                console.log("👁️ Estado do usuário:", estado);
+                
+                const btnLogin = document.getElementById('btn-login');
+                const userLogged = document.getElementById('user-logged');
+                const modalNick = document.getElementById('modal-nickname');
+                const cards = document.querySelectorAll('.game-card');
+                
+                if (estado.autenticado) {
+                    console.log("✅ Usuário autenticado:", estado.user?.email);
+                    btnLogin.style.display = 'none';
+                    
+                    if (estado.isNovoUsuario) {
+                        console.log("🆕 Novo usuário - mostrando modal de nickname");
+                        modalNick.style.display = 'flex';
+                        // Mantém os jogos desabilitados
+                        cards.forEach(card => card.classList.remove('active'));
+                    } else {
+                        console.log("👤 Usuário já tem nickname:", estado.perfil?.nickname);
+                        modalNick.style.display = 'none';
+                        document.getElementById('user-name').textContent = estado.perfil.nickname;
+                        document.getElementById('user-pic').src = estado.perfil.foto;
+                        userLogged.style.display = 'flex';
+                        
+                        // Habilita os jogos
+                        cards.forEach(card => card.classList.add('active'));
+                    }
+                } else {
+                    console.log("❌ Usuário não autenticado");
+                    btnLogin.style.display = 'block';
+                    userLogged.style.display = 'none';
+                    modalNick.style.display = 'none';
+                    
+                    // Desabilita os jogos
+                    cards.forEach(card => card.classList.remove('active'));
+                }
+            });
         };
-
-        // Login direto (sem popup de confirmação extra)
-        async function loginGoogle() {
-            const user = await window.loginGoogle();
-            if (user) {
-                console.log("Login realizado com sucesso!");
-            } else {
-                alert("❌ Falha no login. Tente novamente.");
-            }
-        }
-
-        // Logout
-        async function logout() {
-            await window.logout();
-            location.reload();
-        }
     </script>
 </body>
 </html>
