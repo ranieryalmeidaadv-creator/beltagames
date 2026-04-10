@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <!-- Adicione esta linha ANTES do primeiro script -->
+<script src="perguntas.js"></script>
     <script type="module" src="firebase-config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -444,111 +446,10 @@
     <!-- Display de Combo -->
     <div class="combo-display" id="combo-display"></div>
 
-    <div id="game-container">
-        <!-- Tela de Perguntas -->
-        <div id="quiz-screen">
-            <!-- Estatísticas Aprimoradas -->
-            <div class="quiz-stats">
-                <div class="stat-box">
-                    <span class="stat-value" id="q-current">1</span>
-                    <span class="stat-label">QUESTÃO</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-value" id="score">0</span>
-                    <span class="stat-label">PONTOS</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-value timer-display" id="question-timer">30</span>
-                    <span class="stat-label">SEGUNDOS</span>
-                </div>
-            </div>
+   <!-- Carrega o arquivo de perguntas -->
+    <script src="perguntas.js"></script>
 
-            <!-- Progresso do Quiz -->
-            <div class="progress-container">
-                <div class="progress-bar" id="quiz-progress" style="width: 0%"></div>
-            </div>
-
-            <!-- Timer de Contagem Regressiva por Pergunta -->
-            <div class="question-timer-container">
-                <div class="question-timer-bar" id="question-timer-bar"></div>
-            </div>
-
-            <!-- Pergunta -->
-            <div class="question-text" id="q-text">Carregando...</div>
-
-            <!-- Opções -->
-            <div class="options-grid" id="options-box"></div>
-
-            <!-- Sistema de Poderes -->
-            <div class="power-ups">
-                <button class="power-btn" id="power-5050" onclick="usePowerUp('5050')" disabled>
-                    🎯 50/50
-                    <span id="power-5050-count">1</span>
-                </button>
-                <button class="power-btn" id="power-time" onclick="usePowerUp('time')" disabled>
-                    ⏱ +15s
-                    <span id="power-time-count">1</span>
-                </button>
-                <button class="power-btn" id="power-double" onclick="usePowerUp('double')" disabled>
-                    ✨ 2x Pontos
-                    <span id="power-double-count">1</span>
-                </button>
-            </div>
-
-            <!-- Botões de Controle -->
-            <div class="controls">
-                <button class="btn btn-yellow" onclick="showInstructions()">📖 Como Pontuar</button>
-                <button class="btn" onclick="location.reload()">🔄 Reiniciar Quiz</button>
-                <a href="index.html" class="btn btn-blue">🏠 Menu Principal</a>
-            </div>
-        </div>
-
-        <!-- Tela Final -->
-        <div id="result-screen">
-            <h2 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 10px;">🎓 Quiz Concluído!</h2>
-            <p style="color: #7f8c8d; margin-bottom: 20px; font-size: 1.1rem;">Você demonstrou seu conhecimento!</p>
-            
-            <div class="final-score" id="final-score">0</div>
-            
-            <!-- Estatísticas Detalhadas -->
-            <div class="stats-grid">
-                <div class="result-stat">
-                    <span class="result-value" id="correct-answers">0/10</span>
-                    <span class="result-label">ACERTOS</span>
-                </div>
-                <div class="result-stat">
-                    <span class="result-value" id="final-time">0s</span>
-                    <span class="result-label">TEMPO MÉDIO</span>
-                </div>
-                <div class="result-stat">
-                    <span class="result-value" id="bonus-tempo">0</span>
-                    <span class="result-label">BÔNUS TEMPO</span>
-                </div>
-                <div class="result-stat">
-                    <span class="result-value" id="bonus-combo">0</span>
-                    <span class="result-label">BÔNUS COMBO</span>
-                </div>
-            </div>
-
-            <!-- Mensagem Firebase -->
-            <div id="feedback-message"></div>
-
-            <!-- Botões Finais -->
-            <div class="controls" style="margin-top: 30px;">
-                <button class="btn btn-yellow" onclick="jogarNovamente()">🔄 Jogar Novamente</button>
-                <a href="ranking.html?jogo=Quiz Educativo" class="btn btn-green">🏆 Ver Ranking</a>
-                <button id="btn-salvar" class="btn btn-blue" onclick="salvarPontuacaoQuiz()">
-                    💾 Salvar Pontuação
-                </button>
-            </div>
-
-            <a href="index.html" style="display: block; margin-top: 25px; color: #3498db; text-decoration: none;">
-                ← Voltar ao Portal de Jogos
-            </a>
-        </div>
-    </div>
-
-   <script>
+    <script>
         // ===== CONFIGURAÇÕES DO JOGO =====
         const NOME_DO_JOGO = "Quiz Educativo";
         const TOTAL_PERGUNTAS = 10;
@@ -583,10 +484,32 @@
         const comboDisplay = document.getElementById('combo-display');
         let questionStartTime;
 
+        // ===== VERIFICAÇÃO DE CARREGAMENTO =====
+        function verificarCarregamento() {
+            console.log("🔍 Verificando carregamento...");
+            
+            // Verifica se perguntas.js foi carregado
+            if (typeof questionBank === 'undefined') {
+                console.error("❌ questionBank NÃO definido!");
+                return false;
+            }
+            
+            console.log(`✅ questionBank carregado: ${questionBank.length} perguntas`);
+            
+            if (questionBank.length < TOTAL_PERGUNTAS) {
+                console.warn(`⚠️ Apenas ${questionBank.length} perguntas (mínimo: ${TOTAL_PERGUNTAS})`);
+                return false;
+            }
+            
+            return true;
+        }
+
         // ===== INICIALIZAÇÃO DO JOGO =====
         function initQuiz() {
+            console.log("🚀 Iniciando quiz...");
+            
             // Verificar se o banco de perguntas foi carregado
-            if (!window.questionBank || questionBank.length < TOTAL_PERGUNTAS) {
+            if (!verificarCarregamento()) {
                 alert("⚠️ Erro: Banco de perguntas não carregado ou insuficiente!");
                 console.error("Arquivo perguntas.js não carregado ou vazio");
                 return;
@@ -1067,41 +990,15 @@ DICA: Use os poderes estrategicamente e tente manter combos altos para maximizar
         }
 
         // ===== INICIALIZAÇÃO =====
-     </script>
-    <script>
-    // Verifica se o arquivo perguntas.js já foi carregado
-    console.log('🔄 Verificando banco de perguntas...');
-    
-    if (typeof questionBank !== 'undefined' && questionBank.length > 0) {
-        console.log(`✅ Banco de perguntas já carregado: ${questionBank.length} perguntas`);
-        // Aguarda um pouco para garantir que o DOM esteja pronto
-        setTimeout(initQuiz, 100);
-    } else {
-        console.warn('⚠️ Banco de perguntas não encontrado. Carregando...');
-        
-        // Cria e adiciona o script dinamicamente
-        const script = document.createElement('script');
-        script.src = 'perguntas.js';
-        script.onload = function() {
-            console.log(`✅ Arquivo perguntas.js carregado com sucesso!`);
-            console.log(`📚 Total de perguntas: ${questionBank ? questionBank.length : 0}`);
+        // Aguarda o carregamento completo da página
+        window.addEventListener('load', function() {
+            console.log('📄 Página carregada, iniciando quiz...');
             
-            // Verifica novamente após carregar
-            if (typeof questionBank !== 'undefined' && questionBank.length >= 10) {
-                setTimeout(initQuiz, 100);
-            } else {
-                console.error('❌ questionBank ainda não está disponível após carregar');
-                alert('Erro: Banco de perguntas não carregado corretamente. Verifique o console (F12).');
-            }
-        };
-        script.onerror = function() {
-            console.error('❌ Falha ao carregar perguntas.js');
-            alert('Erro: Não foi possível carregar o arquivo perguntas.js.\nVerifique se ele está na mesma pasta.');
-        };
-        
-        // Adiciona o script ao documento
-        document.head.appendChild(script);
-    }
-</script>
+            // Pequeno delay para garantir que tudo está carregado
+            setTimeout(function() {
+                initQuiz();
+            }, 300);
+        });
+    </script>
 </body>
 </html>
