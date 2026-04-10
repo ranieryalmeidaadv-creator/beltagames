@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+  <!-- LINHA CRÍTICA: Importar Firebase para salvar pontuação -->
+  <script type="module" src="firebase-config.js"></script>
+  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mapa do Brasil - BeLTA Games</title>
@@ -17,14 +20,20 @@
       padding: 20px; display: grid; grid-template-columns: 1fr 380px; gap: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    /* Se a tela for pequena, vira uma coluna só */
     @media (max-width: 1000px) { .main { grid-template-columns: 1fr; } }
 
     .stats {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
       background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px;
     }
-    .stat-val { font-size: 1.8rem; font-weight: bold; color: #2ecc71; display: block; text-align: center;}
+    .stat-val { 
+      font-size: 1.8rem; font-weight: bold; color: #2ecc71; 
+      display: block; text-align: center;
+    }
+    .stat-label { 
+      display: block; text-align: center; font-size: 0.9rem; 
+      color: #7f8c8d; margin-top: 5px;
+    }
     
     .board {
       width: 550px; height: 550px; display: grid;
@@ -34,10 +43,13 @@
     }
     .slot { width: 110px; height: 110px; border: 1px solid rgba(0,0,0,0.05); }
     .slot.inactive { background: white; border: none; pointer-events: none; }
+    .slot.correct { border: 3px solid #27ae60 !important; }
+    .slot.wrong-attempt { border: 3px solid #e74c3c !important; }
 
     .right-panel {
       background: #f1f3f5; padding: 15px; border-radius: 20px;
       max-height: 600px; overflow-y: auto; border: 2px solid #ddd;
+      position: relative;
     }
     .pool { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -45,102 +57,536 @@
       width: 110px; height: 110px; background-image: url('Mapa-Brasil.png');
       background-size: 550px 550px; border-radius: 10px; border: 1px solid #fff;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1); cursor: pointer; transform: scale(0.9);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .piece.selected { border: 4px solid #f1c40f; box-shadow: 0 0 15px #f1c40f; transform: scale(1); }
-    .slot .piece { width: 100%; height: 100%; border: none; transform: scale(1)!important; border-radius: 0; }
+    .piece.selected { 
+      border: 4px solid #f1c40f; 
+      box-shadow: 0 0 15px #f1c40f; 
+      transform: scale(1); 
+    }
+    .piece.placed { cursor: default; }
+    .slot .piece { 
+      width: 100%; height: 100%; border: none; 
+      transform: scale(1)!important; border-radius: 0; 
+    }
 
-    .btn { padding: 12px 25px; border-radius: 12px; border: none; color: #fff; cursor: pointer; font-weight: bold; text-decoration: none; }
+    .btn { 
+      padding: 12px 25px; border-radius: 12px; border: none; 
+      color: #fff; cursor: pointer; font-weight: bold; text-decoration: none;
+      transition: all 0.3s;
+    }
     .btn-orange { background: #e67e22; }
+    .btn-orange:hover { background: #d35400; transform: translateY(-2px); }
     .btn-blue { background: #34495e; }
+    .btn-blue:hover { background: #2c3e50; transform: translateY(-2px); }
+    .btn-green { background: #27ae60; }
+    .btn-green:hover { background: #219653; transform: translateY(-2px); }
+
+    /* Modal de Resultados */
+    #result-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .score-display {
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: #f1c40f;
+      text-shadow: 2px 2px 0 #000;
+      margin: 20px 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      display: block;
+    }
+    .stat-title {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+    }
+    
+    /* Pontuação em Tempo Real */
+    .score-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #2c3e50;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    /* Feedback Visual */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .score-up {
+      animation: pulse 0.5s ease-in-out;
+    }
+    
+    /* Ranking Preview */
+    .ranking-preview {
+      margin-top: 15px;
+      padding: 10px;
+      background: #e8f4f8;
+      border-radius: 10px;
+      border-left: 4px solid #3498db;
+    }
   </style>
 </head>
 <body>
 
-  <h1 style="color:#27ae60">🎮 BeLTA Games</h1>
+  <h1 style="color:#27ae60; text-align: center;">
+    🎮 BeLTA Games - <span style="color:#e67e22">Mapa do Brasil</span>
+  </h1>
 
   <div class="main">
     <div class="left-side">
+      <!-- Estatísticas Aprimoradas -->
       <div class="stats">
-        <div><span class="stat-val" id="moves">0</span><center>MOVIMENTOS</center></div>
-        <div><span class="stat-val" id="timer">00:00</span><center>TEMPO</center></div>
+        <div>
+          <span class="stat-val" id="moves">0</span>
+          <span class="stat-label">MOVIMENTOS</span>
+        </div>
+        <div>
+          <span class="stat-val" id="timer">00:00</span>
+          <span class="stat-label">TEMPO</span>
+        </div>
+        <div>
+          <span class="stat-val" id="score-display">0</span>
+          <span class="stat-label">PONTOS</span>
+        </div>
       </div>
+      
+      <!-- Tabuleiro do Mapa -->
       <div class="board" id="board"></div>
+      
+      <!-- Controles -->
       <div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
-        <button class="btn btn-orange" onclick="location.reload()">🔄 Reiniciar</button>
+        <button class="btn btn-orange" onclick="reiniciarJogo()">🔄 Reiniciar</button>
         <a href="index.html" class="btn btn-blue">🏠 Menu</a>
+        <button class="btn btn-green" onclick="verInstrucoes()">📖 Como Pontuar</button>
       </div>
     </div>
 
     <div class="right-panel">
-      <p style="text-align:center; font-weight:bold; margin-bottom:10px;">PEÇAS</p>
+      <!-- Indicador de Pontuação -->
+      <div class="score-indicator">
+        <span>🎯</span>
+        <span id="current-score">0</span>
+      </div>
+      
+      <p style="text-align:center; font-weight:bold; margin-bottom:10px; color: #2c3e50;">
+        🇧🇷 ARRASTE AS PEÇAS PARA O MAPA
+      </p>
       <div class="pool" id="pool"></div>
+      
+      <!-- Preview do Sistema de Pontuação -->
+      <div class="ranking-preview">
+        <p style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">
+          🏆 Sistema de Pontuação:
+        </p>
+        <ul style="text-align: left; font-size: 0.85rem; color: #555; padding-left: 20px;">
+          <li>✅ Acerto: <strong>+50 pontos</strong></li>
+          <li>⏱️ Tempo: <strong>Bônus por velocidade</strong></li>
+          <li>🎯 Precisão: <strong>Acerto na 1ª tentativa: +100</strong></li>
+          <li>⚡ Eficiência: <strong>Menos movimentos = mais pontos</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Resultados -->
+  <div id="result-modal">
+    <div class="modal-content">
+      <h2 style="color: #27ae60; margin-bottom: 10px;">🎉 Mapa Completo! 🎉</h2>
+      <p style="color: #7f8c8d;">Você dominou a geografia do Brasil!</p>
+      
+      <div class="score-display" id="final-score">0</div>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-number" id="final-time">00:00</span>
+          <span class="stat-title">TEMPO TOTAL</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number" id="final-moves">0</span>
+          <span class="stat-title">MOVIMENTOS</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number" id="bonus-tempo">0</span>
+          <span class="stat-title">BÔNUS TEMPO</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number" id="bonus-precisao">0</span>
+          <span class="stat-title">BÔNUS PRECISÃO</span>
+        </div>
+      </div>
+      
+      <p style="margin: 20px 0; color: #2c3e50; font-weight: bold;">
+        Sua pontuação será salva no ranking "Mapa do Brasil"
+      </p>
+      
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+        <button class="btn btn-orange" onclick="jogarNovamente()">🔄 Jogar Novamente</button>
+        <a href="ranking.html?jogo=Mapa do Brasil" class="btn btn-blue">🏆 Ver Ranking</a>
+        <button id="btn-salvar-ranking" class="btn btn-green" onclick="salvarPontuacao()">
+          💾 Salvar Pontuação
+        </button>
+      </div>
+      
+      <p id="salvar-mensagem" style="margin-top: 15px; display: none; color: #27ae60; font-weight: bold;">
+        ✅ Pontuação salva com sucesso!
+      </p>
+      
+      <a href="index.html" style="display: block; margin-top: 20px; color: #3498db;">
+        ← Voltar ao Portal de Jogos
+      </a>
     </div>
   </div>
 
   <script>
-    // Lista manual das peças que NÃO são brancas (Plano B Garantido)
+    // ===== CONFIGURAÇÕES DO JOGO =====
+    const NOME_DO_JOGO = "Mapa do Brasil";
     const activeSlots = [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 21, 22, 23, 24];
+    const TOTAL_PECAS = activeSlots.length;
     
+    // ===== VARIÁVEIS GLOBAIS =====
     let selectedPiece = null;
     let moves = 0;
     let seconds = 0;
-
+    let score = 0;
+    let timerInterval;
+    let gameCompleted = false;
+    
+    // Rastreamento de acertos por posição (para bônus de precisão)
+    let tentativasPorSlot = new Array(25).fill(0);
+    let acertosPrimeiraTentativa = 0;
+    
+    // ===== INICIALIZAÇÃO =====
     function init() {
       const board = document.getElementById('board');
       const pool = document.getElementById('pool');
-      const pieces = [];
-
+      
+      // Limpa tabuleiro e pool
+      board.innerHTML = '';
+      pool.innerHTML = '';
+      
+      // Reseta variáveis
+      moves = 0;
+      seconds = 0;
+      score = 0;
+      gameCompleted = false;
+      selectedPiece = null;
+      tentativasPorSlot.fill(0);
+      acertosPrimeiraTentativa = 0;
+      
+      // Atualiza displays
+      document.getElementById('moves').textContent = '0';
+      document.getElementById('score-display').textContent = '0';
+      document.getElementById('current-score').textContent = '0';
+      document.getElementById('timer').textContent = '00:00';
+      
+      // Cria slots do tabuleiro
       for (let i = 0; i < 25; i++) {
         const slot = document.createElement('div');
-        const isKeep = activeSlots.includes(i);
-        slot.className = isKeep ? 'slot' : 'slot inactive';
+        const isActive = activeSlots.includes(i);
+        slot.className = isActive ? 'slot' : 'slot inactive';
         slot.dataset.index = i;
-        if (isKeep) slot.onclick = () => place(slot);
-        board.appendChild(slot);
-
-        if (isKeep) {
-          const piece = document.createElement('div');
-          piece.className = 'piece';
-          piece.dataset.id = i;
-          const r = Math.floor(i / 5), c = i % 5;
-          piece.style.backgroundPosition = `-${c * 110}px -${r * 110}px`;
-          piece.onclick = (e) => { e.stopPropagation(); select(piece); };
-          pieces.push(piece);
+        
+        if (isActive) {
+          slot.onclick = () => placePiece(slot);
         }
+        
+        board.appendChild(slot);
       }
-
+      
+      // Cria e embaralha peças
+      const pieces = [];
+      for (let i of activeSlots) {
+        const piece = document.createElement('div');
+        piece.className = 'piece';
+        piece.dataset.id = i;
+        
+        // Posiciona background corretamente
+        const row = Math.floor(i / 5);
+        const col = i % 5;
+        piece.style.backgroundPosition = `-${col * 110}px -${row * 110}px`;
+        
+        piece.onclick = (e) => {
+          e.stopPropagation();
+          selectPiece(piece);
+        };
+        
+        pieces.push(piece);
+      }
+      
+      // Embaralha e adiciona ao pool
       pieces.sort(() => Math.random() - 0.5).forEach(p => pool.appendChild(p));
-      setInterval(() => {
-        seconds++;
-        const m = Math.floor(seconds/60).toString().padStart(2,'0');
-        const s = (seconds%60).toString().padStart(2,'0');
-        document.getElementById('timer').textContent = `${m}:${s}`;
-      }, 1000);
+      
+      // Inicia timer
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      
+      // Esconde modal de resultados
+      document.getElementById('result-modal').style.display = 'none';
     }
-
-    function select(p) {
-      if (p.parentElement.classList.contains('slot')) return;
-      if (selectedPiece) selectedPiece.classList.remove('selected');
-      selectedPiece = p; p.classList.add('selected');
+    
+    // ===== FUNÇÕES DO JOGO =====
+    function updateTimer() {
+      if (gameCompleted) return;
+      
+      seconds++;
+      const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const secs = (seconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer').textContent = `${minutes}:${secs}`;
+      
+      // Atualiza pontuação em tempo real (penalidade por tempo)
+      updateScoreDisplay();
     }
-
-    function place(slot) {
-      if (!selectedPiece || slot.firstChild) return;
-      if (selectedPiece.dataset.id === slot.dataset.index) {
-        slot.appendChild(selectedPiece);
+    
+    function selectPiece(piece) {
+      if (piece.parentElement.classList.contains('slot') || gameCompleted) return;
+      
+      // Remove seleção anterior
+      if (selectedPiece) {
         selectedPiece.classList.remove('selected');
+      }
+      
+      // Seleciona nova peça
+      selectedPiece = piece;
+      piece.classList.add('selected');
+    }
+    
+    function placePiece(slot) {
+      if (!selectedPiece || slot.firstChild || gameCompleted) return;
+      
+      const slotIndex = parseInt(slot.dataset.index);
+      const pieceId = parseInt(selectedPiece.dataset.id);
+      
+      moves++;
+      document.getElementById('moves').textContent = moves;
+      
+      // Verifica se é a posição correta
+      if (pieceId === slotIndex) {
+        // ACRESCENTA PONTOS POR ACERTO
+        addPoints(50, "✅ Acerto");
+        
+        // Adiciona peça ao slot
+        selectedPiece.classList.remove('selected');
+        selectedPiece.classList.add('placed');
+        slot.appendChild(selectedPiece);
+        slot.classList.add('correct');
+        
+        // Verifica se foi primeira tentativa
+        if (tentativasPorSlot[slotIndex] === 0) {
+          acertosPrimeiraTentativa++;
+          addPoints(100, "🎯 Precisão (1ª tentativa)");
+        }
+        
         selectedPiece = null;
-        moves++; document.getElementById('moves').textContent = moves;
-        if (document.querySelectorAll('.slot .piece').length === activeSlots.length) {
-          alert("🏆 Parabéns! Você completou o mapa!");
+        
+        // Verifica se completou o mapa
+        if (document.querySelectorAll('.slot .piece').length === TOTAL_PECAS) {
+          finalizarJogo();
         }
       } else {
-        slot.style.background = "rgba(231,76,60,0.3)";
-        setTimeout(() => slot.style.background = "transparent", 300);
-        moves++; document.getElementById('moves').textContent = moves;
+        // Penalidade por erro
+        tentativasPorSlot[slotIndex]++;
+        addPoints(-10, "❌ Posição errada");
+        
+        // Feedback visual
+        slot.classList.add('wrong-attempt');
+        setTimeout(() => {
+          slot.classList.remove('wrong-attempt');
+        }, 500);
+        
+        selectedPiece = null;
+      }
+      
+      updateScoreDisplay();
+    }
+    
+    // ===== SISTEMA DE PONTUAÇÃO =====
+    function addPoints(points, reason = "") {
+      const oldScore = score;
+      score = Math.max(0, score + points); // Não deixa ficar negativo
+      
+      // Feedback visual
+      if (points > 0) {
+        document.getElementById('score-display').classList.add('score-up');
+        setTimeout(() => {
+          document.getElementById('score-display').classList.remove('score-up');
+        }, 500);
+        
+        // Log no console (opcional)
+        if (reason) console.log(`${reason}: ${points > 0 ? '+' : ''}${points} pontos`);
+      }
+      
+      updateScoreDisplay();
+    }
+    
+    function updateScoreDisplay() {
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('current-score').textContent = score;
+    }
+    
+    function calcularPontuacaoFinal() {
+      // 1. Pontos base (acertos já foram contados durante o jogo)
+      let pontosFinais = score;
+      
+      // 2. Bônus por velocidade (quanto mais rápido, mais pontos)
+      const tempoMaximo = 300; // 5 minutos
+      const tempoBonusMaximo = 500;
+      let bonusTempo = 0;
+      
+      if (seconds < tempoMaximo) {
+        // Fórmula: mais rápido = mais bônus
+        bonusTempo = Math.max(0, tempoBonusMaximo - Math.floor(seconds / 2));
+      }
+      
+      // 3. Bônus por eficiência (menos movimentos)
+      const movimentosIdeais = TOTAL_PECAS; // Um movimento por peça
+      const movimentosBonusMaximo = 300;
+      let bonusEficiencia = 0;
+      
+      if (moves <= movimentosIdeais * 2) {
+        // Se fez até 2x o ideal, ganha bônus
+        bonusEficiencia = Math.max(0, movimentosBonusMaximo - (moves - movimentosIdeais) * 10);
+      }
+      
+      // 4. Bônus por perfeição (todos na primeira tentativa)
+      let bonusPerfeicao = 0;
+      if (acertosPrimeiraTentativa === TOTAL_PECAS) {
+        bonusPerfeicao = 1000; // Bônus especial por perfeição
+      }
+      
+      // Pontuação final
+      const total = pontosFinais + bonusTempo + bonusEficiencia + bonusPerfeicao;
+      
+      return {
+        total: total,
+        base: pontosFinais,
+        bonusTempo: bonusTempo,
+        bonusEficiencia: bonusEficiencia,
+        bonusPerfeicao: bonusPerfeicao,
+        acertosPrimeira: acertosPrimeiraTentativa
+      };
+    }
+    
+    // ===== FINALIZAÇÃO DO JOGO =====
+    function finalizarJogo() {
+      gameCompleted = true;
+      clearInterval(timerInterval);
+      
+      // Calcula pontuação final
+      const pontuacao = calcularPontuacaoFinal();
+      
+      // Atualiza modal com resultados
+      document.getElementById('final-score').textContent = pontuacao.total;
+      document.getElementById('final-time').textContent = document.getElementById('timer').textContent;
+      document.getElementById('final-moves').textContent = moves;
+      document.getElementById('bonus-tempo').textContent = pontuacao.bonusTempo;
+      document.getElementById('bonus-precisao').textContent = pontuacao.bonusEficiencia + pontuacao.bonusPerfeicao;
+      
+      // Mostra modal
+      document.getElementById('result-modal').style.display = 'flex';
+      
+      // Salva automaticamente após 2 segundos
+      setTimeout(() => {
+        salvarPontuacao(pontuacao.total);
+      }, 2000);
+      
+      // Log detalhado
+      console.log('🎮 Jogo Finalizado!');
+      console.log(`⏱️ Tempo: ${seconds}s`);
+      console.log(`🔄 Movimentos: ${moves}`);
+      console.log(`🎯 Acertos 1ª tentativa: ${acertosPrimeiraTentativa}/${TOTAL_PECAS}`);
+      console.log(`💰 Pontuação: ${pontuacao.total}`);
+    }
+    
+    // ===== INTEGRAÇÃO COM FIREBASE =====
+    async function salvarPontuacao(pontos) {
+      console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
+      
+      try {
+        const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
+        
+        if (sucesso) {
+          document.getElementById('salvar-mensagem').style.display = 'block';
+          document.getElementById('btn-salvar-ranking').style.display = 'none';
+          
+          console.log('✅ Pontuação salva no ranking!');
+          return true;
+        } else {
+          console.log('⚠️ Pontuação não salva (usuário não logado?)');
+          alert('⚠️ Faça login para salvar sua pontuação no ranking!');
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Erro ao salvar:', error);
+        alert('❌ Erro ao salvar pontuação. Tente novamente.');
+        return false;
       }
     }
+    
+    // ===== FUNÇÕES AUXILIARES =====
+    function reiniciarJogo() {
+      if (confirm('Reiniciar o jogo? Sua pontuação atual será perdida.')) {
+        init();
+      }
+    }
+    
+    function jogarNovamente() {
+      document.getElementById('result-modal').style.display = 'none';
+      init();
+    }
+    
+    function verInstrucoes() {
+      alert(`🏆 SISTEMA DE PONTUAÇÃO - MAPA DO BRASIL
 
+✅ Acerto correto: +50 pontos
+🎯 Acerto na 1ª tentativa: +100 pontos extras
+❌ Posição errada: -10 pontos
+⏱️ Bônus por velocidade: Até 500 pontos (quanto mais rápido, mais pontos)
+⚡ Bônus por eficiência: Até 300 pontos (menos movimentos = mais pontos)
+🏅 Bônus perfeição: 1000 pontos extras (se acertar todas na 1ª tentativa)
+
+DICA: Tente posicionar cada peça corretamente na primeira tentativa para maximizar sua pontuação!`);
+    }
+    
+    // ===== INICIALIZAÇÃO AO CARREGAR =====
     window.onload = init;
   </script>
 </body>
