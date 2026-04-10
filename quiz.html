@@ -443,74 +443,116 @@
 
     <!-- Display de Combo -->
     <div class="combo-display" id="combo-display"></div>
-    <!-- Adicione esta linha ANTES do primeiro script -->
-<script src="perguntas.js"></script>
-<script>
-    // ===== CONFIGURAÇÕES DO JOGO =====
-    const NOME_DO_JOGO = "Quiz Educativo";
-    const TOTAL_PERGUNTAS = 10;
-    const TEMPO_POR_PERGUNTA = 30;
-    const PONTOS_BASE_POR_ACERTO = 100;
-    
-    // ===== VARIÁVEIS GLOBAIS =====
-    let selectedQuestions = [];
-    let currentIdx = 0;
-    let score = 0;
-    let timerInterval;
-    let questionTimer;
-    let timeLeft = TEMPO_POR_PERGUNTA;
-    let gameActive = false;
-    
-    // Estatísticas
-    let correctAnswers = 0;
-    let totalTimeSpent = 0;
-    let averageTimePerQuestion = 0;
-    let consecutiveCorrect = 0;
-    let highestCombo = 0;
-    let comboMultiplier = 1;
-    
-    // Sistema de poderes
-    let powerUps = {
-        '5050': { count: 1, used: false },
-        'time': { count: 1, used: false },
-        'double': { count: 1, used: false }
-    };
-    
-    // Elementos DOM
-    let comboDisplay;
+<!-- Carrega primeiro o arquivo de perguntas -->
+    <script src="perguntas.js"></script>
 
-    // ===== VERIFICAÇÃO DE CARREGAMENTO =====
-    function verificarCarregamento() {
-        console.log("🔍 Verificando carregamento...");
+    <script>
+        // ===== CONFIGURAÇÕES DO JOGO =====
+        const NOME_DO_JOGO = "Quiz Educativo";
+        const TOTAL_PERGUNTAS = 10;
+        const TEMPO_POR_PERGUNTA = 30;
+        const PONTOS_BASE_POR_ACERTO = 100;
         
-        if (typeof questionBank === 'undefined') {
-            console.error("❌ questionBank NÃO definido!");
-            return false;
-        }
+        // ===== VARIÁVEIS GLOBAIS =====
+        let selectedQuestions = [];
+        let currentIdx = 0;
+        let score = 0;
+        let timerInterval;
+        let questionTimer;
+        let timeLeft = TEMPO_POR_PERGUNTA;
+        let gameActive = false;
         
-        console.log(`✅ questionBank carregado: ${questionBank.length} perguntas`);
+        // Estatísticas
+        let correctAnswers = 0;
+        let totalTimeSpent = 0;
+        let averageTimePerQuestion = 0;
+        let consecutiveCorrect = 0;
+        let highestCombo = 0;
+        let comboMultiplier = 1;
         
-        if (questionBank.length < TOTAL_PERGUNTAS) {
-            console.warn(`⚠️ Apenas ${questionBank.length} perguntas (mínimo: ${TOTAL_PERGUNTAS})`);
-            return false;
-        }
+        // Sistema de poderes
+        let powerUps = {
+            '5050': { count: 1, used: false },
+            'time': { count: 1, used: false },
+            'double': { count: 1, used: false }
+        };
         
-        return true;
-    }
+        // Cache de elementos DOM
+        let domElements = {
+            qCurrent: null,
+            scoreElement: null,
+            qText: null,
+            quizProgress: null,
+            questionTimerElement: null,
+            questionTimerBar: null,
+            optionsBox: null,
+            comboDisplay: null,
+            quizScreen: null,
+            resultScreen: null
+        };
 
-    // ===== INICIALIZAÇÃO DO JOGO =====
-    function initQuiz() {
-        console.log("🚀 Iniciando quiz...");
-        
-        // Aguarda um pouco para garantir que o DOM está pronto
-        setTimeout(() => {
-            // Agora tenta obter os elementos
-            comboDisplay = document.getElementById('combo-display');
+        // ===== INICIALIZAÇÃO DOS ELEMENTOS DOM =====
+        function initDOMElements() {
+            console.log("🔄 Inicializando elementos DOM...");
+            
+            // Cache de todos os elementos necessários
+            domElements.qCurrent = document.getElementById('q-current');
+            domElements.scoreElement = document.getElementById('score');
+            domElements.qText = document.getElementById('q-text');
+            domElements.quizProgress = document.getElementById('quiz-progress');
+            domElements.questionTimerElement = document.getElementById('question-timer');
+            domElements.questionTimerBar = document.getElementById('question-timer-bar');
+            domElements.optionsBox = document.getElementById('options-box');
+            domElements.comboDisplay = document.getElementById('combo-display');
+            domElements.quizScreen = document.getElementById('quiz-screen');
+            domElements.resultScreen = document.getElementById('result-screen');
+            
+            // Verificar se todos os elementos essenciais existem
+            const essentialElements = ['qCurrent', 'scoreElement', 'qText', 'optionsBox', 'quizScreen', 'resultScreen'];
+            for (const elementName of essentialElements) {
+                if (!domElements[elementName]) {
+                    console.error(`❌ Elemento essencial não encontrado: ${elementName}`);
+                    return false;
+                }
+            }
+            
+            console.log("✅ Todos os elementos DOM carregados");
+            return true;
+        }
+
+        // ===== VERIFICAÇÃO DE CARREGAMENTO =====
+        function verificarCarregamento() {
+            console.log("🔍 Verificando carregamento...");
+            
+            if (typeof questionBank === 'undefined') {
+                console.error("❌ questionBank NÃO definido!");
+                return false;
+            }
+            
+            console.log(`✅ questionBank carregado: ${questionBank.length} perguntas`);
+            
+            if (questionBank.length < TOTAL_PERGUNTAS) {
+                console.warn(`⚠️ Apenas ${questionBank.length} perguntas (mínimo: ${TOTAL_PERGUNTAS})`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ===== INICIALIZAÇÃO DO JOGO =====
+        function initQuiz() {
+            console.log("🚀 Iniciando quiz...");
+            
+            // Verificar elementos DOM primeiro
+            if (!initDOMElements()) {
+                console.error("❌ Falha ao inicializar elementos DOM");
+                setTimeout(initQuiz, 100); // Tenta novamente em 100ms
+                return;
+            }
             
             // Verificar se o banco de perguntas foi carregado
             if (!verificarCarregamento()) {
                 alert("⚠️ Erro: Banco de perguntas não carregado ou insuficiente!");
-                console.error("Arquivo perguntas.js não carregado ou vazio");
                 return;
             }
             
@@ -526,391 +568,417 @@
             comboMultiplier = 1;
             gameActive = true;
             
-            // Resetar poderes (agora que o DOM está pronto)
+            // Resetar poderes
             resetPowerUps();
             
             // Atualizar UI
-            document.getElementById('quiz-screen').style.display = 'block';
-            document.getElementById('result-screen').style.display = 'none';
-            document.getElementById('q-current').textContent = '1';
-            document.getElementById('score').textContent = '0';
-            document.getElementById('question-timer').textContent = TEMPO_POR_PERGUNTA;
-            document.getElementById('quiz-progress').style.width = '0%';
-            document.getElementById('question-timer-bar').style.width = '100%';
+            domElements.quizScreen.style.display = 'block';
+            domElements.resultScreen.style.display = 'none';
+            domElements.qCurrent.textContent = '1';
+            domElements.scoreElement.textContent = '0';
+            
+            if (domElements.questionTimerElement) {
+                domElements.questionTimerElement.textContent = TEMPO_POR_PERGUNTA;
+            }
+            
+            if (domElements.quizProgress) {
+                domElements.quizProgress.style.width = '0%';
+            }
+            
+            if (domElements.questionTimerBar) {
+                domElements.questionTimerBar.style.width = '100%';
+            }
             
             // Iniciar primeira pergunta
             renderQuestion();
-        }, 100);
-    }
+        }
 
-    function resetPowerUps() {
-        powerUps = {
-            '5050': { count: 1, used: false },
-            'time': { count: 1, used: false },
-            'double': { count: 1, used: false }
-        };
-        
-        // Verifica se os elementos existem antes de tentar acessá-los
-        const elements = {
-            '5050': document.getElementById('power-5050'),
-            'time': document.getElementById('power-time'),
-            'double': document.getElementById('power-double')
-        };
-        
-        for (const [key, element] of Object.entries(elements)) {
-            if (element) {
-                element.disabled = false;
-                const countElement = document.getElementById(`power-${key}-count`);
+        function resetPowerUps() {
+            powerUps = {
+                '5050': { count: 1, used: false },
+                'time': { count: 1, used: false },
+                'double': { count: 1, used: false }
+            };
+            
+            // Habilitar botões de poder
+            const powerButtons = [
+                { id: 'power-5050', countId: 'power-5050-count' },
+                { id: 'power-time', countId: 'power-time-count' },
+                { id: 'power-double', countId: 'power-double-count' }
+            ];
+            
+            powerButtons.forEach(power => {
+                const btn = document.getElementById(power.id);
+                const countElement = document.getElementById(power.countId);
+                
+                if (btn) {
+                    btn.disabled = false;
+                }
+                
                 if (countElement) {
                     countElement.textContent = '1';
                 }
+            });
+        }
+
+        function renderQuestion() {
+            if (currentIdx >= selectedQuestions.length) {
+                endQuiz();
+                return;
             }
-        }
-    }
 
-    function renderQuestion() {
-        if (currentIdx >= selectedQuestions.length) {
-            endQuiz();
-            return;
-        }
-
-        const q = selectedQuestions[currentIdx];
-        
-        // Atualizar UI
-        document.getElementById('q-current').textContent = currentIdx + 1;
-        document.getElementById('score').textContent = score;
-        document.getElementById('q-text').textContent = q.q;
-        
-        // Atualizar progresso
-        const progress = (currentIdx / TOTAL_PERGUNTAS) * 100;
-        const progressBar = document.getElementById('quiz-progress');
-        if (progressBar) {
-            progressBar.style.width = `${progress}%`;
+            const q = selectedQuestions[currentIdx];
             
-            // Atualizar cor da barra de progresso
-            if (progress < 25) {
-                progressBar.style.background = 'linear-gradient(90deg, #e74c3c, #f1c40f)';
-            } else if (progress < 75) {
-                progressBar.style.background = 'linear-gradient(90deg, #f1c40f, #3498db)';
-            } else {
-                progressBar.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
+            // Atualizar UI
+            if (domElements.qCurrent) {
+                domElements.qCurrent.textContent = currentIdx + 1;
             }
-        }
-
-        const optionsBox = document.getElementById('options-box');
-        if (!optionsBox) return;
-        
-        optionsBox.innerHTML = '';
-
-        // Embaralha as alternativas
-        const shuffledOptions = [...q.a].sort(() => Math.random() - 0.5);
-
-        shuffledOptions.forEach((opt, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'quiz-btn-option';
-            btn.textContent = `${String.fromCharCode(65 + index)}) ${opt}`;
-            btn.dataset.answer = opt;
-            btn.onclick = () => checkAnswer(opt, q.c);
-            optionsBox.appendChild(btn);
-        });
-
-        // Iniciar timer da pergunta
-        startQuestionTimer();
-        questionStartTime = Date.now();
-    }
-
-    function startQuestionTimer() {
-        // Limpar timer anterior
-        clearInterval(questionTimer);
-        
-        timeLeft = TEMPO_POR_PERGUNTA;
-        const timerElement = document.getElementById('question-timer');
-        const timerBar = document.getElementById('question-timer-bar');
-        
-        if (timerElement) timerElement.textContent = timeLeft;
-        if (timerBar) timerBar.style.width = '100%';
-        
-        questionTimer = setInterval(() => {
-            timeLeft--;
-            if (timerElement) timerElement.textContent = timeLeft;
             
-            // Atualizar barra visual
-            const percentLeft = (timeLeft / TEMPO_POR_PERGUNTA) * 100;
-            if (timerBar) {
-                timerBar.style.width = `${percentLeft}%`;
+            if (domElements.scoreElement) {
+                domElements.scoreElement.textContent = score;
+            }
+            
+            if (domElements.qText) {
+                domElements.qText.textContent = q.q;
+            }
+            
+            // Atualizar progresso
+            if (domElements.quizProgress) {
+                const progress = (currentIdx / TOTAL_PERGUNTAS) * 100;
+                domElements.quizProgress.style.width = `${progress}%`;
                 
-                // Mudar cor conforme o tempo passa
-                if (timeLeft > 15) {
-                    timerBar.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
-                } else if (timeLeft > 5) {
-                    timerBar.style.background = 'linear-gradient(90deg, #f1c40f, #e74c3c)';
+                // Atualizar cor da barra de progresso
+                if (progress < 25) {
+                    domElements.quizProgress.style.background = 'linear-gradient(90deg, #e74c3c, #f1c40f)';
+                } else if (progress < 75) {
+                    domElements.quizProgress.style.background = 'linear-gradient(90deg, #f1c40f, #3498db)';
                 } else {
-                    timerBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+                    domElements.quizProgress.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
                 }
             }
-            
-            if (timeLeft <= 0) {
-                clearInterval(questionTimer);
-                timeOutQuestion();
-            }
-        }, 1000);
-    }
 
-    function timeOutQuestion() {
-        const correctAnswer = selectedQuestions[currentIdx].c;
-        const timeSpent = TEMPO_POR_PERGUNTA - timeLeft;
-        totalTimeSpent += timeSpent;
-        
-        // Mostrar resposta correta
-        const allButtons = document.querySelectorAll('.quiz-btn-option');
-        allButtons.forEach(btn => {
-            btn.disabled = true;
-            if (btn.dataset.answer === correctAnswer) {
-                btn.classList.add('correct');
-            } else {
-                btn.classList.add('wrong');
-            }
-        });
-        
-        // Resetar combo
-        consecutiveCorrect = 0;
-        comboMultiplier = 1;
-        
-        // Próxima pergunta
-        setTimeout(() => {
-            currentIdx++;
-            renderQuestion();
-        }, 1500);
-    }
+            // Limpar opções anteriores
+            if (domElements.optionsBox) {
+                domElements.optionsBox.innerHTML = '';
 
-    function checkAnswer(selected, correct) {
-        if (!gameActive) return;
-        
-        clearInterval(questionTimer);
-        const timeSpent = TEMPO_POR_PERGUNTA - timeLeft;
-        totalTimeSpent += timeSpent;
-        
-        // Travar todos os botões
-        const allButtons = document.querySelectorAll('.quiz-btn-option');
-        allButtons.forEach(btn => btn.disabled = true);
+                // Embaralha as alternativas
+                const shuffledOptions = [...q.a].sort(() => Math.random() - 0.5);
 
-        const isCorrect = selected === correct;
-        let questionScore = 0;
-        
-        if (isCorrect) {
-            correctAnswers++;
+                shuffledOptions.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-btn-option';
+                    btn.textContent = `${String.fromCharCode(65 + index)}) ${opt}`;
+                    btn.dataset.answer = opt;
+                    btn.onclick = () => checkAnswer(opt, q.c);
+                    domElements.optionsBox.appendChild(btn);
+                });
+            }
+
+            // Iniciar timer da pergunta
+            startQuestionTimer();
+        }
+
+        function startQuestionTimer() {
+            // Limpar timer anterior
+            clearInterval(questionTimer);
             
-            // Pontos base
-            questionScore = PONTOS_BASE_POR_ACERTO;
+            timeLeft = TEMPO_POR_PERGUNTA;
             
-            // Bônus por velocidade
-            const speedBonus = Math.max(0, (TEMPO_POR_PERGUNTA - timeSpent) * 3);
-            questionScore += speedBonus;
-            
-            // Atualizar combo
-            consecutiveCorrect++;
-            if (consecutiveCorrect > highestCombo) {
-                highestCombo = consecutiveCorrect;
+            if (domElements.questionTimerElement) {
+                domElements.questionTimerElement.textContent = timeLeft;
             }
             
-            // Aplicar multiplicador de combo
-            if (consecutiveCorrect >= 3 && consecutiveCorrect < 6) {
-                comboMultiplier = 1.5;
-            } else if (consecutiveCorrect >= 6 && consecutiveCorrect < 9) {
-                comboMultiplier = 2;
-            } else if (consecutiveCorrect >= 9) {
-                comboMultiplier = 3;
+            if (domElements.questionTimerBar) {
+                domElements.questionTimerBar.style.width = '100%';
+                domElements.questionTimerBar.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
             }
             
-            // Aplicar multiplicador à pontuação
-            questionScore = Math.floor(questionScore * comboMultiplier);
+            questionTimer = setInterval(() => {
+                timeLeft--;
+                
+                if (domElements.questionTimerElement) {
+                    domElements.questionTimerElement.textContent = timeLeft;
+                }
+                
+                // Atualizar barra visual
+                if (domElements.questionTimerBar) {
+                    const percentLeft = (timeLeft / TEMPO_POR_PERGUNTA) * 100;
+                    domElements.questionTimerBar.style.width = `${percentLeft}%`;
+                    
+                    // Mudar cor conforme o tempo passa
+                    if (timeLeft > 15) {
+                        domElements.questionTimerBar.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
+                    } else if (timeLeft > 5) {
+                        domElements.questionTimerBar.style.background = 'linear-gradient(90deg, #f1c40f, #e74c3c)';
+                    } else {
+                        domElements.questionTimerBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+                    }
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(questionTimer);
+                    timeOutQuestion();
+                }
+            }, 1000);
+        }
+
+        function timeOutQuestion() {
+            const correctAnswer = selectedQuestions[currentIdx].c;
+            const timeSpent = TEMPO_POR_PERGUNTA - timeLeft;
+            totalTimeSpent += timeSpent;
             
-            // Adicionar pontos
-            score += questionScore;
+            // Mostrar resposta correta
+            const allButtons = document.querySelectorAll('.quiz-btn-option');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.dataset.answer === correctAnswer) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                }
+            });
             
-            // Atualizar display de pontos
-            const scoreElement = document.getElementById('score');
-            if (scoreElement) scoreElement.textContent = score;
-        } else {
-            // Erro - resetar combo
+            // Resetar combo
             consecutiveCorrect = 0;
             comboMultiplier = 1;
-        }
-
-        // Mostrar cores das respostas
-        allButtons.forEach(btn => {
-            if (btn.dataset.answer === correct) {
-                btn.classList.add('correct');
-            } else if (btn.dataset.answer === selected && !isCorrect) {
-                btn.classList.add('wrong');
-            } else {
-                btn.style.opacity = '0.6';
-            }
-        });
-
-        // Próxima pergunta após delay
-        setTimeout(() => {
-            currentIdx++;
-            renderQuestion();
-        }, 1500);
-    }
-
-    // ===== SISTEMA DE PODERES =====
-    function usePowerUp(powerType) {
-        if (!powerUps[powerType] || powerUps[powerType].count <= 0 || powerUps[powerType].used) {
-            return;
-        }
-
-        switch (powerType) {
-            case '5050':
-                use5050Power();
-                break;
-            case 'time':
-                useTimePower();
-                break;
-            case 'double':
-                useDoublePower();
-                break;
-        }
-
-        powerUps[powerType].count--;
-        powerUps[powerType].used = true;
-        
-        const powerBtn = document.getElementById(`power-${powerType}`);
-        if (powerBtn) powerBtn.disabled = true;
-        
-        const countElement = document.getElementById(`power-${powerType}-count`);
-        if (countElement) countElement.textContent = powerUps[powerType].count;
-    }
-
-    function use5050Power() {
-        const correctAnswer = selectedQuestions[currentIdx].c;
-        const buttons = document.querySelectorAll('.quiz-btn-option');
-        const wrongAnswers = [];
-        
-        buttons.forEach(btn => {
-            if (btn.dataset.answer !== correctAnswer) {
-                wrongAnswers.push(btn);
-            }
-        });
-        
-        wrongAnswers.sort(() => Math.random() - 0.5).slice(0, 2).forEach(btn => {
-            btn.style.opacity = '0.3';
-            btn.style.pointerEvents = 'none';
-        });
-    }
-
-    function useTimePower() {
-        timeLeft += 15;
-        const timerElement = document.getElementById('question-timer');
-        if (timerElement) timerElement.textContent = timeLeft;
-        
-        const timerBar = document.getElementById('question-timer-bar');
-        if (timerBar) {
-            const percentLeft = (timeLeft / (TEMPO_POR_PERGUNTA + 15)) * 100;
-            timerBar.style.width = `${percentLeft}%`;
-        }
-    }
-
-    function useDoublePower() {
-        comboMultiplier = 2;
-    }
-
-    // ===== FIM DO QUIZ =====
-    function endQuiz() {
-        gameActive = false;
-        clearInterval(questionTimer);
-        
-        // Calcular estatísticas finais
-        averageTimePerQuestion = totalTimeSpent / TOTAL_PERGUNTAS;
-        const finalScore = calculateFinalScore();
-        
-        // Mostrar resultados
-        showResults(finalScore);
-    }
-
-    function calculateFinalScore() {
-        const baseScore = score;
-        const accuracy = (correctAnswers / TOTAL_PERGUNTAS) * 100;
-        const accuracyBonus = Math.floor(baseScore * (accuracy / 100) * 0.5);
-        const maxTimeBonus = 500;
-        const timeBonus = Math.max(0, maxTimeBonus - (averageTimePerQuestion * 10));
-        const comboBonus = highestCombo * 20;
-        const perfectionBonus = (correctAnswers === TOTAL_PERGUNTAS) ? 1000 : 0;
-        const unusedPowerBonus = Object.values(powerUps).reduce((total, power) => total + (power.count * 50), 0);
-        
-        const totalScore = baseScore + accuracyBonus + timeBonus + comboBonus + perfectionBonus + unusedPowerBonus;
-        
-        return {
-            total: totalScore,
-            base: baseScore,
-            accuracyBonus: accuracyBonus,
-            timeBonus: timeBonus,
-            comboBonus: comboBonus,
-            perfectionBonus: perfectionBonus,
-            unusedPowerBonus: unusedPowerBonus,
-            accuracy: Math.round(accuracy),
-            averageTime: averageTimePerQuestion.toFixed(1),
-            correctAnswers: correctAnswers,
-            highestCombo: highestCombo
-        };
-    }
-
-    function showResults(finalScore) {
-        // Atualizar elementos
-        document.getElementById('final-score').textContent = finalScore.total;
-        document.getElementById('correct-answers').textContent = `${finalScore.correctAnswers}/${TOTAL_PERGUNTAS}`;
-        document.getElementById('final-time').textContent = `${finalScore.averageTime}s`;
-        document.getElementById('bonus-tempo').textContent = finalScore.timeBonus;
-        document.getElementById('bonus-combo').textContent = finalScore.comboBonus + finalScore.perfectionBonus;
-        
-        // Mostrar tela final
-        document.getElementById('quiz-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        
-        // Salvar automaticamente
-        setTimeout(() => {
-            salvarPontuacaoQuiz(finalScore.total);
-        }, 2000);
-    }
-
-    // ===== INTEGRAÇÃO COM FIREBASE =====
-    async function salvarPontuacaoQuiz(pontos) {
-        console.log(`💾 Tentando salvar: ${pontos} pontos`);
-        
-        try {
-            const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
             
-            if (sucesso) {
-                showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
-                const btnSalvar = document.getElementById('btn-salvar');
-                if (btnSalvar) btnSalvar.style.display = 'none';
+            // Próxima pergunta
+            setTimeout(() => {
+                currentIdx++;
+                renderQuestion();
+            }, 1500);
+        }
+
+        function checkAnswer(selected, correct) {
+            if (!gameActive) return;
+            
+            clearInterval(questionTimer);
+            const timeSpent = TEMPO_POR_PERGUNTA - timeLeft;
+            totalTimeSpent += timeSpent;
+            
+            // Travar todos os botões
+            const allButtons = document.querySelectorAll('.quiz-btn-option');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selected === correct;
+            let questionScore = 0;
+            
+            if (isCorrect) {
+                correctAnswers++;
+                
+                // Pontos base
+                questionScore = PONTOS_BASE_POR_ACERTO;
+                
+                // Bônus por velocidade
+                const speedBonus = Math.max(0, (TEMPO_POR_PERGUNTA - timeSpent) * 3);
+                questionScore += speedBonus;
+                
+                // Atualizar combo
+                consecutiveCorrect++;
+                if (consecutiveCorrect > highestCombo) {
+                    highestCombo = consecutiveCorrect;
+                }
+                
+                // Aplicar multiplicador de combo
+                if (consecutiveCorrect >= 3 && consecutiveCorrect < 6) {
+                    comboMultiplier = 1.5;
+                } else if (consecutiveCorrect >= 6 && consecutiveCorrect < 9) {
+                    comboMultiplier = 2;
+                } else if (consecutiveCorrect >= 9) {
+                    comboMultiplier = 3;
+                }
+                
+                // Aplicar multiplicador à pontuação
+                questionScore = Math.floor(questionScore * comboMultiplier);
+                
+                // Adicionar pontos
+                score += questionScore;
+                
+                // Atualizar display de pontos
+                if (domElements.scoreElement) {
+                    domElements.scoreElement.textContent = score;
+                }
             } else {
-                showFirebaseMessage('⚠️ Faça login para salvar no ranking', 'warning');
+                // Erro - resetar combo
+                consecutiveCorrect = 0;
+                comboMultiplier = 1;
             }
-        } catch (error) {
-            console.error('❌ Erro ao salvar:', error);
-            showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+
+            // Mostrar cores das respostas
+            allButtons.forEach(btn => {
+                if (btn.dataset.answer === correct) {
+                    btn.classList.add('correct');
+                } else if (btn.dataset.answer === selected && !isCorrect) {
+                    btn.classList.add('wrong');
+                } else {
+                    btn.style.opacity = '0.6';
+                }
+            });
+
+            // Próxima pergunta após delay
+            setTimeout(() => {
+                currentIdx++;
+                renderQuestion();
+            }, 1500);
         }
-    }
 
-    function showFirebaseMessage(text, type) {
-        const messageEl = document.getElementById('feedback-message');
-        if (messageEl) {
-            messageEl.textContent = text;
-            messageEl.className = `feedback-${type}`;
-            messageEl.style.display = 'block';
+        // ===== SISTEMA DE PODERES =====
+        function usePowerUp(powerType) {
+            if (!powerUps[powerType] || powerUps[powerType].count <= 0 || powerUps[powerType].used) {
+                return;
+            }
+
+            switch (powerType) {
+                case '5050':
+                    use5050Power();
+                    break;
+                case 'time':
+                    useTimePower();
+                    break;
+                case 'double':
+                    useDoublePower();
+                    break;
+            }
+
+            powerUps[powerType].count--;
+            powerUps[powerType].used = true;
+            
+            const powerBtn = document.getElementById(`power-${powerType}`);
+            if (powerBtn) powerBtn.disabled = true;
+            
+            const countElement = document.getElementById(`power-${powerType}-count`);
+            if (countElement) countElement.textContent = powerUps[powerType].count;
         }
-    }
 
-    // ===== FUNÇÕES AUXILIARES =====
-    function jogarNovamente() {
-        document.getElementById('result-screen').style.display = 'none';
-        initQuiz();
-    }
+        function use5050Power() {
+            const correctAnswer = selectedQuestions[currentIdx].c;
+            const buttons = document.querySelectorAll('.quiz-btn-option');
+            const wrongAnswers = [];
+            
+            buttons.forEach(btn => {
+                if (btn.dataset.answer !== correctAnswer) {
+                    wrongAnswers.push(btn);
+                }
+            });
+            
+            wrongAnswers.sort(() => Math.random() - 0.5).slice(0, 2).forEach(btn => {
+                btn.style.opacity = '0.3';
+                btn.style.pointerEvents = 'none';
+            });
+        }
 
-    function showInstructions() {
-        alert(`🏆 SISTEMA DE PONTUAÇÃO - QUIZ EDUCATIVO
+        function useTimePower() {
+            timeLeft += 15;
+            if (domElements.questionTimerElement) {
+                domElements.questionTimerElement.textContent = timeLeft;
+            }
+            
+            if (domElements.questionTimerBar) {
+                const percentLeft = (timeLeft / (TEMPO_POR_PERGUNTA + 15)) * 100;
+                domElements.questionTimerBar.style.width = `${percentLeft}%`;
+            }
+        }
+
+        function useDoublePower() {
+            comboMultiplier = 2;
+        }
+
+        // ===== FIM DO QUIZ =====
+        function endQuiz() {
+            gameActive = false;
+            clearInterval(questionTimer);
+            
+            // Calcular estatísticas finais
+            averageTimePerQuestion = totalTimeSpent / TOTAL_PERGUNTAS;
+            const finalScore = calculateFinalScore();
+            
+            // Mostrar resultados
+            showResults(finalScore);
+            
+            // Salvar automaticamente
+            setTimeout(() => {
+                salvarPontuacaoQuiz(finalScore.total);
+            }, 2000);
+        }
+
+        function calculateFinalScore() {
+            const baseScore = score;
+            const accuracy = (correctAnswers / TOTAL_PERGUNTAS) * 100;
+            const accuracyBonus = Math.floor(baseScore * (accuracy / 100) * 0.5);
+            const maxTimeBonus = 500;
+            const timeBonus = Math.max(0, maxTimeBonus - (averageTimePerQuestion * 10));
+            const comboBonus = highestCombo * 20;
+            const perfectionBonus = (correctAnswers === TOTAL_PERGUNTAS) ? 1000 : 0;
+            const unusedPowerBonus = Object.values(powerUps).reduce((total, power) => total + (power.count * 50), 0);
+            
+            const totalScore = baseScore + accuracyBonus + timeBonus + comboBonus + perfectionBonus + unusedPowerBonus;
+            
+            return {
+                total: totalScore,
+                base: baseScore,
+                accuracyBonus: accuracyBonus,
+                timeBonus: timeBonus,
+                comboBonus: comboBonus,
+                perfectionBonus: perfectionBonus,
+                unusedPowerBonus: unusedPowerBonus,
+                accuracy: Math.round(accuracy),
+                averageTime: averageTimePerQuestion.toFixed(1),
+                correctAnswers: correctAnswers,
+                highestCombo: highestCombo
+            };
+        }
+
+        function showResults(finalScore) {
+            // Atualizar elementos
+            document.getElementById('final-score').textContent = finalScore.total;
+            document.getElementById('correct-answers').textContent = `${finalScore.correctAnswers}/${TOTAL_PERGUNTAS}`;
+            document.getElementById('final-time').textContent = `${finalScore.averageTime}s`;
+            document.getElementById('bonus-tempo').textContent = finalScore.timeBonus;
+            document.getElementById('bonus-combo').textContent = finalScore.comboBonus + finalScore.perfectionBonus;
+            
+            // Mostrar tela final
+            domElements.quizScreen.style.display = 'none';
+            domElements.resultScreen.style.display = 'block';
+        }
+
+        // ===== INTEGRAÇÃO COM FIREBASE =====
+        async function salvarPontuacaoQuiz(pontos) {
+            console.log(`💾 Tentando salvar: ${pontos} pontos`);
+            
+            try {
+                const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
+                
+                if (sucesso) {
+                    showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
+                    const btnSalvar = document.getElementById('btn-salvar');
+                    if (btnSalvar) btnSalvar.style.display = 'none';
+                } else {
+                    showFirebaseMessage('⚠️ Faça login para salvar no ranking', 'warning');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+            }
+        }
+
+        function showFirebaseMessage(text, type) {
+            const messageEl = document.getElementById('feedback-message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = `feedback-${type}`;
+                messageEl.style.display = 'block';
+            }
+        }
+
+        // ===== FUNÇÕES AUXILIARES =====
+        function jogarNovamente() {
+            domElements.resultScreen.style.display = 'none';
+            domElements.quizScreen.style.display = 'block';
+            initQuiz();
+        }
+
+        function showInstructions() {
+            alert(`🏆 SISTEMA DE PONTUAÇÃO - QUIZ EDUCATIVO
 
 ✅ Acerto básico: 100 pontos
 ⏱️ Bônus velocidade: Até 90 pontos extras
@@ -925,18 +993,22 @@
 • 50/50: Elimina 2 respostas erradas
 • +15s: Adiciona 15 segundos
 • 2x Pontos: Dobra a pontuação`);
-    }
+        }
 
-    // ===== INICIALIZAÇÃO =====
-    // Aguarda o carregamento completo da página
-    window.addEventListener('load', function() {
-        console.log('📄 Página carregada, iniciando quiz...');
-        
-        // Pequeno delay para garantir que tudo está carregado
-        setTimeout(function() {
-            initQuiz();
-        }, 500);
-    });
-</script>
+        // ===== INICIALIZAÇÃO =====
+        // Aguarda o carregamento completo da página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM carregado, aguardando recursos...');
+        });
+
+        window.addEventListener('load', function() {
+            console.log('📄 Página totalmente carregada, iniciando quiz...');
+            
+            // Pequeno delay adicional para garantir que tudo está carregado
+            setTimeout(function() {
+                initQuiz();
+            }, 300);
+        });
+    </script>
 </body>
 </html>
