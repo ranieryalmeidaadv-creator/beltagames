@@ -24,19 +24,10 @@ const provider = new GoogleAuthProvider();
 window.loginGoogle = async () => {
   try {
     const resultado = await signInWithPopup(auth, provider);
-    const user = resultado.user;
-    console.log("Usuário logado:", user.displayName);
-    
-    // Verifica se é primeiro acesso
-    const perfil = await verificarOuCriarPerfil(user);
-    if (!perfil) {
-      console.log("Novo usuário - solicitar nickname");
-      return { isNovoUsuario: true, user };
-    }
-    return { isNovoUsuario: false, user, perfil };
+    return resultado.user;
   } catch (error) {
-    console.error("Erro no login:", error.message);
-    throw error;
+    console.error("Erro no login:", error);
+    return null;
   }
 };
 
@@ -44,10 +35,8 @@ window.loginGoogle = async () => {
 window.logout = async () => {
   try {
     await signOut(auth);
-    console.log("Desconectado com sucesso");
   } catch (error) {
-    console.error("Erro ao desconectar:", error.message);
-    throw error;
+    console.error("Erro no logout:", error);
   }
 };
 
@@ -55,99 +44,107 @@ window.logout = async () => {
 window.observarUsuario = (callback) => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      const perfil = await verificarOuCriarPerfil(user);
-      callback({ autenticado: true, user, perfil });
+      // Verifica se tem perfil
+      const userRef = doc(db, "usuarios", user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        callback({ 
+          autenticado: true, 
+          user, 
+          perfil: userSnap.data(),
+          isNovoUsuario: false 
+        });
+      } else {
+        callback({ 
+          autenticado: true, 
+          user, 
+          perfil: null,
+          isNovoUsuario: true 
+        });
+      }
     } else {
-      callback({ autenticado: false, user: null, perfil: null });
+      callback({ 
+        autenticado: false, 
+        user: null, 
+        perfil: null,
+        isNovoUsuario: false 
+      });
     }
   });
 };
 
 // ===== FUNÇÕES DE PERFIL =====
 
-// Verifica se o usuário já tem perfil cadastrado
-const verificarOuCriarPerfil = async (user) => {
-  try {
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
-    
-    if (userSnap.exists()) {
-      return userSnap.data();
-    }
-    return null; // Usuário novo
-  } catch (error) {
-    console.error("Erro ao verificar perfil:", error.message);
-    return null;
-  }
-};
-
 // Salvar novo nickname (primeiro acesso)
 window.salvarNovoNickname = async (nickname) => {
   try {
     const user = auth.currentUser;
-    if (!user) throw new Error("Usuário não autenticado");
-    if (!nickname || nickname.trim().length === 0) throw new Error("Nickname inválido");
-    
+    if (!user) {
+      alert("Erro: usuário não está logado!");
+      return null;
+    }
+
     const dados = {
       uid: user.uid,
       nickname: nickname.trim(),
       nomeReal: user.displayName,
+      email: user.email,
       foto: user.photoURL,
-      criadoEm: new Date().toISOString()
+      criadoEm: new Date().toISOString(),
+      ultimoAcesso: new Date().toISOString()
     };
     
     await setDoc(doc(db, "usuarios", user.uid), dados);
-    console.log("Nickname salvo:", nickname);
+    console.log("✅ Nickname salvo para:", user.email);
     return dados;
   } catch (error) {
-    console.error("Erro ao salvar nickname:", error.message);
-    throw error;
+    console.error("❌ Erro ao salvar nickname:", error);
+    alert("Erro ao salvar nickname. Tente novamente.");
+    return null;
   }
 };
 
-// ===== FUNÇÕES DE RANKING E PONTOS =====
+// ===== FUNÇÕES DE RANKING =====
 
 // Salvar pontuação do jogo
 window.salvarPontos = async (nomeJogo, pontos) => {
   try {
-    // Validações
-    if (!nomeJogo || typeof nomeJogo !== 'string') throw new Error("Nome do jogo inválido");
-    if (typeof pontos !== 'number' || pontos < 0) throw new Error("Pontuação deve ser um número positivo");
-    
     const user = auth.currentUser;
-    if (!user) throw new Error("Usuário não autenticado");
-    
+    if (!user) {
+      console.warn("⚠️ Usuário não logado. Pontos não salvos.");
+      return false;
+    }
+
     // Busca o nickname do usuário
     const userRef = doc(db, "usuarios", user.uid);
     const userSnap = await getDoc(userRef);
-    const nickname = userSnap.exists() ? userSnap.data().nickname : user.displayName || "Anônimo";
+    const nickname = userSnap.exists() ? userSnap.data().nickname : user.displayName;
 
     // Salva a pontuação
     await addDoc(collection(db, "rankings"), {
       uid: user.uid,
       nickname: nickname,
       foto: user.photoURL,
-      jogo: nomeJogo.trim(),
-      pontos: Math.floor(pontos),
+      jogo: nomeJogo,
+      pontos: pontos,
       data: new Date().toISOString()
     });
     
-    console.log(`Pontos salvos: ${nomeJogo} - ${pontos}`);
-    return { sucesso: true, mensagem: "Pontuação salva!" };
+    console.log(`✅ Pontos salvos: ${nickname} - ${nomeJogo} - ${pontos}`);
+    return true;
   } catch (error) {
-    console.error("Erro ao salvar pontos:", error.message);
-    throw error;
+    console.error("❌ Erro ao salvar pontos:", error);
+    return false;
   }
 };
 
 // Obter Top 10 de um jogo
 window.obterRanking = async (nomeJogo) => {
   try {
-    if (!nomeJogo || typeof nomeJogo !== 'string') throw new Error("Nome do jogo inválido");
-    
     const q = query(
       collection(db, "rankings"),
-      where("jogo", "==", nomeJogo.trim()),
+      where("jogo", "==", nomeJogo),
       orderBy("pontos", "desc"),
       limit(10)
     );
@@ -158,10 +155,9 @@ window.obterRanking = async (nomeJogo) => {
       ...doc.data()
     }));
     
-    console.log("Ranking obtido:", ranking);
     return ranking;
   } catch (error) {
-    console.error("Erro ao obter ranking:", error.message);
-    throw error;
+    console.error("❌ Erro ao obter ranking:", error);
+    return [];
   }
 };
