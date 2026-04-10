@@ -96,9 +96,29 @@
             display: inline-block;
             margin-top: 20px;
             font-weight: bold;
+            margin: 5px;
         }
 
         #result-screen { display: none; }
+        
+        /* Mensagem de feedback */
+        #feedback-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        .feedback-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -122,19 +142,20 @@
         <!-- Tela Final -->
         <div id="result-screen">
             <h2 style="font-size: 2rem;">Quiz Finalizado!</h2>
-            <div style="font-size: 4rem; color: #27ae60; margin: 20px 0;" id="final-score">0/10</div>
+            <div style="font-size: 4rem; color: #27ae60; margin: 20px 0;">
+                <span id="final-score">0</span>/10
+            </div>
             <p id="final-time" style="margin-bottom: 20px;"></p>
-            // Exemplo para o Quiz
-function finalizarQuiz() {
-    window.salvarPontos("Quiz Educativo", final-score);
-    alert("Sua pontuação foi salva no Ranking!");
-}
+            
+            <!-- Mensagem de feedback sobre salvamento -->
+            <div id="feedback-message"></div>
+            
             <button class="control-btn" onclick="location.reload()">🔄 Jogar Novamente</button>
             <a href="index.html" class="control-btn">🏠 Menu Principal</a>
         </div>
     </div>
 
-    <!-- 1. Carrega o banco de perguntas externo do GitHub -->
+    <!-- Banco de perguntas do GitHub (crie este arquivo) -->
     <script src="perguntas.js"></script>
 
     <script>
@@ -146,7 +167,29 @@ function finalizarQuiz() {
 
         function initQuiz() {
             // Sorteia 10 perguntas do banco carregado do perguntas.js
-            selectedQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 10);
+            // Se não existir perguntas.js, usa um banco básico
+            if (window.questionBank && window.questionBank.length > 0) {
+                selectedQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 10);
+            } else {
+                // Banco de perguntas básico se perguntas.js não existir
+                selectedQuestions = [
+                    {
+                        q: "Qual é o maior planeta do sistema solar?",
+                        a: ["Terra", "Marte", "Júpiter", "Saturno"],
+                        c: "Júpiter"
+                    },
+                    {
+                        q: "Quantos lados tem um quadrado?",
+                        a: ["3", "4", "5", "6"],
+                        c: "4"
+                    },
+                    {
+                        q: "Qual é a capital do Brasil?",
+                        a: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"],
+                        c: "Brasília"
+                    }
+                ].slice(0, 3); // Apenas 3 perguntas para teste
+            }
             
             renderQuestion();
             startTimer();
@@ -197,7 +240,7 @@ function finalizarQuiz() {
                 score++;
             }
 
-            // A LÓGICA DE CORES SOLICITADA:
+            // Lógica de cores
             allButtons.forEach(btn => {
                 if (btn.textContent === correct) {
                     btn.classList.add('correct'); // Fundo Verde para a certa
@@ -213,12 +256,40 @@ function finalizarQuiz() {
             }, 1500);
         }
 
-        function showResults() {
+        async function showResults() {
             clearInterval(timerInterval);
             document.getElementById('quiz-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'block';
-            document.getElementById('final-score').textContent = `${score}/10`;
+            document.getElementById('final-score').textContent = score;
             document.getElementById('final-time').textContent = `Tempo total: ${document.getElementById('timer').textContent}`;
+            
+            // Tenta salvar a pontuação no Firebase
+            await salvarPontuacaoQuiz(score);
+        }
+
+        // Função para salvar pontuação no Firebase
+        async function salvarPontuacaoQuiz(pontos) {
+            const feedbackEl = document.getElementById('feedback-message');
+            
+            try {
+                // Usa a função do firebase-config.js
+                const sucesso = await window.salvarPontos("Quiz Educativo", pontos);
+                
+                if (sucesso) {
+                    feedbackEl.innerHTML = "🎉 Sua pontuação foi salva no ranking!";
+                    feedbackEl.className = "feedback-success";
+                    feedbackEl.style.display = "block";
+                } else {
+                    feedbackEl.innerHTML = "⚠️ Pontuação não foi salva. Você precisa estar logado!";
+                    feedbackEl.className = "feedback-error";
+                    feedbackEl.style.display = "block";
+                }
+            } catch (error) {
+                console.error("Erro ao salvar pontuação:", error);
+                feedbackEl.innerHTML = "❌ Erro ao salvar pontuação. Tente novamente.";
+                feedbackEl.className = "feedback-error";
+                feedbackEl.style.display = "block";
+            }
         }
 
         // Inicia o jogo
