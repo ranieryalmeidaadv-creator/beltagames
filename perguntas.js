@@ -1,6 +1,13 @@
-// perguntas.js
-// ============== BANCO DE 100+ PERGUNTAS ==============     
- const questionBank = [
+// perguntas.js - Banco de 100+ perguntas
+if (typeof questionBank === 'undefined') {
+    var questionBank = [
+        // ... todo o seu array de perguntas aqui ...
+    ];
+    console.log(`✅ Banco de perguntas criado: ${questionBank.length} perguntas`);
+} else {
+    console.log('⚠️ questionBank já existe, mesclando perguntas...');
+    // Se já existir, adiciona as perguntas
+    questionBank.push(...[
             // MATEMÁTICA (20 perguntas)
             {q: "Quanto é 2 + 2?", a: ["3", "4", "5", "6"], c: "4"},
             {q: "Quanto é 5 + 3?", a: ["6", "7", "8", "9"], c: "8"},
