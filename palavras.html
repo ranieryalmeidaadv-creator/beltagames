@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <!-- IMPORTANTE: Importar Firebase para ranking -->
+    <script type="module" src="firebase-config.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desafio das Palavras - BeLTA Games</title>
@@ -18,11 +21,33 @@
             align-items: center;
         }
 
-        .header { text-align: center; margin-bottom: 15px; color: white; }
-        h1 { font-size: 2.5rem; text-shadow: 3px 3px 0 rgba(0,0,0,0.3); color: #f1c40f; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 15px; 
+            color: white; 
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 850px;
+        }
+        
+        h1 { 
+            font-size: 2.5rem; 
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3); 
+            color: #f1c40f; 
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #bdc3c7;
+            font-size: 1.1rem;
+        }
 
         #game-container {
-            background: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             padding: 25px;
             border-radius: 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.3);
@@ -31,22 +56,48 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            border: 4px solid #f1c40f;
         }
 
+        /* Barra de Estatísticas Aprimorada */
         .stats-bar {
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             width: 100%;
-            background: #f8f9fa;
-            padding: 10px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
             border-radius: 20px;
             margin-bottom: 20px;
-            border: 2px solid #eee;
+            border: 3px solid #f1c40f;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: #2575fc; display: block; }
+        .stat-item { 
+            text-align: center; 
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-value { 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #f1c40f;
+            display: block;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .stat-label { 
+            font-size: 0.8rem; 
+            color: #bdc3c7; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
+        /* Área de Jogo */
         .play-area {
             display: flex;
             width: 100%;
@@ -57,18 +108,20 @@
             margin-bottom: 30px;
         }
 
-        /* Área Visual dos Balões */
+        /* Área Visual Aprimorada */
         .visual-area {
             width: 220px;
             height: 250px;
             position: relative;
-            background: #eef2f3;
+            background: linear-gradient(135deg, #eef2f3 0%, #d9e4f5 100%);
             border-radius: 20px;
             display: flex;
             justify-content: center;
             align-items: flex-end;
             padding-bottom: 20px;
             overflow: hidden;
+            border: 3px solid #2575fc;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
         }
 
         .balloon {
@@ -76,7 +129,9 @@
             width: 40px;
             height: 50px;
             border-radius: 50%;
-            transition: all 0.5s ease;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .balloon::after {
@@ -89,42 +144,389 @@
             background: rgba(0,0,0,0.2);
         }
 
-        .astronaut { font-size: 60px; z-index: 10; transition: 0.5s; }
-
-        /* Área da Palavra */
-        .word-section { text-align: center; flex: 1; min-width: 280px; }
-        .hint-box { background: #e3f2fd; padding: 12px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #bbdefb; color: #1565c0; font-weight: bold; }
-        .word-display { font-size: 2.5rem; letter-spacing: 10px; font-weight: bold; color: #34495e; margin-bottom: 20px; text-transform: uppercase; }
-
-        /* Teclado */
-        .keyboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 650px; }
-        .key {
-            width: 45px; height: 50px; background: #eee; border: none; border-radius: 10px;
-            font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase;
+        .astronaut { 
+            font-size: 60px; 
+            z-index: 10; 
+            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
         }
-        .key:hover { background: #ddd; transform: scale(1.1); }
-        .key.correct { background: #2ecc71 !important; color: white; }
-        .key.wrong { background: #95a5a6 !important; color: white; opacity: 0.4; }
-        .key:disabled { cursor: default; transform: none; }
 
-        /* Botões */
-        .controls { margin-top: 25px; display: flex; gap: 15px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; text-decoration: none; transition: 0.3s; }
-        .btn-reset { background: #f1c40f; color: #333; }
-        .btn-menu { background: #34495e; }
+        /* Área da Palavra Aprimorada */
+        .word-section { 
+            text-align: center; 
+            flex: 1; 
+            min-width: 280px; 
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 20px;
+            border: 3px solid #2196f3;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2);
+        }
+        
+        .hint-box { 
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            border: 2px solid #4caf50; 
+            color: #2e7d32; 
+            font-weight: bold;
+            font-size: 1rem;
+            text-align: left;
+        }
+        
+        .word-display { 
+            font-size: 2.5rem; 
+            letter-spacing: 10px; 
+            font-weight: bold; 
+            color: #34495e; 
+            margin-bottom: 20px; 
+            text-transform: uppercase;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 15px;
+            border: 3px solid #6a11cb;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Teclado Aprimorado */
+        .keyboard { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 8px; 
+            max-width: 650px; 
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 20px;
+            border: 3px solid #f1c40f;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .key {
+            width: 45px; 
+            height: 50px; 
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%); 
+            border: none; 
+            border-radius: 10px;
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+            text-transform: uppercase;
+            color: #2c3e50;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .key:hover { 
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); 
+            color: white;
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .key.correct { 
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important; 
+            color: white; 
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+        }
+        
+        .key.wrong { 
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important; 
+            color: white; 
+            opacity: 0.7;
+            transform: scale(0.9);
+        }
+        
+        .key:disabled { 
+            cursor: default; 
+            transform: none !important;
+        }
+
+        /* Botões Aprimorados */
+        .controls { 
+            margin-top: 25px; 
+            display: flex; 
+            gap: 15px; 
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn { 
+            padding: 15px 30px; 
+            border: none; 
+            border-radius: 15px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: white; 
+            text-decoration: none; 
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 180px;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+        
+        .btn-yellow { 
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%); 
+            color: #d35400; 
+        }
+        
+        .btn-blue { 
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); 
+            color: white; 
+        }
+        
+        .btn-green {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+        }
+
+        /* Sistema de Combo */
+        #combo-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 0 0 20px #f1c40f;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* Feedback de Pontuação */
+        .score-feedback {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2ecc71;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 100;
+            pointer-events: none;
+            animation: floatUp 1.5s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
+
+        /* Modal de Resultados */
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 4px solid #f1c40f;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        
+        .final-score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 3px 3px 0 #000;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #6a11cb;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .result-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #3498db;
+        }
+        
+        .result-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+        
+        /* Mensagem Firebase */
+        .firebase-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .success { 
+            background: rgba(46, 204, 113, 0.2); 
+            color: #2ecc71; 
+            border: 2px solid #27ae60; 
+        }
+        
+        .warning { 
+            background: rgba(243, 156, 18, 0.2); 
+            color: #f39c12; 
+            border: 2px solid #f39c12; 
+        }
+        
+        .error { 
+            background: rgba(231, 76, 60, 0.2); 
+            color: #e74c3c; 
+            border: 2px solid #e74c3c; 
+        }
+        
+        /* Progresso do Jogo */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #f1c40f);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 5px;
+        }
+        
+        /* Efeitos Visuais */
+        @keyframes balloonPop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        
+        .balloon-pop {
+            animation: balloonPop 0.5s ease-out forwards;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        /* Letras Reveladas */
+        .letter-reveal {
+            display: inline-block;
+            animation: letterReveal 0.5s ease-out;
+        }
+        
+        @keyframes letterReveal {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>🚀 Desafio das Palavras</h1>
-        <p>Acerte as letras para manter os balões flutuando!</p>
+        <p class="subtitle">Acerte as letras para manter os balões flutuando e ganhe pontos!</p>
     </div>
 
+    <!-- Display de Combo -->
+    <div class="combo-display" id="combo-display"></div>
+
     <div id="game-container">
+        <!-- Barra de Estatísticas Aprimorada -->
         <div class="stats-bar">
-            <div class="stat-item"><span class="stat-value" id="points">0</span><span class="stat-label">Pontos</span></div>
-            <div class="stat-item"><span class="stat-value" id="timer">00:00</span><span class="stat-label">Tempo</span></div>
+            <div class="stat-item">
+                <span class="stat-value" id="points">0</span>
+                <span class="stat-label">Pontos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="timer">00:00</span>
+                <span class="stat-label">Tempo</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="combo">1x</span>
+                <span class="stat-label">Multiplicador</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="words">0/10</span>
+                <span class="stat-label">Palavras</span>
+            </div>
+        </div>
+        
+        <!-- Progresso do Jogo -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
         </div>
 
         <div class="play-area">
@@ -134,7 +536,7 @@
             </div>
 
             <div class="word-section">
-                <div class="hint-box">Dica: <span id="hint-text">...</span></div>
+                <div class="hint-box">💡 Dica: <span id="hint-text">...</span></div>
                 <div class="word-display" id="word-display">_ _ _ _</div>
             </div>
         </div>
@@ -142,12 +544,66 @@
         <div class="keyboard" id="keyboard"></div>
 
         <div class="controls">
-            <button class="btn btn-reset" onclick="initGame()">🔄 Nova Palavra</button>
-            <a href="index.html" class="btn btn-menu">🏠 Menu Principal</a>
+            <button class="btn btn-yellow" onclick="startNewGame()">🔄 Nova Partida</button>
+            <button class="btn btn-purple" onclick="showInstructions()">📖 Como Pontuar</button>
+            <a href="index.html" class="btn btn-blue">🏠 Menu Principal</a>
+        </div>
+    </div>
+
+    <!-- Modal de Resultados -->
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 style="color: #f1c40f; font-size: 2.5rem; margin-bottom: 10px;">🎉 Missão Cumprida!</h2>
+            <p style="color: #bdc3c7; margin-bottom: 20px;">Você completou o desafio das palavras!</p>
+            
+            <div class="final-score" id="final-score">0</div>
+            
+            <div class="stats-grid">
+                <div class="result-stat">
+                    <span class="result-value" id="final-time">00:00</span>
+                    <span class="result-label">TEMPO TOTAL</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="final-words">0/10</span>
+                    <span class="result-label">PALAVRAS</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="bonus-tempo">0</span>
+                    <span class="result-label">BÔNUS TEMPO</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="bonus-combo">0</span>
+                    <span class="result-label">BÔNUS COMBO</span>
+                </div>
+            </div>
+            
+            <p style="margin: 20px 0; color: #2c3e50; font-weight: bold; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+                Sua pontuação será salva no ranking "Desafio Palavras"
+            </p>
+            
+            <div id="firebase-message" class="firebase-message"></div>
+            
+            <div class="controls" style="margin-top: 30px;">
+                <button class="btn btn-yellow" onclick="jogarNovamente()">🔄 Jogar Novamente</button>
+                <a href="ranking.html?jogo=Desafio Palavras" class="btn btn-green">🏆 Ver Ranking</a>
+                <button id="btn-salvar" class="btn btn-blue" onclick="salvarPontuacao()">
+                    💾 Salvar Pontuação
+                </button>
+            </div>
+            
+            <a href="index.html" style="display: block; margin-top: 25px; color: #bdc3c7; text-decoration: none;">
+                ← Voltar ao Portal de Jogos
+            </a>
         </div>
     </div>
 
     <script>
+        // ===== CONFIGURAÇÕES DO JOGO =====
+        const NOME_DO_JOGO = "Desafio Palavras";
+        const TOTAL_PALAVRAS = 10;
+        const MAX_CHANCES = 6;
+        
+        // Banco de palavras completo (mantive as 20 do exemplo, pode adicionar mais)
         const wordList = [
             {w: "FOTOSSINTESE", h: "Processo das plantas para produzir energia usando a luz solar."},
             {w: "MAMIFERO", h: "Animal que mama quando filhote."},
@@ -169,126 +625,532 @@
             {w: "SINONIMO", h: "Palavra com significado parecido."},
             {w: "ANTONIMO", h: "Palavra com significado oposto."},
             {w: "AMAZONIA", h: "A maior floresta tropical do mundo."}
-            // ... (Você pode adicionar as outras 80 palavras aqui seguindo este padrão)
         ];
 
-        let selectedWord = "", selectedHint = "";
-        let guessedLetters = [], wrongGuesses = 0, points = 0;
-        let timerSeconds = 0, timerInterval;
-        const maxChances = 6;
+        // Cores dos balões
         const balloonColors = ['#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#536DFE', '#448AFF'];
 
-        function initGame() {
+        // ===== VARIÁVEIS GLOBAIS =====
+        let selectedWord = "";
+        let selectedHint = "";
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        let points = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        
+        // Controle do jogo
+        let currentWordIndex = 0;
+        let gameActive = false;
+        let totalScore = 0;
+        
+        // Sistema de pontuação
+        let combo = 1;
+        let currentCombo = 0;
+        let highestCombo = 0;
+        let startTime = 0;
+        let totalWordsCompleted = 0;
+        let totalErrors = 0;
+        let totalCorrectLetters = 0;
+        
+        // Elementos DOM
+        const astronaut = document.getElementById('astronaut');
+        const comboDisplay = document.getElementById('combo-display');
+
+        // ===== INICIALIZAÇÃO DO JOGO =====
+        function startNewGame() {
+            // Resetar variáveis
+            currentWordIndex = 0;
+            totalScore = 0;
+            totalWordsCompleted = 0;
+            totalErrors = 0;
+            totalCorrectLetters = 0;
+            combo = 1;
+            currentCombo = 0;
+            highestCombo = 0;
+            gameActive = true;
+            timerSeconds = 0;
+            
+            // Atualizar UI
+            document.getElementById('points').textContent = '0';
+            document.getElementById('words').textContent = '0/10';
+            document.getElementById('combo').textContent = '1x';
+            document.getElementById('timer').textContent = '00:00';
+            document.getElementById('progress-bar').style.width = '0%';
+            
+            // Esconder modal
+            document.getElementById('result-modal').style.display = 'none';
+            
+            // Iniciar timer
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Iniciar primeira palavra
+            initWord();
+        }
+        
+        function updateTimer() {
+            if (!gameActive) return;
+            
+            timerSeconds++;
+            const minutes = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const seconds = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+            
+            // Penalidade por tempo (perde 1 ponto a cada 15 segundos)
+            if (timerSeconds % 15 === 0 && points > 0) {
+                points = Math.max(0, points - 1);
+                updatePointsDisplay();
+            }
+        }
+        
+        function initWord() {
+            if (currentWordIndex >= TOTAL_PALAVRAS) {
+                endGame();
+                return;
+            }
+            
+            // Selecionar palavra aleatória
             const randomObj = wordList[Math.floor(Math.random() * wordList.length)];
             selectedWord = randomObj.w.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
             selectedHint = randomObj.h;
             guessedLetters = [];
             wrongGuesses = 0;
+            startTime = Date.now();
             
+            // Atualizar UI
             document.getElementById('hint-text').textContent = selectedHint;
             document.getElementById('keyboard').innerHTML = '';
-            document.getElementById('astronaut').style.transform = 'translateY(0)';
+            astronaut.style.transform = 'translateY(0)';
             
+            // Criar elementos
             createBalloons();
             createKeyboard();
-            updateDisplay();
+            updateWordDisplay();
             
-            if (!timerInterval) startTimer();
+            // Atualizar contador
+            currentWordIndex++;
+            document.getElementById('words').textContent = `${currentWordIndex}/${TOTAL_PALAVRAS}`;
+            updateProgressBar();
         }
-
+        
         function createBalloons() {
             const area = document.getElementById('visual-area');
-            // Limpa balões antigos mantendo o astronauta
             const oldBalloons = area.querySelectorAll('.balloon');
             oldBalloons.forEach(b => b.remove());
 
-            for (let i = 0; i < maxChances; i++) {
-                const b = document.createElement('div');
-                b.className = 'balloon';
-                b.id = `balloon-${i}`;
-                b.style.backgroundColor = balloonColors[i];
-                b.style.left = (20 + (i * 30)) + 'px';
-                b.style.top = (20 + (i % 2 * 20)) + 'px';
-                area.appendChild(b);
+            for (let i = 0; i < MAX_CHANCES; i++) {
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                balloon.id = `balloon-${i}`;
+                balloon.style.backgroundColor = balloonColors[i];
+                balloon.style.left = (20 + (i * 30)) + 'px';
+                balloon.style.top = (20 + (i % 2 * 20)) + 'px';
+                area.appendChild(balloon);
             }
         }
-
+        
         function createKeyboard() {
             const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            const kb = document.getElementById('keyboard');
-            letters.split('').forEach(l => {
-                const btn = document.createElement('button');
-                btn.textContent = l;
-                btn.className = 'key';
-                btn.onclick = () => handleGuess(l, btn);
-                kb.appendChild(btn);
+            const keyboard = document.getElementById('keyboard');
+            
+            letters.split('').forEach(letter => {
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.className = 'key';
+                button.onclick = () => handleGuess(letter, button);
+                keyboard.appendChild(button);
             });
         }
-
-        function handleGuess(letter, btn) {
-            btn.disabled = true;
-            if (selectedWord.includes(letter)) {
-                guessedLetters.push(letter);
-                btn.classList.add('correct');
-                updateDisplay();
-                checkWin();
-            } else {
-                wrongGuesses++;
-                btn.classList.add('wrong');
-                popBalloon();
-                checkLose();
-            }
-        }
-
-        function popBalloon() {
-            const balloon = document.getElementById(`balloon-${maxChances - wrongGuesses}`);
-            if (balloon) {
-                balloon.style.transform = 'scale(0)';
-                balloon.style.opacity = '0';
-            }
-            // O astronauta desce um pouco
-            document.getElementById('astronaut').style.transform = `translateY(${wrongGuesses * 15}px)`;
-        }
-
-        function updateDisplay() {
-            const display = selectedWord.split('').map(l => 
-                guessedLetters.includes(l) ? l : "_"
+        
+        function updateWordDisplay() {
+            const displayElement = document.getElementById('word-display');
+            const displayText = selectedWord.split('').map(letter => 
+                guessedLetters.includes(letter) ? `<span class="letter-reveal">${letter}</span>` : "_"
             ).join(" ");
-            document.getElementById('word-display').textContent = display;
+            
+            displayElement.innerHTML = displayText;
         }
-
-        function checkWin() {
-            const currentDisplay = document.getElementById('word-display').textContent.replace(/\s/g, '');
-            if (currentDisplay === selectedWord) {
-                points += 10;
-                document.getElementById('points').textContent = points;
-                setTimeout(() => {
-                    alert("🌟 EXCELENTE! Você salvou o astronauta!");
-                    initGame();
-                }, 300);
+        
+        function updateProgressBar() {
+            const progress = (currentWordIndex / TOTAL_PALAVRAS) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            
+            // Atualizar cor da barra
+            if (progress < 25) {
+                document.getElementById('progress-bar').style.background = 'linear-gradient(90deg, #e74c3c, #f1c40f)';
+            } else if (progress < 75) {
+                document.getElementById('progress-bar').style.background = 'linear-gradient(90deg, #f1c40f, #3498db)';
+            } else {
+                document.getElementById('progress-bar').style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
             }
         }
 
-        function checkLose() {
-            if (wrongGuesses >= maxChances) {
-                document.getElementById('astronaut').style.transform = 'translateY(100px)';
-                setTimeout(() => {
-                    alert("🎈 Ops! Todos os balões estouraram.\nA palavra era: " + selectedWord);
-                    initGame();
-                }, 300);
+        // ===== LÓGICA DO JOGO =====
+        function handleGuess(letter, button) {
+            if (!gameActive || button.disabled) return;
+            
+            button.disabled = true;
+            
+            if (selectedWord.includes(letter)) {
+                // Acerto
+                guessedLetters.push(letter);
+                button.classList.add('correct');
+                
+                // Efeito visual
+                button.classList.add('pulse');
+                setTimeout(() => button.classList.remove('pulse'), 300);
+                
+                // Calcular pontos
+                const letterPoints = calculateLetterPoints();
+                addPoints(letterPoints);
+                
+                // Atualizar combo
+                updateCombo(true);
+                
+                // Atualizar estatísticas
+                totalCorrectLetters++;
+                
+                updateWordDisplay();
+                checkWordComplete();
+            } else {
+                // Erro
+                wrongGuesses++;
+                button.classList.add('wrong');
+                button.classList.add('shake');
+                setTimeout(() => button.classList.remove('shake'), 300);
+                
+                // Penalidade
+                addPoints(-5);
+                
+                // Atualizar combo
+                updateCombo(false);
+                
+                // Estourar balão
+                popBalloon();
+                
+                // Atualizar estatísticas
+                totalErrors++;
+                
+                checkGameOver();
             }
         }
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timerSeconds++;
-                const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-                const s = (timerSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('timer').textContent = `${m}:${s}`;
-            }, 1000);
+        
+        function calculateLetterPoints() {
+            // Pontos base por letra
+            let basePoints = 10;
+            
+            // Bônus por descobrir letras raras (menos frequentes na palavra)
+            const letterFrequency = selectedWord.split('').filter(l => l === guessedLetters[guessedLetters.length - 1]).length;
+            const rarityBonus = Math.max(0, 5 - letterFrequency) * 2;
+            
+            // Bônus por combo
+            const comboBonus = currentCombo * 2;
+            
+            // Bônus por velocidade (quanto mais rápido, mais pontos)
+            const timeTaken = Date.now() - startTime;
+            const speedBonus = Math.max(0, 20 - Math.floor(timeTaken / 1000));
+            
+            return Math.floor((basePoints + rarityBonus + comboBonus + speedBonus) * combo);
         }
+        
+        function addPoints(pointsToAdd) {
+            const oldPoints = points;
+            points = Math.max(0, points + pointsToAdd);
+            
+            // Feedback visual
+            if (pointsToAdd > 0) {
+                document.getElementById('points').classList.add('pulse');
+                setTimeout(() => {
+                    document.getElementById('points').classList.remove('pulse');
+                }, 300);
+                
+                // Mostrar feedback flutuante
+                showScoreFeedback(pointsToAdd);
+            }
+            
+            updatePointsDisplay();
+        }
+        
+        function updatePointsDisplay() {
+            document.getElementById('points').textContent = points;
+        }
+        
+        function showScoreFeedback(points) {
+            const feedback = document.createElement('div');
+            feedback.className = 'score-feedback';
+            feedback.textContent = `+${points}`;
+            
+            // Posicionar próximo ao display de pontos
+            const pointsElement = document.getElementById('points');
+            const rect = pointsElement.getBoundingClientRect();
+            
+            feedback.style.left = (rect.left + rect.width / 2) + 'px';
+            feedback.style.top = (rect.top - 20) + 'px';
+            
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                if (feedback.parentElement) feedback.remove();
+            }, 1500);
+        }
+        
+        function updateCombo(isCorrect) {
+            if (isCorrect) {
+                currentCombo++;
+                
+                // Aumentar multiplicador a cada 3 acertos consecutivos
+                if (currentCombo >= 3 && currentCombo < 6) {
+                    combo = 1.5;
+                } else if (currentCombo >= 6 && currentCombo < 9) {
+                    combo = 2;
+                } else if (currentCombo >= 9) {
+                    combo = 3;
+                }
+                
+                // Atualizar maior combo
+                if (currentCombo > highestCombo) {
+                    highestCombo = currentCombo;
+                }
+                
+                // Mostrar feedback de combo
+                if (currentCombo >= 3) {
+                    showComboDisplay(currentCombo);
+                }
+            } else {
+                currentCombo = 0;
+                combo = 1;
+            }
+            
+            document.getElementById('combo').textContent = `${combo}x`;
+            
+            // Destaque visual para combo alto
+            if (combo >= 2) {
+                document.getElementById('combo').style.color = '#f1c40f';
+                document.getElementById('combo').style.textShadow = '0 0 10px #f1c40f';
+            } else {
+                document.getElementById('combo').style.color = '#f1c40f';
+                document.getElementById('combo').style.textShadow = 'none';
+            }
+        }
+        
+        function showComboDisplay(comboCount) {
+            comboDisplay.textContent = `${comboCount} COMBO!`;
+            comboDisplay.style.opacity = '1';
+            comboDisplay.style.transform = 'translate(-50%, -50%) scale(1)';
+            
+            setTimeout(() => {
+                comboDisplay.style.opacity = '0';
+                comboDisplay.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            }, 800);
+        }
+        
+        function popBalloon() {
+            const balloon = document.getElementById(`balloon-${MAX_CHANCES - wrongGuesses}`);
+            if (balloon) {
+                balloon.classList.add('balloon-pop');
+                setTimeout(() => {
+                    if (balloon.parentElement) balloon.remove();
+                }, 500);
+            }
+            
+            // O astronauta desce
+            astronaut.style.transform = `translateY(${wrongGuesses * 15}px)`;
+        }
+        
+        function checkWordComplete() {
+            const wordComplete = selectedWord.split('').every(letter => guessedLetters.includes(letter));
+            
+            if (wordComplete) {
+                // Pontos bônus por completar palavra
+                const wordBonus = calculateWordBonus();
+                addPoints(wordBonus);
+                
+                totalWordsCompleted++;
+                totalScore += points;
+                
+                // Próxima palavra
+                setTimeout(() => {
+                    if (currentWordIndex < TOTAL_PALAVRAS) {
+                        points = 0; // Resetar pontos para próxima palavra
+                        updatePointsDisplay();
+                        initWord();
+                    } else {
+                        endGame();
+                    }
+                }, 1000);
+            }
+        }
+        
+        function calculateWordBonus() {
+            let bonus = 100;
+            
+            // Bônus por tempo (quanto mais rápido, mais pontos)
+            const timeTaken = Date.now() - startTime;
+            const timeBonus = Math.max(0, 200 - Math.floor(timeTaken / 100));
+            
+            // Bônus por precisão (sem erros)
+            const accuracyBonus = wrongGuesses === 0 ? 50 : 0;
+            
+            // Bônus por dificuldade (palavras longas)
+            const lengthBonus = selectedWord.length * 2;
+            
+            return bonus + timeBonus + accuracyBonus + lengthBonus;
+        }
+        
+        function checkGameOver() {
+            if (wrongGuesses >= MAX_CHANCES) {
+                // Perdeu esta palavra
+                totalErrors++;
+                
+                // Mostrar palavra completa
+                setTimeout(() => {
+                    alert(`❌ Palavra perdida! A palavra era: ${selectedWord}`);
+                    
+                    // Próxima palavra
+                    if (currentWordIndex < TOTAL_PALAVRAS) {
+                        points = 0;
+                        updatePointsDisplay();
+                        initWord();
+                    } else {
+                        endGame();
+                    }
+                }, 500);
+            }
+        }
+        
+        // ===== FIM DE JOGO =====
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            // Calcular pontuação final
+            const finalScore = calculateFinalScore();
+            
+            // Mostrar modal de resultados
+            showResultModal(finalScore);
+            
+            // Salvar automaticamente após 2 segundos
+            setTimeout(() => {
+                salvarPontuacao(finalScore.total);
+            }, 2000);
+        }
+        
+        function calculateFinalScore() {
+            // 1. Pontos acumulados
+            const baseScore = totalScore;
+            
+            // 2. Bônus por tempo total (quanto mais rápido, mais bônus)
+            const maxTimeBonus = 500;
+            const timeBonus = Math.max(0, maxTimeBonus - (timerSeconds * 2));
+            
+            // 3. Bônus por precisão (menos erros)
+            const accuracy = totalWordsCompleted > 0 ? (totalCorrectLetters / (totalCorrectLetters + totalErrors)) : 0;
+            const accuracyBonus = Math.floor(baseScore * accuracy * 0.3);
+            
+            // 4. Bônus por palavras completadas
+            const completionBonus = totalWordsCompleted * 50;
+            
+            // 5. Bônus por combo máximo
+            const comboBonus = highestCombo * 10;
+            
+            // 6. Bônus perfeição (completar todas as palavras sem erros)
+            const perfectionBonus = (totalErrors === 0 && totalWordsCompleted === TOTAL_PALAVRAS) ? 1000 : 0;
+            
+            // Total
+            const totalFinalScore = baseScore + timeBonus + accuracyBonus + completionBonus + comboBonus + perfectionBonus;
+            
+            return {
+                total: totalFinalScore,
+                base: baseScore,
+                timeBonus: timeBonus,
+                accuracyBonus: accuracyBonus,
+                completionBonus: completionBonus,
+                comboBonus: comboBonus,
+                perfectionBonus: perfectionBonus,
+                accuracy: Math.round(accuracy * 100),
+                wordsCompleted: totalWordsCompleted,
+                highestCombo: highestCombo
+            };
+        }
+        
+        function showResultModal(finalScore) {
+            // Atualizar elementos do modal
+            document.getElementById('final-score').textContent = finalScore.total;
+            document.getElementById('final-time').textContent = document.getElementById('timer').textContent;
+            document.getElementById('final-words').textContent = `${finalScore.wordsCompleted}/${TOTAL_PALAVRAS}`;
+            document.getElementById('bonus-tempo').textContent = finalScore.timeBonus;
+            document.getElementById('bonus-combo').textContent = finalScore.comboBonus + finalScore.perfectionBonus;
+            
+            // Mostrar modal
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+        
+        // ===== INTEGRAÇÃO COM FIREBASE =====
+        async function salvarPontuacao(pontos) {
+            console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
+            
+            try {
+                const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
+                
+                if (sucesso) {
+                    showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
+                    document.getElementById('btn-salvar').style.display = 'none';
+                    return true;
+                } else {
+                    showFirebaseMessage('⚠️ Faça login para salvar sua pontuação no ranking', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+                return false;
+            }
+        }
+        
+        function showFirebaseMessage(text, type) {
+            const messageEl = document.getElementById('firebase-message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = `firebase-message ${type}`;
+                messageEl.style.display = 'block';
+            }
+        }
+        
+        // ===== FUNÇÕES AUXILIARES =====
+        function jogarNovamente() {
+            document.getElementById('result-modal').style.display = 'none';
+            startNewGame();
+        }
+        
+        function showInstructions() {
+            alert(`🏆 SISTEMA DE PONTUAÇÃO - DESAFIO DAS PALAVRAS
 
-        window.onload = initGame;
+✅ Letra correta: +10 pontos base
+🎯 Letra rara (poucas na palavra): Bônus extra
+🔥 Sistema de combo: Acertos consecutivos aumentam multiplicador (até 3x)
+⏱️ Bônus por velocidade: Até 20 pontos extras por letra (quanto mais rápido, mais pontos)
+🌟 Bônus por palavra completa: +100 pontos base
+⚡ Bônus tempo por palavra: Até 200 pontos (quanto mais rápido, mais pontos)
+🎯 Bônus precisão: +50 pontos por palavra sem erros
+📏 Bônus dificuldade: +2 pontos por letra na palavra
+
+🏆 Bônus finais:
+• Tempo total: Até 500 pontos
+• Precisão geral: 30% dos pontos base
+• Palavras completadas: +50 pontos por palavra
+• Combo máximo: +10 pontos por acerto no maior combo
+• Perfeição: 1000 pontos extras (se completar todas as palavras sem erros)
+
+❌ Penalidades:
+- Letra errada: -5 pontos
+- Tempo: Perde 1 ponto a cada 15 segundos
+
+DICA: Tente manter combos altos e complete palavras rapidamente para maximizar sua pontuação!`);
+        }
+        
+        // ===== INICIALIZAÇÃO =====
+        window.onload = startNewGame;
     </script>
 </body>
 </html>
