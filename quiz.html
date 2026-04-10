@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Educativo - BeLTA Games</title>
     <style>
+        /* (Estilos anteriores mantidos) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -30,7 +31,6 @@
             text-align: center;
         }
 
-        /* Topo: Tempo e Pontos */
         .quiz-stats {
             display: flex;
             justify-content: space-between;
@@ -57,11 +57,10 @@
             gap: 12px;
         }
 
-        /* Botão de Opção (Estado Normal) */
         .quiz-btn-option {
             padding: 18px;
             font-size: 1.2rem;
-            background: #f1c40f; /* Amarelo */
+            background: #f1c40f;
             color: #333;
             border: none;
             border-radius: 15px;
@@ -71,14 +70,12 @@
             font-family: inherit;
         }
 
-        /* RESPOSTA CORRETA (Verde) */
         .quiz-btn-option.correct {
             background: #27ae60 !important; 
             color: white !important;
             transform: scale(1.02);
         }
 
-        /* RESPOSTAS ERRADAS (Vermelho) */
         .quiz-btn-option.wrong {
             background: #e74c3c !important; 
             color: white !important;
@@ -101,7 +98,7 @@
 
         #result-screen { display: none; }
         
-        /* Mensagem de feedback */
+        /* Adicione isso ao final do seu CSS */
         #feedback-message {
             margin-top: 15px;
             padding: 10px;
@@ -155,7 +152,7 @@
         </div>
     </div>
 
-    <!-- Banco de perguntas do GitHub (crie este arquivo) -->
+    <!-- 1. Carrega o banco de perguntas externo do GitHub -->
     <script src="perguntas.js"></script>
 
     <script>
@@ -167,29 +164,7 @@
 
         function initQuiz() {
             // Sorteia 10 perguntas do banco carregado do perguntas.js
-            // Se não existir perguntas.js, usa um banco básico
-            if (window.questionBank && window.questionBank.length > 0) {
-                selectedQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 10);
-            } else {
-                // Banco de perguntas básico se perguntas.js não existir
-                selectedQuestions = [
-                    {
-                        q: "Qual é o maior planeta do sistema solar?",
-                        a: ["Terra", "Marte", "Júpiter", "Saturno"],
-                        c: "Júpiter"
-                    },
-                    {
-                        q: "Quantos lados tem um quadrado?",
-                        a: ["3", "4", "5", "6"],
-                        c: "4"
-                    },
-                    {
-                        q: "Qual é a capital do Brasil?",
-                        a: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"],
-                        c: "Brasília"
-                    }
-                ].slice(0, 3); // Apenas 3 perguntas para teste
-            }
+            selectedQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 10);
             
             renderQuestion();
             startTimer();
@@ -240,7 +215,7 @@
                 score++;
             }
 
-            // Lógica de cores
+            // A LÓGICA DE CORES SOLICITADA:
             allButtons.forEach(btn => {
                 if (btn.textContent === correct) {
                     btn.classList.add('correct'); // Fundo Verde para a certa
@@ -264,16 +239,16 @@
             document.getElementById('final-time').textContent = `Tempo total: ${document.getElementById('timer').textContent}`;
             
             // Tenta salvar a pontuação no Firebase
-            await salvarPontuacaoQuiz(score);
+            await salvarPontuacaoQuiz();
         }
 
         // Função para salvar pontuação no Firebase
-        async function salvarPontuacaoQuiz(pontos) {
+        async function salvarPontuacaoQuiz() {
             const feedbackEl = document.getElementById('feedback-message');
             
             try {
                 // Usa a função do firebase-config.js
-                const sucesso = await window.salvarPontos("Quiz Educativo", pontos);
+                const sucesso = await window.salvarPontos("Quiz Educativo", score);
                 
                 if (sucesso) {
                     feedbackEl.innerHTML = "🎉 Sua pontuação foi salva no ranking!";
