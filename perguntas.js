@@ -19,7 +19,7 @@
             {q: "Qual é o dobro de 12?", a: ["22", "24", "26", "28"], c: "24"},
             {q: "Quanto é 6 × 4?", a: ["20", "22", "24", "26"], c: "24"},
             {q: "Quanto é 36 ÷ 6?", a: ["4", "5", "6", "7"], c: "6"},
-            {q: "Qual número é maior: 45 ou 54?", a: ["45", "54", "São iguais"], c: "54"},
+            {q: "Qual número é maior: 45 ou 54?", a: ["45", "54", "São iguais", "Não é possível saber"], c: "54"},
             {q: "Quantos minutos tem uma hora?", a: ["50", "60", "70", "80"], c: "60"},
             {q: "Quantos dias tem uma semana?", a: ["5", "6", "7", "8"], c: "7"},
             

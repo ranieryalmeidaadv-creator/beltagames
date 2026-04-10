@@ -353,6 +353,8 @@
 
     <!-- Import Firebase Config -->
     <script type="module" src="firebase-config.js"></script>
+    <!-- HTML entity encoder/decoder for XSS prevention -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js" integrity="sha512-PEsccDx9jqX6Dh4wZDCnWMaIO3gAaU0j46W//sSqQhOCqoKE1WF8pE4/solRRIGRbPNI3n4flh+Eg4GBGkUEQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script>
         // Mapeamento de jogos para ícones
@@ -448,7 +450,7 @@
                     <div class="empty-ranking">
                         <div style="font-size: 3rem;">😕</div>
                         <h3>Erro ao carregar rankings</h3>
-                        <p>${error.message}</p>
+                        <p>${he.escape(error.message)}</p>
                         <p>Tente recarregar a página ou verificar sua conexão.</p>
                     </div>
                 `;
@@ -507,20 +509,20 @@
                         <div class="${positionClass}">
                             ${index + 1}
                         </div>
-                        <img src="${player.foto || 'https://via.placeholder.com/40'}" 
-                             alt="${player.nickname}" 
+                        <img src="${he.escape(player.foto) || 'https://via.placeholder.com/40'}" 
+                             alt="${he.escape(player.nickname)}" 
                              class="player-photo"
                              onerror="this.src='https://via.placeholder.com/40'">
                         <div class="player-info">
                             <span class="player-name">
-                                ${player.nickname} ${stars}
+                                ${he.escape(player.nickname)} ${stars}
                             </span>
                             <span class="ranking-date">
                                 ${formatDate(player.data)}
                             </span>
                         </div>
                         <div class="player-score">
-                            ${player.pontos} pts
+                            ${Number(player.pontos)} pts
                         </div>
                     </li>
                 `;
