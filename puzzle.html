@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <!-- IMPORTANTE: Importar Firebase para ranking -->
+    <script type="module" src="firebase-config.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puzzle 15 - BeLTA Games</title>
@@ -18,42 +21,93 @@
             padding: 20px;
         }
 
-        .header { text-align: center; margin-bottom: 20px; }
-        h1 { font-size: 2.5rem; text-shadow: 3px 3px 0 #333; color: #f1c40f; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        h1 { 
+            font-size: 2.5rem; 
+            text-shadow: 3px 3px 0 #333; 
+            color: #f1c40f; 
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #bdc3c7;
+            font-size: 1.1rem;
+        }
 
         #game-container {
-            background: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             color: #2c3e50;
             padding: 30px;
             border-radius: 25px;
             width: 100%;
-            max-width: 500px; /* Ajustado para o tamanho do tabuleiro */
+            max-width: 500px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             text-align: center;
+            border: 4px solid #f1c40f;
         }
 
-        /* Puzzle 15 Estilos */
+        /* Estatísticas Aprimoradas */
         .puzzle-stats { 
-            display: flex; 
-            justify-content: space-around; 
-            background: #ecf0f1; 
-            padding: 15px; 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); 
+            padding: 20px; 
             border-radius: 15px; 
             margin-bottom: 20px; 
+            border: 3px solid #f1c40f;
         }
 
+        .stat-box {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #f1c40f;
+            display: block;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Tabuleiro Aprimorado */
         .board-15 { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             gap: 8px; 
             background: #34495e; 
-            padding: 10px; 
-            border-radius: 12px; 
+            padding: 12px; 
+            border-radius: 15px; 
             margin: 0 auto 25px;
             width: 320px;
             height: 320px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border: 3px solid #2c3e50;
         }
 
+        /* Peças Aprimoradas */
         .tile-15 {
             width: 70px; 
             height: 70px;
@@ -64,18 +118,59 @@
             justify-content: center;
             font-size: 1.8rem;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 12px;
             user-select: none;
             transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
         }
 
-        .tile-15.empty { background: transparent; cursor: default; box-shadow: none; }
+        .tile-15::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(0,0,0,0.1));
+            border-radius: 12px;
+        }
+
+        .tile-15.empty { 
+            background: transparent; 
+            cursor: default; 
+            box-shadow: none; 
+        }
+        
+        .tile-15.empty::before {
+            display: none;
+        }
+        
         .tile-15:not(.empty):hover { 
             background: linear-gradient(145deg, #1abc9c, #16a085); 
-            transform: scale(1.05); 
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .tile-15.correct-position {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+        }
+        
+        .tile-15.incorrect-position {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
         }
 
-        .control-btn { 
+        /* Controles Aprimorados */
+        .controls { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
             padding: 12px 25px; 
             font-size: 1rem; 
             background: #e74c3c; 
@@ -84,22 +179,203 @@
             border-radius: 12px; 
             cursor: pointer; 
             margin: 5px;
-            transition: 0.3s;
+            transition: all 0.3s;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: bold;
+            min-width: 150px;
         }
         
-        .control-btn:hover { background: #c0392b; transform: translateY(-2px); }
-        .btn-yellow { background: #f1c40f; color: #d35400; }
-        .btn-yellow:hover { background: #f39c12; }
+        .btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+        
+        .btn-yellow { 
+            background: linear-gradient(135deg, #f1c40f, #f39c12); 
+            color: #d35400; 
+        }
+        
+        .btn-yellow:hover { 
+            background: linear-gradient(135deg, #f39c12, #e67e22); 
+        }
+        
+        .btn-blue { 
+            background: linear-gradient(135deg, #3498db, #2980b9); 
+            color: white; 
+        }
+        
+        .btn-green {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
 
-        h2 { margin-bottom: 15px; }
+        /* Modal de Resultados */
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 40px;
+            border-radius: 25px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 4px solid #f1c40f;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        
+        .final-score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 3px 3px 0 #000;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #e74c3c;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .result-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #3498db;
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+        
+        /* Mensagem Firebase */
+        .firebase-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .success { 
+            background: rgba(46, 204, 113, 0.2); 
+            color: #2ecc71; 
+            border: 2px solid #27ae60; 
+        }
+        
+        .warning { 
+            background: rgba(243, 156, 18, 0.2); 
+            color: #f39c12; 
+            border: 2px solid #f39c12; 
+        }
+        
+        .error { 
+            background: rgba(231, 76, 60, 0.2); 
+            color: #e74c3c; 
+            border: 2px solid #e74c3c; 
+        }
+        
+        /* Sistema de Dicas */
+        #hint-display {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            font-size: 0.9rem;
+            color: #34495e;
+            display: none;
+        }
+        
+        /* Progresso do Jogo */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #f1c40f);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 4px;
+        }
+        
+        /* Feedback Visual */
+        @keyframes correctMove {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes incorrectMove {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .correct-move {
+            animation: correctMove 0.3s ease-in-out;
+        }
+        
+        .incorrect-move {
+            animation: incorrectMove 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>BeLTA Games</h1>
+        <h1>🧩 Puzzle 15</h1>
+        <p class="subtitle">Organize os números em ordem crescente no menor tempo possível!</p>
     </div>
 
     <div id="game-container">
@@ -108,122 +384,441 @@
         </div>
     </div>
 
+    <!-- Modal de Resultados -->
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 style="color: #f1c40f; font-size: 2.5rem; margin-bottom: 10px;">🎉 Puzzle Resolvido!</h2>
+            <p style="color: #bdc3c7; margin-bottom: 20px;">Você dominou o desafio numérico!</p>
+            
+            <div class="final-score" id="final-score">0</div>
+            
+            <div class="stats-grid">
+                <div class="result-stat">
+                    <span class="result-value" id="final-time">00:00</span>
+                    <span class="result-label">TEMPO TOTAL</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="final-moves">0</span>
+                    <span class="result-label">MOVIMENTOS</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="bonus-tempo">0</span>
+                    <span class="result-label">BÔNUS TEMPO</span>
+                </div>
+                <div class="result-stat">
+                    <span class="result-value" id="bonus-eficiencia">0</span>
+                    <span class="result-label">BÔNUS EFICIÊNCIA</span>
+                </div>
+            </div>
+            
+            <p style="margin: 20px 0; color: #2c3e50; font-weight: bold; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+                Sua pontuação será salva no ranking "Puzzle 15"
+            </p>
+            
+            <div id="firebase-message" class="firebase-message"></div>
+            
+            <div class="controls" style="margin-top: 30px;">
+                <button class="btn btn-yellow" onclick="jogarNovamente()">🔄 Jogar Novamente</button>
+                <a href="ranking.html?jogo=Puzzle 15" class="btn btn-green">🏆 Ver Ranking</a>
+                <button id="btn-salvar" class="btn btn-blue" onclick="salvarPontuacao()">
+                    💾 Salvar Pontuação
+                </button>
+            </div>
+            
+            <a href="index.html" style="display: block; margin-top: 25px; color: #bdc3c7; text-decoration: none;">
+                ← Voltar ao Portal de Jogos
+            </a>
+        </div>
+    </div>
+
     <script>
-        const gameContent = document.getElementById('game-content');
+        // ===== CONFIGURAÇÕES DO JOGO =====
+        const NOME_DO_JOGO = "Puzzle 15";
         
-        // ============== PUZZLE 15 LÓGICA (BASEADA NO SEU CÓDIGO) ==============
+        // ===== VARIÁVEIS GLOBAIS =====
         let puzzleBoard = [];
         let emptyIndex = 15; 
         let movesCount = 0;
         let timerSeconds = 0;
         let timerInterval = null;
+        let gameActive = false;
+        let score = 0;
         
+        // Estatísticas detalhadas
+        let correctMoves = 0;
+        let incorrectMoves = 0;
+        let consecutiveCorrect = 0;
+        let highestConsecutive = 0;
+        let startTime = 0;
+        
+        // Elementos DOM
+        const gameContent = document.getElementById('game-content');
+        
+        // ===== INICIALIZAÇÃO DO JOGO =====
         function startPuzzle() {
-            // Inicializa o tabuleiro ordenado
+            // Resetar variáveis
             puzzleBoard = [];
-            for (let i = 1; i <= 15; i++) puzzleBoard.push(i);
-            puzzleBoard.push(null);
-            
             movesCount = 0;
             timerSeconds = 0;
             emptyIndex = 15;
+            score = 0;
+            correctMoves = 0;
+            incorrectMoves = 0;
+            consecutiveCorrect = 0;
+            highestConsecutive = 0;
+            gameActive = true;
+            startTime = Date.now();
             
-            // Embaralha corretamente
+            // Inicializar tabuleiro
+            for (let i = 1; i <= 15; i++) puzzleBoard.push(i);
+            puzzleBoard.push(null);
+            
+            // Embaralhar
             shufflePuzzle();
             
-            // Timer
+            // Parar timer anterior
             if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timerSeconds++;
-                updatePuzzleDisplay();
-            }, 1000);
             
+            // Iniciar timer
+            startTimer();
+            
+            // Renderizar jogo
             renderPuzzle();
+            
+            // Esconder modal
+            document.getElementById('result-modal').style.display = 'none';
         }
         
         function shufflePuzzle() {
-            // Reseta antes de embaralhar para garantir que o tabuleiro base está limpo
+            // Reseta antes de embaralhar
             puzzleBoard = [];
             for (let i = 1; i <= 15; i++) puzzleBoard.push(i);
             puzzleBoard.push(null);
             emptyIndex = 15;
 
-            // Faz 300 movimentos válidos para embaralhar e garantir que tenha solução
+            // Faz 300 movimentos válidos para embaralhar
             for (let i = 0; i < 300; i++) {
                 const adjacent = getAdjacentPositions(emptyIndex);
                 const randomMove = adjacent[Math.floor(Math.random() * adjacent.length)];
                 swapTiles(randomMove, emptyIndex);
                 emptyIndex = randomMove;
             }
+            
             movesCount = 0;
-            if (document.getElementById('timer-display')) renderPuzzle(); 
+            correctMoves = 0;
+            incorrectMoves = 0;
+            consecutiveCorrect = 0;
+            score = 0;
+        }
+        
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                
+                timerSeconds++;
+                updateTimerDisplay();
+                
+                // Penalidade por tempo (perde 1 ponto a cada 10 segundos)
+                if (timerSeconds % 10 === 0 && score > 0) {
+                    score = Math.max(0, score - 1);
+                    updateScoreDisplay();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer-display');
+            if (timerElement) {
+                timerElement.textContent = formatTime(timerSeconds);
+            }
         }
         
         function renderPuzzle() {
             gameContent.innerHTML = `
-                <h2>🧩 Puzzle 15</h2>
+                <h2 style="color: #2c3e50; margin-bottom: 15px;">🧩 Desafio Numérico</h2>
+                
                 <div class="puzzle-stats">
-                    <div>
-                        <div style="font-size: 1.8rem; font-weight: bold;">${movesCount}</div>
-                        <div>Movimentos</div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="moves-display">${movesCount}</span>
+                        <span class="stat-label">Movimentos</span>
                     </div>
-                    <div>
-                        <div style="font-size: 1.8rem; font-weight: bold;" id="timer-display">00:00</div>
-                        <div>Tempo</div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="timer-display">${formatTime(timerSeconds)}</span>
+                        <span class="stat-label">Tempo</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="score-display">0</span>
+                        <span class="stat-label">Pontos</span>
                     </div>
                 </div>
+                
+                <!-- Progresso do Jogo -->
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                
                 <div class="board-15" id="puzzle-board"></div>
-                <div>
-                    <button class="control-btn btn-yellow" onclick="shufflePuzzle()">🔀 Embaralhar</button>
-                    <button class="control-btn btn-yellow" onclick="startPuzzle()">🔄 Reiniciar</button>
+                
+                <!-- Dicas -->
+                <div id="hint-display"></div>
+                
+                <div class="controls">
+                    <button class="btn btn-yellow" onclick="shufflePuzzle()">🔀 Embaralhar</button>
+                    <button class="btn btn-yellow" onclick="startPuzzle()">🔄 Reiniciar</button>
+                    <button class="btn btn-purple" onclick="mostrarInstrucoes()">📖 Como Pontuar</button>
                     <br>
-                    <a href="index.html" class="control-btn">🏠 Voltar ao Menu</a>
+                    <a href="index.html" class="btn btn-blue">🏠 Menu Principal</a>
                 </div>
             `;
             
             createPuzzleTiles();
-            updatePuzzleDisplay();
+            updateProgressBar();
         }
         
         function createPuzzleTiles() {
             const board = document.getElementById('puzzle-board');
             if (!board) return;
+            
             board.innerHTML = '';
             
             puzzleBoard.forEach((value, index) => {
                 const tile = document.createElement('div');
-                tile.className = value === null ? 'tile-15 empty' : 'tile-15';
+                
+                // Adicionar classes baseadas na posição correta
+                const row = Math.floor(index / 4);
+                const col = index % 4;
+                const expectedValue = index === 15 ? null : index + 1;
+                
+                tile.className = 'tile-15';
+                
+                if (value === null) {
+                    tile.classList.add('empty');
+                } else if (value === expectedValue) {
+                    tile.classList.add('correct-position');
+                } else {
+                    tile.classList.add('incorrect-position');
+                }
+                
                 tile.textContent = value || '';
+                tile.dataset.index = index;
+                tile.dataset.value = value || 'empty';
+                
                 tile.onclick = () => handleTileClick(index);
+                
                 board.appendChild(tile);
             });
         }
         
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            if (!progressBar) return;
+            
+            // Calcular progresso baseado em quantas peças estão na posição correta
+            let correctCount = 0;
+            puzzleBoard.forEach((value, index) => {
+                const expectedValue = index === 15 ? null : index + 1;
+                if (value === expectedValue) correctCount++;
+            });
+            
+            const progress = (correctCount / 16) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Atualizar cor da barra baseada no progresso
+            if (progress < 25) {
+                progressBar.style.background = 'linear-gradient(90deg, #e74c3c, #f1c40f)';
+            } else if (progress < 75) {
+                progressBar.style.background = 'linear-gradient(90deg, #f1c40f, #3498db)';
+            } else {
+                progressBar.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
+            }
+        }
+        
         function handleTileClick(clickedIndex) {
+            if (!gameActive) return;
+            
             if (isAdjacent(clickedIndex, emptyIndex)) {
+                const isCorrectMove = isMoveTowardsSolution(clickedIndex);
+                
+                // Realizar movimento
                 swapTiles(clickedIndex, emptyIndex);
                 emptyIndex = clickedIndex;
                 movesCount++;
                 
-                createPuzzleTiles();
-                // Atualiza apenas o texto de movimentos para não renderizar tudo
-                renderPuzzleStatsOnly();
+                // Atualizar estatísticas
+                if (isCorrectMove) {
+                    correctMoves++;
+                    consecutiveCorrect++;
+                    
+                    if (consecutiveCorrect > highestConsecutive) {
+                        highestConsecutive = consecutiveCorrect;
+                    }
+                    
+                    // Adicionar pontos por movimento correto
+                    addPoints(calculateMovePoints());
+                    
+                    // Feedback visual
+                    const tile = document.querySelector(`.tile-15[data-index="${clickedIndex}"]`);
+                    if (tile) {
+                        tile.classList.add('correct-move');
+                        setTimeout(() => tile.classList.remove('correct-move'), 300);
+                    }
+                } else {
+                    incorrectMoves++;
+                    consecutiveCorrect = 0;
+                    
+                    // Penalidade por movimento incorreto
+                    addPoints(-5);
+                    
+                    // Feedback visual
+                    const tile = document.querySelector(`.tile-15[data-index="${clickedIndex}"]`);
+                    if (tile) {
+                        tile.classList.add('incorrect-move');
+                        setTimeout(() => tile.classList.remove('incorrect-move'), 300);
+                    }
+                }
                 
+                // Atualizar display
+                updateStatsDisplay();
+                createPuzzleTiles();
+                updateProgressBar();
+                
+                // Verificar vitória
                 if (checkPuzzleWin()) {
-                    clearInterval(timerInterval);
-                    setTimeout(() => {
-                        alert(`🎉 Parabéns! Você completou em ${movesCount} movimentos e ${formatTime(timerSeconds)}!`);
-                    }, 300);
+                    gameCompleted();
+                } else {
+                    // Mostrar dica ocasionalmente
+                    if (movesCount % 10 === 0) {
+                        showHint();
+                    }
+                }
+            } else {
+                // Tentativa de movimento inválido
+                const tile = document.querySelector(`.tile-15[data-index="${clickedIndex}"]`);
+                if (tile && !tile.classList.contains('empty')) {
+                    tile.classList.add('incorrect-move');
+                    setTimeout(() => tile.classList.remove('incorrect-move'), 300);
                 }
             }
         }
-
-        // Função auxiliar para atualizar stats sem reconstruir o board todo durante o clique
-        function renderPuzzleStatsOnly() {
-            const movesDisplay = document.querySelector('.puzzle-stats div:first-child div');
-            if (movesDisplay) movesDisplay.textContent = movesCount;
+        
+        function isMoveTowardsSolution(clickedIndex) {
+            // Verifica se o movimento aproxima a peça da posição correta
+            const value = puzzleBoard[clickedIndex];
+            if (value === null) return false;
+            
+            const currentPosition = clickedIndex;
+            const targetPosition = value - 1; // Posição correta (0-14)
+            
+            // Distância antes do movimento
+            const beforeRow = Math.floor(currentPosition / 4);
+            const beforeCol = currentPosition % 4;
+            const targetRow = Math.floor(targetPosition / 4);
+            const targetCol = targetPosition % 4;
+            const distanceBefore = Math.abs(beforeRow - targetRow) + Math.abs(beforeCol - targetCol);
+            
+            // Distância depois do movimento (após trocar com vazio)
+            const emptyRow = Math.floor(emptyIndex / 4);
+            const emptyCol = emptyIndex % 4;
+            const distanceAfter = Math.abs(emptyRow - targetRow) + Math.abs(emptyCol - targetCol);
+            
+            return distanceAfter < distanceBefore;
         }
         
+        function calculateMovePoints() {
+            let basePoints = 10;
+            
+            // Bônus por combo
+            const comboBonus = Math.min(20, consecutiveCorrect * 2);
+            
+            // Bônus por eficiência (menos movimentos = mais pontos)
+            const efficiencyBonus = Math.max(0, 50 - movesCount);
+            
+            // Bônus por posicionamento correto
+            const positionBonus = isPositionImproving() ? 5 : 0;
+            
+            return basePoints + comboBonus + efficiencyBonus + positionBonus;
+        }
+        
+        function isPositionImproving() {
+            // Verifica se mais peças estão na posição correta após o movimento
+            let correctBefore = 0;
+            let correctAfter = 0;
+            
+            // Simula o movimento
+            const tempBoard = [...puzzleBoard];
+            [tempBoard[emptyIndex], tempBoard[getLastMovedIndex()]] = [tempBoard[getLastMovedIndex()], tempBoard[emptyIndex]];
+            
+            // Conta posições corretas
+            for (let i = 0; i < 16; i++) {
+                const expectedValue = i === 15 ? null : i + 1;
+                if (puzzleBoard[i] === expectedValue) correctBefore++;
+                if (tempBoard[i] === expectedValue) correctAfter++;
+            }
+            
+            return correctAfter > correctBefore;
+        }
+        
+        function getLastMovedIndex() {
+            // Retorna o índice da última peça movida (não vazia)
+            // Simplificação: procura a peça que está na posição do vazio anterior
+            for (let i = 0; i < 16; i++) {
+                if (puzzleBoard[i] === null) {
+                    return i === emptyIndex ? getAdjacentPositions(emptyIndex)[0] : emptyIndex;
+                }
+            }
+            return emptyIndex;
+        }
+        
+        function addPoints(points) {
+            const oldScore = score;
+            score = Math.max(0, score + points);
+            
+            // Feedback visual
+            if (points > 0) {
+                document.getElementById('score-display').classList.add('correct-move');
+                setTimeout(() => {
+                    document.getElementById('score-display').classList.remove('correct-move');
+                }, 300);
+            }
+            
+            updateScoreDisplay();
+            return points;
+        }
+        
+        function updateStatsDisplay() {
+            const movesElement = document.getElementById('moves-display');
+            const scoreElement = document.getElementById('score-display');
+            
+            if (movesElement) movesElement.textContent = movesCount;
+            if (scoreElement) scoreElement.textContent = score;
+        }
+        
+        function updateScoreDisplay() {
+            const scoreElement = document.getElementById('score-display');
+            if (scoreElement) scoreElement.textContent = score;
+        }
+        
+        function showHint() {
+            const hintElement = document.getElementById('hint-display');
+            if (!hintElement) return;
+            
+            const hints = [
+                "💡 Dica: Tente mover as peças das bordas primeiro!",
+                "💡 Dica: Foque em completar a primeira linha primeiro!",
+                "💡 Dica: Cada movimento correto aumenta seu multiplicador!",
+                "💡 Dica: Menos movimentos = mais pontos no final!"
+            ];
+            
+            const randomHint = hints[Math.floor(Math.random() * hints.length)];
+            hintElement.textContent = randomHint;
+            hintElement.style.display = 'block';
+            
+            setTimeout(() => {
+                hintElement.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ===== FUNÇÕES AUXILIARES DO PUZZLE =====
         function isAdjacent(index1, index2) {
             const row1 = Math.floor(index1 / 4);
             const col1 = index1 % 4;
@@ -258,20 +853,136 @@
             return puzzleBoard[15] === null;
         }
         
-        function updatePuzzleDisplay() {
-            const timerElement = document.getElementById('timer-display');
-            if (timerElement) {
-                timerElement.textContent = formatTime(timerSeconds);
-            }
-        }
-        
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
             const secs = (seconds % 60).toString().padStart(2, '0');
             return `${mins}:${secs}`;
         }
+        
+        // ===== FIM DE JOGO =====
+        function gameCompleted() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            // Calcular pontuação final
+            const finalScore = calculateFinalScore();
+            
+            // Mostrar modal de resultados
+            showResultModal(finalScore);
+            
+            // Salvar automaticamente após 2 segundos
+            setTimeout(() => {
+                salvarPontuacao(finalScore.total);
+            }, 2000);
+        }
+        
+        function calculateFinalScore() {
+            // 1. Pontos acumulados durante o jogo
+            const baseScore = score;
+            
+            // 2. Bônus por tempo (quanto mais rápido, mais bônus)
+            const maxTimeBonus = 1000;
+            const timeBonus = Math.max(0, maxTimeBonus - (timerSeconds * 3));
+            
+            // 3. Bônus por eficiência (menos movimentos)
+            const idealMoves = 80; // Movimentos ideais para resolver
+            const efficiencyBonus = Math.max(0, (idealMoves - movesCount) * 10);
+            
+            // 4. Bônus por precisão (alta taxa de acertos)
+            const totalMoves = correctMoves + incorrectMoves;
+            const accuracy = totalMoves > 0 ? correctMoves / totalMoves : 0;
+            const accuracyBonus = Math.floor(baseScore * accuracy * 0.5);
+            
+            // 5. Bônus por combo máximo
+            const comboBonus = highestConsecutive * 5;
+            
+            // 6. Bônus perfeição (resolver em menos de 60 segundos)
+            const perfectionBonus = timerSeconds < 60 ? 500 : 0;
+            
+            // Total
+            const totalScore = baseScore + timeBonus + efficiencyBonus + accuracyBonus + comboBonus + perfectionBonus;
+            
+            return {
+                total: totalScore,
+                base: baseScore,
+                timeBonus: timeBonus,
+                efficiencyBonus: efficiencyBonus,
+                accuracyBonus: accuracyBonus,
+                comboBonus: comboBonus,
+                perfectionBonus: perfectionBonus,
+                accuracy: Math.round(accuracy * 100),
+                highestCombo: highestConsecutive
+            };
+        }
+        
+        function showResultModal(finalScore) {
+            // Atualizar elementos do modal
+            document.getElementById('final-score').textContent = finalScore.total;
+            document.getElementById('final-time').textContent = formatTime(timerSeconds);
+            document.getElementById('final-moves').textContent = movesCount;
+            document.getElementById('bonus-tempo').textContent = finalScore.timeBonus;
+            document.getElementById('bonus-eficiencia').textContent = finalScore.efficiencyBonus + finalScore.accuracyBonus;
+            
+            // Mostrar modal
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+        
+        // ===== INTEGRAÇÃO COM FIREBASE =====
+        async function salvarPontuacao(pontos) {
+            console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
+            
+            try {
+                const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
+                
+                if (sucesso) {
+                    showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
+                    document.getElementById('btn-salvar').style.display = 'none';
+                    return true;
+                } else {
+                    showFirebaseMessage('⚠️ Faça login para salvar sua pontuação no ranking', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+                return false;
+            }
+        }
+        
+        function showFirebaseMessage(text, type) {
+            const messageEl = document.getElementById('firebase-message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = `firebase-message ${type}`;
+                messageEl.style.display = 'block';
+            }
+        }
+        
+        // ===== FUNÇÕES AUXILIARES =====
+        function jogarNovamente() {
+            document.getElementById('result-modal').style.display = 'none';
+            startPuzzle();
+        }
+        
+        function mostrarInstrucoes() {
+            alert(`🏆 SISTEMA DE PONTUAÇÃO - PUZZLE 15
 
-        // Iniciar o jogo automaticamente ao carregar a página
+✅ Movimento correto: +10 pontos base
+🎯 Movimento eficiente: Bônus por aproximar peças da posição correta
+🔥 Sistema de combo: Acertos consecutivos aumentam pontos por movimento (até +20)
+⏱️ Bônus por tempo: Até 1000 pontos (quanto mais rápido, mais pontos)
+⚡ Bônus por eficiência: Menos movimentos = mais pontos (ideal: 80 movimentos)
+🎯 Bônus por precisão: 50% dos pontos base como bônus por alta taxa de acertos
+🏆 Bônus perfeição: 500 pontos extras (se resolver em menos de 1 minuto)
+
+❌ Penalidades:
+- Movimento incorreto: -5 pontos
+- Tempo: Perde 1 ponto a cada 10 segundos
+
+DICA: Pense antes de mover! Movimentos calculados rendem mais pontos que movimentos aleatórios.`);
+        }
+        
+        // ===== INICIALIZAÇÃO =====
         window.onload = startPuzzle;
     </script>
 </body>
