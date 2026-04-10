@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <!-- IMPORTANTE: Importar Firebase para ranking -->
+    <script type="module" src="firebase-config.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabuada Ninja - BeLTA Games</title>
@@ -23,12 +26,13 @@
         h1 { font-size: 2.8rem; color: #e74c3c; text-shadow: 2px 2px 0 #f1c40f; margin-bottom: 5px; }
         p { color: #f1c40f; font-weight: bold; }
 
+        /* Container Principal Aprimorado */
         #game-wrapper {
             width: 100%;
             max-width: 800px;
             height: 75vh;
             position: relative;
-            background: #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
             border: 6px solid #34495e;
             border-radius: 25px;
             margin-top: 15px;
@@ -36,12 +40,13 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
+        /* Quadro da Pergunta Aprimorado */
         .question-box {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(231, 76, 60, 0.95);
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             padding: 15px 45px;
             border-radius: 50px;
             font-size: 2.8rem;
@@ -49,18 +54,60 @@
             z-index: 100;
             border: 4px solid #f1c40f;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 0 #000;
         }
 
-        .stats {
-            display: flex;
-            gap: 30px;
+        /* Estatísticas Aprimoradas */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             margin-top: 10px;
-            font-size: 1.6rem;
+            width: 90%;
+            max-width: 800px;
+            padding: 10px;
+            background: rgba(44, 62, 80, 0.8);
+            border-radius: 15px;
+            border: 2px solid #34495e;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        .stat-value {
+            font-size: 1.8rem;
             font-weight: bold;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #bdc3c7;
         }
         .score { color: #2ecc71; }
-        .lives { color: #e74c3c; }
+        .combo { color: #f1c40f; }
+        .streak { color: #9b59b6; }
+        .time { color: #3498db; }
 
+        /* Sistema de Combo */
+        #combo-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 0 0 20px #f1c40f, 0 0 40px #e74c3c;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* Balões Aprimorados */
         .balloon {
             position: absolute;
             width: 85px;
@@ -77,6 +124,8 @@
             box-shadow: inset -6px -6px 12px rgba(0,0,0,0.2);
             animation: floatUp linear forwards;
             user-select: none;
+            z-index: 10;
+            transition: transform 0.2s;
         }
 
         .balloon::after {
@@ -88,18 +137,44 @@
             background: rgba(255,255,255,0.4);
         }
 
+        .balloon:hover {
+            transform: scale(1.05);
+        }
+
         @keyframes floatUp {
             from { transform: translateY(80vh); }
             to { transform: translateY(-25vh); }
         }
 
         .pop { animation: popOut 0.25s ease-out forwards; pointer-events: none; }
-        @keyframes popOut { to { transform: scale(1.8); opacity: 0; } }
+        @keyframes popOut { 
+            0% { transform: scale(1); }
+            50% { transform: scale(1.8); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
 
+        /* Feedback de Pontuação */
+        .score-feedback {
+            position: absolute;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2ecc71;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 150;
+            pointer-events: none;
+            animation: floatScore 1.5s ease-out forwards;
+        }
+        
+        @keyframes floatScore {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        /* Overlay de Fim de Jogo Aprimorado */
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -108,6 +183,56 @@
             text-align: center;
             padding: 20px;
         }
+        
+        .result-content {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 30px;
+            border-radius: 25px;
+            max-width: 500px;
+            width: 90%;
+            border: 4px solid #f1c40f;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        }
+        
+        .final-score {
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 3px 3px 0 #000;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 15px;
+            border: 3px solid #e74c3c;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .result-stat {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #3498db;
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+        
         .btn {
             padding: 15px 45px;
             font-size: 1.5rem;
@@ -117,10 +242,42 @@
             font-weight: bold;
             transition: 0.3s;
             margin: 10px;
+            text-decoration: none;
+            display: inline-block;
         }
-        .btn-start { background: #e74c3c; color: white; }
-        .btn-menu { background: #34495e; color: white; text-decoration: none; }
-        .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        
+        .btn-start { 
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white; 
+        }
+        
+        .btn-menu { 
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white; 
+        }
+        
+        .btn-ranking { 
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white; 
+        }
+        
+        .btn:hover { 
+            transform: scale(1.05); 
+            filter: brightness(1.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .firebase-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 2px solid #27ae60; }
+        .warning { background: rgba(243, 156, 18, 0.2); color: #f39c12; border: 2px solid #f39c12; }
+        .error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 2px solid #e74c3c; }
     </style>
 </head>
 <body>
@@ -130,151 +287,536 @@
         <p>Mostre que você é um mestre da matemática!</p>
     </div>
 
-    <div class="stats">
-        <span class="score">Pontos: <span id="score-val">0</span></span>
-        <span class="lives">Vidas: <span id="lives-val">❤️❤️❤️</span></span>
+    <!-- Estatísticas Aprimoradas -->
+    <div class="stats-container">
+        <div class="stat-box">
+            <span class="stat-value score" id="score-val">0</span>
+            <span class="stat-label">PONTOS</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value" id="lives-val">❤️❤️❤️</span>
+            <span class="stat-label">VIDAS</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value combo" id="combo-val">1x</span>
+            <span class="stat-label">MULTIPLICADOR</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value time" id="time-val">00:00</span>
+            <span class="stat-label">TEMPO</span>
+        </div>
     </div>
+
+    <!-- Display de Combo -->
+    <div id="combo-display"></div>
 
     <div id="game-wrapper">
         <div class="question-box" id="question">Pronto?</div>
         
+        <!-- Tela de Início -->
         <div class="overlay" id="start-screen">
-            <h2 style="color: #f1c40f; margin-bottom: 20px; font-size: 2rem;">Inicie seu Treinamento Ninja</h2>
-            <p style="color: white; margin-bottom: 30px; font-size: 1.1rem; max-width: 400px;">
-                Acerte os balões com os resultados corretos. <br>
-                A velocidade aumentará conforme você evolui!
-            </p>
-            <button class="btn btn-start" onclick="startGame()">Começar Missão</button>
-            <a href="index.html" class="btn btn-menu">Voltar ao Menu</a>
+            <div class="result-content">
+                <h2 style="color: #f1c40f; margin-bottom: 20px; font-size: 2rem;">🏯 Dojo da Tabuada</h2>
+                <p style="color: white; margin-bottom: 30px; font-size: 1.1rem; max-width: 400px;">
+                    <strong>Objetivo:</strong> Estoure os balões com os resultados CORRETOS!<br><br>
+                    <strong>🏆 Sistema de Pontuação:</strong><br>
+                    • Acerto rápido: +50 a +200 pontos<br>
+                    • Combo: Multiplicador crescente<br>
+                    • Precisão: Acertos consecutivos dão bônus<br>
+                    • Velocidade: Bônus ao final por tempo<br><br>
+                    <strong>⚠️ Cuidado!</strong> Erros quebram seu combo e custam vidas!
+                </p>
+                <button class="btn btn-start" onclick="startGame()">🎯 Iniciar Missão</button>
+                <a href="index.html" class="btn btn-menu">🏠 Menu Principal</a>
+            </div>
         </div>
     </div>
 
     <script>
+        // ===== CONFIGURAÇÕES DO JOGO =====
+        const NOME_DO_JOGO = "Tabuada Ninja";
+        
+        // ===== VARIÁVEIS GLOBAIS =====
         let score = 0;
         let lives = 3;
         let gameActive = false;
         let currentAnswer = 0;
+        let gameTime = 0;
+        let timerInterval;
         
-        // VELOCIDADE INICIAL: 12 segundos (bem lento)
-        const startDuration = 12; 
-        const minDuration = 2.5; // Limite máximo de velocidade (muito rápido)
-        const speedIncrement = 0.08; // Quanto reduz por ponto (0.08s a menos por ponto)
-
-        let spawnInterval;
+        // Sistema de Combo
+        let combo = 1;
+        let currentCombo = 0;
+        let highestCombo = 0;
+        
+        // Estatísticas Detalhadas
+        let totalCorrect = 0;
+        let totalWrong = 0;
+        let totalBalloons = 0;
+        let fastestAnswer = Infinity;
+        let slowestAnswer = 0;
+        
+        // Velocidade do Jogo
+        const startDuration = 12; // segundos
+        const minDuration = 2.5;  // mínimo
+        const speedIncrement = 0.08;
+        
+        // Elementos DOM
         const wrapper = document.getElementById('game-wrapper');
         const questionEl = document.getElementById('question');
         const scoreEl = document.getElementById('score-val');
         const livesEl = document.getElementById('lives-val');
+        const comboEl = document.getElementById('combo-val');
+        const timeEl = document.getElementById('time-val');
+        const comboDisplay = document.getElementById('combo-display');
         const startScreen = document.getElementById('start-screen');
+        
+        let spawnInterval;
 
+        // ===== INICIALIZAÇÃO DO JOGO =====
         function startGame() {
+            // Reset de variáveis
             score = 0;
             lives = 3;
             gameActive = true;
+            gameTime = 0;
+            combo = 1;
+            currentCombo = 0;
+            highestCombo = 0;
+            totalCorrect = 0;
+            totalWrong = 0;
+            totalBalloons = 0;
+            fastestAnswer = Infinity;
+            slowestAnswer = 0;
+            
+            // Limpar tela
             startScreen.style.display = 'none';
+            clearAllBalloons();
+            
+            // Atualizar UI
             updateStats();
             nextQuestion();
             
-            if(spawnInterval) clearInterval(spawnInterval);
+            // Iniciar timers
+            startTimers();
+        }
+        
+        function startTimers() {
+            // Timer principal
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                gameTime++;
+                updateTimeDisplay();
+            }, 1000);
+            
+            // Spawn de balões
+            clearInterval(spawnInterval);
             spawnInterval = setInterval(spawnBalloons, 2200);
         }
+        
+        function updateTimeDisplay() {
+            const minutes = Math.floor(gameTime / 60).toString().padStart(2, '0');
+            const seconds = (gameTime % 60).toString().padStart(2, '0');
+            timeEl.textContent = `${minutes}:${seconds}`;
+        }
 
+        // ===== LÓGICA DO JOGO =====
         function nextQuestion() {
-            const n1 = Math.floor(Math.random() * 9) + 2; 
-            const n2 = Math.floor(Math.random() * 9) + 2; 
+            // Gera números entre 2 e 12 para desafio maior
+            const n1 = Math.floor(Math.random() * 11) + 2; // 2-12
+            const n2 = Math.floor(Math.random() * 11) + 2; // 2-12
             currentAnswer = n1 * n2;
-            questionEl.textContent = `${n1} x ${n2}`;
+            questionEl.textContent = `${n1} × ${n2} = ?`;
         }
 
         function spawnBalloons() {
             if (!gameActive) return;
 
             const answers = [currentAnswer];
-            while(answers.length < 3) {
-                let wrong = (Math.floor(Math.random() * 80) + 4);
-                if(!answers.includes(wrong) && wrong !== currentAnswer) answers.push(wrong);
+            
+            // Gera respostas erradas plausíveis
+            while (answers.length < 3) {
+                let wrong = currentAnswer;
+                while (wrong === currentAnswer || answers.includes(wrong)) {
+                    // Adiciona/subtrai um número aleatório
+                    const offset = Math.floor(Math.random() * 15) + 1;
+                    wrong = currentAnswer + (Math.random() > 0.5 ? offset : -offset);
+                    if (wrong < 4) wrong = currentAnswer + offset; // Evita números muito baixos
+                }
+                answers.push(wrong);
             }
 
+            // Embaralha respostas
             answers.sort(() => Math.random() - 0.5);
 
+            // Cria balões com delay
             answers.forEach((val, index) => {
                 setTimeout(() => {
-                    if(gameActive) createBalloon(val);
-                }, index * 700); 
+                    if (gameActive) createBalloon(val);
+                }, index * 700);
             });
+            
+            totalBalloons++;
         }
 
         function createBalloon(val) {
-            const b = document.createElement('div');
-            b.className = 'balloon';
-            b.textContent = val;
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            balloon.textContent = val;
             
+            // Posição aleatória
             const pos = Math.floor(Math.random() * (wrapper.offsetWidth - 100));
-            b.style.left = pos + 'px';
+            balloon.style.left = pos + 'px';
             
-            // CÁLCULO DE VELOCIDADE GRADUAL:
-            // Começa em 12s e diminui 0.08s para cada ponto feito.
+            // Velocidade baseada na pontuação
             const currentDuration = Math.max(minDuration, startDuration - (score * speedIncrement));
-            b.style.animationDuration = currentDuration + 's';
+            balloon.style.animationDuration = currentDuration + 's';
+            
+            // Cor baseada no valor (dica visual)
+            if (val === currentAnswer) {
+                // Resposta correta - cor especial
+                balloon.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                balloon.style.border = '2px solid #f1c40f';
+            } else {
+                // Cores aleatórias para respostas erradas
+                const colors = [
+                    'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                    'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+                    'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                    'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)'
+                ];
+                balloon.style.background = colors[Math.floor(Math.random() * colors.length)];
+            }
 
-            const colors = ['#3498db', '#e67e22', '#9b59b6', '#f1c40f', '#1abc9c', '#e74c3c'];
-            b.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-            b.onclick = () => handleBalloonClick(b, val);
-
-            b.addEventListener('animationend', () => {
-                if (val === currentAnswer && b.parentElement && !b.classList.contains('pop')) {
-                    loseLife();
+            balloon.onclick = () => handleBalloonClick(balloon, val);
+            
+            // Remove balão se passar sem ser clicado
+            balloon.addEventListener('animationend', () => {
+                if (val === currentAnswer && balloon.parentElement && !balloon.classList.contains('pop')) {
+                    balloon.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    loseLife('O balão correto escapou!');
                 }
-                if(b.parentElement) b.remove();
+                if (balloon.parentElement) balloon.remove();
             });
 
-            wrapper.appendChild(b);
+            wrapper.appendChild(balloon);
         }
 
         function handleBalloonClick(balloon, val) {
             if (!gameActive || balloon.classList.contains('pop')) return;
-
-            if (val === currentAnswer) {
-                score++;
-                balloon.classList.add('pop');
-                setTimeout(() => balloon.remove(), 250);
+            
+            const clickTime = Date.now();
+            const isCorrect = val === currentAnswer;
+            
+            if (isCorrect) {
+                // ACRESCENTA PONTOS
+                const basePoints = 100;
+                const speedBonus = calculateSpeedBonus();
+                const comboBonus = basePoints * (combo - 1) * 0.5;
+                const totalPoints = Math.floor(basePoints + speedBonus + comboBonus);
+                
+                addPoints(totalPoints, balloon);
+                
+                // Atualiza estatísticas
+                totalCorrect++;
+                currentCombo++;
+                
+                // Atualiza combo máximo
+                if (currentCombo > highestCombo) {
+                    highestCombo = currentCombo;
+                }
+                
+                // Atualiza multiplicador de combo
+                updateCombo();
+                
+                // Mostra feedback de combo
+                if (currentCombo >= 3) {
+                    showComboDisplay(currentCombo);
+                }
+                
+                // Próxima pergunta
                 nextQuestion();
             } else {
-                balloon.style.backgroundColor = '#000';
-                loseLife();
-                balloon.classList.add('pop');
-                setTimeout(() => balloon.remove(), 250);
+                // Penalidade por erro
+                totalWrong++;
+                currentCombo = 0;
+                combo = 1;
+                updateComboDisplay();
+                
+                balloon.style.background = 'linear-gradient(135deg, #000 0%, #333 100%)';
+                loseLife('Resposta errada!');
             }
+            
+            // Anima e remove balão
+            balloon.classList.add('pop');
+            setTimeout(() => {
+                if (balloon.parentElement) balloon.remove();
+            }, 250);
+            
             updateStats();
         }
+        
+        function calculateSpeedBonus() {
+            // Bônus por velocidade baseado na dificuldade atual
+            const currentSpeed = Math.max(minDuration, startDuration - (score * speedIncrement));
+            const maxBonus = 200;
+            const speedRatio = (startDuration - currentSpeed) / (startDuration - minDuration);
+            
+            return Math.floor(maxBonus * speedRatio);
+        }
+        
+        function addPoints(points, balloon) {
+            const oldScore = score;
+            score += points;
+            
+            // Feedback visual da pontuação
+            showScoreFeedback(points, balloon);
+            
+            // Efeito sonoro visual (piscar score)
+            scoreEl.classList.add('score-up');
+            setTimeout(() => scoreEl.classList.remove('score-up'), 300);
+            
+            updateStats();
+        }
+        
+        function showScoreFeedback(points, balloon) {
+            const feedback = document.createElement('div');
+            feedback.className = 'score-feedback';
+            feedback.textContent = `+${points}`;
+            
+            // Posiciona próximo ao balão
+            const rect = balloon.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            feedback.style.left = (rect.left - wrapperRect.left + rect.width / 2) + 'px';
+            feedback.style.top = (rect.top - wrapperRect.top) + 'px';
+            
+            wrapper.appendChild(feedback);
+            
+            // Remove após animação
+            setTimeout(() => {
+                if (feedback.parentElement) feedback.remove();
+            }, 1500);
+        }
+        
+        function updateCombo() {
+            // Combo aumenta a cada 5 acertos consecutivos
+            if (currentCombo >= 5 && currentCombo < 10) {
+                combo = 2;
+            } else if (currentCombo >= 10 && currentCombo < 15) {
+                combo = 3;
+            } else if (currentCombo >= 15 && currentCombo < 20) {
+                combo = 4;
+            } else if (currentCombo >= 20) {
+                combo = 5;
+            }
+            
+            updateComboDisplay();
+        }
+        
+        function updateComboDisplay() {
+            comboEl.textContent = `${combo}x`;
+            
+            // Destaque visual para combo alto
+            if (combo >= 3) {
+                comboEl.style.color = '#f1c40f';
+                comboEl.style.textShadow = '0 0 10px #f1c40f';
+            } else {
+                comboEl.style.color = '#f1c40f';
+                comboEl.style.textShadow = 'none';
+            }
+        }
+        
+        function showComboDisplay(comboCount) {
+            comboDisplay.textContent = `${comboCount} COMBO!`;
+            comboDisplay.style.opacity = '1';
+            comboDisplay.style.transform = 'translate(-50%, -50%) scale(1)';
+            
+            setTimeout(() => {
+                comboDisplay.style.opacity = '0';
+                comboDisplay.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            }, 800);
+        }
 
-        function loseLife() {
+        function loseLife(reason) {
             lives--;
             updateStats();
-            if (lives <= 0) gameOver();
+            
+            // Feedback visual
+            if (lives > 0) {
+                showLifeLostFeedback(reason);
+            }
+            
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+        
+        function showLifeLostFeedback(reason) {
+            const feedback = document.createElement('div');
+            feedback.className = 'score-feedback';
+            feedback.textContent = reason;
+            feedback.style.color = '#e74c3c';
+            
+            feedback.style.left = '50%';
+            feedback.style.top = '50%';
+            feedback.style.transform = 'translate(-50%, -50%)';
+            
+            wrapper.appendChild(feedback);
+            
+            setTimeout(() => {
+                if (feedback.parentElement) feedback.remove();
+            }, 1000);
         }
 
         function updateStats() {
             scoreEl.textContent = score;
             livesEl.textContent = "❤️".repeat(Math.max(0, lives));
+            updateComboDisplay();
         }
 
+        // ===== FIM DE JOGO =====
         function gameOver() {
             gameActive = false;
+            clearInterval(timerInterval);
             clearInterval(spawnInterval);
             
-            const balloons = document.querySelectorAll('.balloon');
-            balloons.forEach(b => b.remove());
-
+            // Calcular pontuação final com bônus
+            const finalScore = calculateFinalScore();
+            
+            // Mostrar tela de resultados
+            showGameOverScreen(finalScore);
+            
+            // Salvar pontuação automaticamente
+            setTimeout(() => {
+                salvarPontuacao(finalScore.total);
+            }, 1000);
+        }
+        
+        function calculateFinalScore() {
+            // 1. Pontos base (já acumulados)
+            const baseScore = score;
+            
+            // 2. Bônus por precisão
+            const accuracy = totalBalloons > 0 ? totalCorrect / totalBalloons : 0;
+            const accuracyBonus = Math.floor(baseScore * accuracy * 0.5);
+            
+            // 3. Bônus por velocidade (quanto mais rápido, mais pontos)
+            const timeBonus = Math.max(0, 5000 - (gameTime * 10));
+            
+            // 4. Bônus por combo máximo
+            const comboBonus = highestCombo * 50;
+            
+            // 5. Bônus por sobrevivência (vidas restantes)
+            const survivalBonus = lives * 100;
+            
+            // Total
+            const totalScore = baseScore + accuracyBonus + timeBonus + comboBonus + survivalBonus;
+            
+            return {
+                total: totalScore,
+                base: baseScore,
+                accuracyBonus: accuracyBonus,
+                timeBonus: timeBonus,
+                comboBonus: comboBonus,
+                survivalBonus: survivalBonus,
+                accuracy: Math.round(accuracy * 100),
+                highestCombo: highestCombo
+            };
+        }
+        
+        function showGameOverScreen(finalScore) {
+            // Limpa balões restantes
+            clearAllBalloons();
+            
+            // Atualiza conteúdo do overlay
             startScreen.style.display = 'flex';
             startScreen.innerHTML = `
-                <h2 style="color: #e74c3c; font-size: 2.5rem; margin-bottom: 10px;">TREINO FINALIZADO</h2>
-                <p style="font-size: 1.4rem; color: white; margin-bottom: 20px;">Você alcançou o nível de <b>${score} pontos</b>!</p>
-                <button class="btn btn-start" onclick="location.reload()">Recomeçar Treino</button>
-                <a href="index.html" class="btn btn-menu">Menu Principal</a>
+                <div class="result-content">
+                    <h2 style="color: #e74c3c; font-size: 2.5rem; margin-bottom: 10px;">🥋 MISSÃO CONCLUÍDA</h2>
+                    <p style="color: #bdc3c7; margin-bottom: 20px; font-size: 1.1rem;">
+                        Você demonstrou suas habilidades ninja!
+                    </p>
+                    
+                    <div class="final-score">${finalScore.total} PONTOS</div>
+                    
+                    <div class="stats-grid">
+                        <div class="result-stat">
+                            <span class="result-value">${finalScore.base}</span>
+                            <span class="result-label">PONTOS BASE</span>
+                        </div>
+                        <div class="result-stat">
+                            <span class="result-value">${finalScore.highestCombo}</span>
+                            <span class="result-label">COMBO MÁXIMO</span>
+                        </div>
+                        <div class="result-stat">
+                            <span class="result-value">${finalScore.accuracy}%</span>
+                            <span class="result-label">PRECISÃO</span>
+                        </div>
+                        <div class="result-stat">
+                            <span class="result-value">${totalBalloons}</span>
+                            <span class="result-label">BALÕES TOTAL</span>
+                        </div>
+                    </div>
+                    
+                    <div id="firebase-message" class="firebase-message"></div>
+                    
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-start" onclick="startGame()">🔄 Nova Missão</button>
+                        <a href="ranking.html?jogo=Tabuada Ninja" class="btn btn-ranking">🏆 Ver Ranking</a>
+                        <a href="index.html" class="btn btn-menu">🏠 Menu Principal</a>
+                    </div>
+                </div>
             `;
         }
+        
+        // ===== INTEGRAÇÃO COM FIREBASE =====
+        async function salvarPontuacao(pontos) {
+            console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
+            
+            try {
+                const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
+                
+                if (sucesso) {
+                    showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
+                    console.log('✅ Pontuação salva com sucesso!');
+                    return true;
+                } else {
+                    showFirebaseMessage('⚠️ Faça login para salvar sua pontuação', 'warning');
+                    console.log('⚠️ Pontuação não salva (usuário não logado?)');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+                return false;
+            }
+        }
+        
+        function showFirebaseMessage(text, type) {
+            const messageEl = document.getElementById('firebase-message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = `firebase-message ${type}`;
+                messageEl.style.display = 'block';
+            }
+        }
+
+        // ===== FUNÇÕES AUXILIARES =====
+        function clearAllBalloons() {
+            const balloons = document.querySelectorAll('.balloon');
+            balloons.forEach(balloon => {
+                if (balloon.parentElement) balloon.remove();
+            });
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        window.onload = function() {
+            // Configura display inicial
+            updateStats();
+            updateTimeDisplay();
+        };
     </script>
 </body>
 </html>
