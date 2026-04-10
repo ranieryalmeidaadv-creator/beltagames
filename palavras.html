@@ -3,6 +3,8 @@
 <head>
     <!-- IMPORTANTE: Importar Firebase para ranking -->
     <script type="module" src="firebase-config.js"></script>
+    <!-- Importar o arquivo de palavras EXTERNO -->
+    <script src="palavras.js"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -597,36 +599,12 @@
         </div>
     </div>
 
-    <script>
+       <script>
         // ===== CONFIGURAÇÕES DO JOGO =====
         const NOME_DO_JOGO = "Desafio Palavras";
         const TOTAL_PALAVRAS = 10;
         const MAX_CHANCES = 6;
         
-        // Banco de palavras completo (mantive as 20 do exemplo, pode adicionar mais)
-        const wordList = [
-            {w: "FOTOSSINTESE", h: "Processo das plantas para produzir energia usando a luz solar."},
-            {w: "MAMIFERO", h: "Animal que mama quando filhote."},
-            {w: "ATMOSFERA", h: "Camada de ar que envolve a Terra."},
-            {w: "ESQUELETO", h: "Conjunto de ossos do nosso corpo."},
-            {w: "GRAVIDADE", h: "Força que puxa tudo para o centro da Terra."},
-            {w: "PLANETA", h: "Corpo celeste que orbita uma estrela, como a Terra."},
-            {w: "CONTINENTE", h: "Grande massa de terra cercada por oceanos."},
-            {w: "MULTIPLICACAO", h: "Operação matemática de somar várias vezes o mesmo número."},
-            {w: "DIVISAO", h: "Operação de repartir algo em partes iguais."},
-            {w: "SUBSTANTIVO", h: "Classe de palavra que dá nome aos seres e objetos."},
-            {w: "REPUBLICA", h: "Forma de governo onde o povo elege o presidente."},
-            {w: "RECICLAGEM", h: "Transformar lixo em algo novo."},
-            {w: "ASTRONAUTA", h: "Pessoa que viaja para o espaço."},
-            {w: "EQUADOR", h: "Linha imaginária que divide a Terra em Norte e Sul."},
-            {w: "DICIONARIO", h: "Livro que explica o significado das palavras."},
-            {w: "TRIANGULO", h: "Forma geométrica de três lados."},
-            {w: "HIDROGRAFIA", h: "Estudo das águas do planeta."},
-            {w: "SINONIMO", h: "Palavra com significado parecido."},
-            {w: "ANTONIMO", h: "Palavra com significado oposto."},
-            {w: "AMAZONIA", h: "A maior floresta tropical do mundo."}
-        ];
-
         // Cores dos balões
         const balloonColors = ['#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#536DFE', '#448AFF'];
 
@@ -653,13 +631,27 @@
         let totalErrors = 0;
         let totalCorrectLetters = 0;
         
+        // Controle de palavras usadas
+        let usedWords = [];
+        let availableWords = [];
+
         // Elementos DOM
         const astronaut = document.getElementById('astronaut');
         const comboDisplay = document.getElementById('combo-display');
 
         // ===== INICIALIZAÇÃO DO JOGO =====
         function startNewGame() {
-            // Resetar variáveis
+            // Verificar se há palavras suficientes
+            if (wordList.length < TOTAL_PALAVRAS) {
+                alert(`⚠️ Aviso: O banco de dados tem apenas ${wordList.length} palavras. Para uma partida de ${TOTAL_PALAVRAS} palavras, é necessário ter pelo menos ${TOTAL_PALAVRAS} palavras.`);
+                console.warn(`Banco de dados: ${wordList.length} palavras | Necessário: ${TOTAL_PALAVRAS}`);
+            }
+            
+            // Resetar controle de palavras
+            usedWords = [];
+            availableWords = [...wordList]; // Cria cópia do array original
+            
+            // Resetar outras variáveis
             currentWordIndex = 0;
             totalScore = 0;
             totalWordsCompleted = 0;
@@ -704,34 +696,127 @@
             }
         }
         
+        function getRandomWord() {
+            // Se já usamos todas as palavras disponíveis, recomeça o pool
+            if (availableWords.length === 0) {
+                availableWords = [...wordList];
+            }
+            
+            // Tenta evitar palavras muito similares seguidas
+            let attempts = 0;
+            let selectedWordObj;
+            
+            while (attempts < 5 && availableWords.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableWords.length);
+                selectedWordObj = availableWords[randomIndex];
+                
+                // Se for a primeira palavra ou não houver palavra anterior, aceita
+                if (usedWords.length === 0) {
+                    break;
+                }
+                
+                // Verifica se a palavra é muito similar à anterior
+                const lastWord = usedWords[usedWords.length - 1];
+                const similarity = calculateSimilarity(lastWord.w, selectedWordObj.w);
+                
+                // Se a similaridade for baixa (< 30%), aceita a palavra
+                if (similarity < 30) {
+                    break;
+                }
+                
+                attempts++;
+                
+                // Se tentou muitas vezes e não encontrou palavra diferente, aceita qualquer
+                if (attempts >= 5) {
+                    break;
+                }
+            }
+            
+            // Se ainda não tem objeto selecionado, pega um aleatório
+            if (!selectedWordObj) {
+                const randomIndex = Math.floor(Math.random() * availableWords.length);
+                selectedWordObj = availableWords[randomIndex];
+            }
+            
+            // Remove a palavra do pool disponível
+            const indexToRemove = availableWords.indexOf(selectedWordObj);
+            if (indexToRemove > -1) {
+                availableWords.splice(indexToRemove, 1);
+            }
+            
+            // Adiciona às palavras usadas
+            usedWords.push(selectedWordObj);
+            
+            return selectedWordObj;
+        }
+        
+        function calculateSimilarity(word1, word2) {
+            // Calcula similaridade simples baseada em letras em comum
+            const set1 = new Set(word1.toUpperCase().split(''));
+            const set2 = new Set(word2.toUpperCase().split(''));
+            
+            let commonLetters = 0;
+            for (const letter of set1) {
+                if (set2.has(letter)) {
+                    commonLetters++;
+                }
+            }
+            
+            const totalUniqueLetters = new Set([...set1, ...set2]).size;
+            
+            return (commonLetters / totalUniqueLetters) * 100;
+        }
+        
         function initWord() {
             if (currentWordIndex >= TOTAL_PALAVRAS) {
                 endGame();
                 return;
             }
             
-            // Selecionar palavra aleatória
-            const randomObj = wordList[Math.floor(Math.random() * wordList.length)];
-            selectedWord = randomObj.w.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-            selectedHint = randomObj.h;
+            // Obter palavra aleatória que não foi usada
+            const currentWordObj = getRandomWord();
+            selectedWord = currentWordObj.w.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+            selectedHint = currentWordObj.h;
+            
+            console.log(`Palavra ${currentWordIndex + 1}: ${selectedWord}`);
+            console.log(`Palavras já usadas: ${usedWords.map(w => w.w).join(', ')}`);
+            
             guessedLetters = [];
             wrongGuesses = 0;
             startTime = Date.now();
             
             // Atualizar UI
             document.getElementById('hint-text').textContent = selectedHint;
-            document.getElementById('keyboard').innerHTML = '';
+            
+            // Resetar teclado
+            resetKeyboard();
+            
+            // Resetar astronauta
             astronaut.style.transform = 'translateY(0)';
             
-            // Criar elementos
+            // Criar balões
             createBalloons();
-            createKeyboard();
             updateWordDisplay();
             
             // Atualizar contador
             currentWordIndex++;
             document.getElementById('words').textContent = `${currentWordIndex}/${TOTAL_PALAVRAS}`;
             updateProgressBar();
+        }
+        
+        function resetKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            
+            letters.split('').forEach(letter => {
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.className = 'key';
+                button.onclick = () => handleGuess(letter, button);
+                keyboard.appendChild(button);
+            });
         }
         
         function createBalloons() {
@@ -748,19 +833,6 @@
                 balloon.style.top = (20 + (i % 2 * 20)) + 'px';
                 area.appendChild(balloon);
             }
-        }
-        
-        function createKeyboard() {
-            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            const keyboard = document.getElementById('keyboard');
-            
-            letters.split('').forEach(letter => {
-                const button = document.createElement('button');
-                button.textContent = letter;
-                button.className = 'key';
-                button.onclick = () => handleGuess(letter, button);
-                keyboard.appendChild(button);
-            });
         }
         
         function updateWordDisplay() {
