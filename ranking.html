@@ -430,16 +430,18 @@
             `;
             
             try {
-                // Para cada jogo, busca o ranking
-                for (const gameName of GAMES_LIST) {
-                    console.log(`📊 Carregando ranking: ${gameName}`);
-                    
-                    // Usa a função do firebase-config.js
-                    const rankingData = await window.obterRanking(gameName);
-                    
-                    // Armazena no objeto global
-                    allRankings[gameName] = rankingData || [];
-                }
+                // Carrega todos os jogos em paralelo
+                const results = await Promise.all(
+                    GAMES_LIST.map(gameName => {
+                        console.log(`📊 Carregando ranking: ${gameName}`);
+                        return window.obterRanking(gameName)
+                            .then(data => ({ gameName, data: data || [] }));
+                    })
+                );
+
+                results.forEach(({ gameName, data }) => {
+                    allRankings[gameName] = data;
+                });
                 
                 console.log('✅ Todos os rankings carregados:', allRankings);
                 displayRankings();

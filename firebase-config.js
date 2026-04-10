@@ -141,23 +141,66 @@ window.salvarPontos = async (nomeJogo, pontos) => {
 
 // Obter Top 10 de um jogo
 window.obterRanking = async (nomeJogo) => {
-  try {
-    const q = query(
-      collection(db, "rankings"),
-      where("jogo", "==", nomeJogo),
-      orderBy("pontos", "desc"),
-      limit(10)
-    );
-    
-    const snap = await getDocs(q);
-    const ranking = snap.docs.map((doc, index) => ({
-      posicao: index + 1,
-      ...doc.data()
-    }));
-    
-    return ranking;
-  } catch (error) {
-    console.error("❌ Erro ao obter ranking:", error);
-    return [];
-  }
+    console.log(`🔍 Buscando ranking para: "${nomeJogo}"`);
+
+    try {
+        // TENTATIVA 1: Query otimizada com índice composto (jogo + pontos desc)
+        const q = query(
+            collection(db, "rankings"),
+            where("jogo", "==", nomeJogo),
+            orderBy("pontos", "desc"),
+            limit(10)
+        );
+
+        const snap = await getDocs(q);
+        console.log(`✅ Query otimizada: ${snap.docs.length} resultados`);
+
+        return snap.docs.map((doc, index) => ({
+            posicao: index + 1,
+            id: doc.id,
+            ...doc.data()
+        }));
+
+    } catch (error) {
+        console.error(`❌ ERRO:`, error);
+
+        // Se for erro de índice ausente, usa fallback sem índice composto
+        if (error.code === 'failed-precondition') {
+            console.log("⚠️ Índice não encontrado, usando fallback...");
+            return await obterRankingFallback(nomeJogo);
+        }
+
+        return [];
+    }
+};
+
+// Função fallback que não precisa de índice composto
+async function obterRankingFallback(nomeJogo) {
+    try {
+        // Busca os registros com limite razoável para evitar leitura excessiva
+        const allQuery = query(
+            collection(db, "rankings"),
+            limit(500)
+        );
+        const allSnap = await getDocs(allQuery);
+
+        const allData = allSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Filtra e ordena localmente
+        const filtered = allData
+            .filter(item => item.jogo === nomeJogo)
+            .sort((a, b) => b.pontos - a.pontos)
+            .slice(0, 10)
+            .map((item, index) => ({
+                posicao: index + 1,
+                ...item
+            }));
+
+        console.log(`✅ Fallback para "${nomeJogo}": ${filtered.length} resultados`);
+        return filtered;
+
+    } catch (error) {
+        console.error("❌ Erro no fallback:", error);
+        return [];
+    }
 };
