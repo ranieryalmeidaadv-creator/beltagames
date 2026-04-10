@@ -4,99 +4,272 @@
     <meta charset="UTF-8">
     <title>BeLTA Games - Portal</title>
     <style>
-        /* (Seus estilos de gradiente e cards que já criamos) */
-        body { font-family: 'Comic Sans MS', sans-serif; background: linear-gradient(135deg, #8e44ad, #3498db); color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
-        .header { text-align: center; padding: 20px; }
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 90%; max-width: 1000px; padding: 20px; }
-        .game-card { background: white; border-radius: 20px; padding: 20px; color: #333; text-decoration: none; text-align: center; transition: 0.3s; }
-        .game-card:hover { transform: translateY(-5px); }
+        body { 
+            font-family: 'Comic Sans MS', sans-serif; 
+            background: linear-gradient(135deg, #8e44ad, #3498db); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        .header { 
+            text-align: center; 
+            padding: 20px; 
+        }
+        .games-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            width: 90%; 
+            max-width: 1000px; 
+            padding: 20px; 
+        }
+        .game-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 20px; 
+            color: #333; 
+            text-decoration: none; 
+            text-align: center; 
+            transition: 0.3s; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .game-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
         
         /* Modal de Nickname */
-        #modal-nickname { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; color: #333; width: 300px; }
-        input { padding: 10px; width: 100%; margin: 10px 0; border-radius: 10px; border: 1px solid #ccc; }
+        #modal-nickname { 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal-content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            text-align: center; 
+            color: #333; 
+            width: 90%; 
+            max-width: 400px; 
+        }
+        input { 
+            padding: 12px; 
+            width: 100%; 
+            margin: 15px 0; 
+            border-radius: 10px; 
+            border: 2px solid #ddd; 
+            font-size: 16px;
+        }
         
         /* Barra de Login */
-        .auth-bar { background: rgba(255,255,255,0.1); width: 100%; padding: 10px 20px; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
-        .user-pic { width: 35px; border-radius: 50%; }
+        .auth-bar { 
+            background: rgba(255,255,255,0.15); 
+            width: 100%; 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 10px; 
+            backdrop-filter: blur(5px);
+        }
+        .user-pic { 
+            width: 35px; 
+            height: 35px;
+            border-radius: 50%; 
+            border: 2px solid white;
+        }
+        .auth-buttons button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #btn-login {
+            background: #4285F4;
+            color: white;
+        }
+        #btn-logout {
+            background: #e74c3c;
+            color: white;
+        }
+        .game-card.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
     <div class="auth-bar">
-        <div id="user-logged" style="display: none;">
-            <img id="user-pic" class="user-pic" src="">
-            <span id="user-name"></span>
-            <button onclick="logout()">Sair</button>
+        <div class="logo">
+            <span style="font-size: 1.2em; font-weight: bold;">🎮 BeLTA Games</span>
         </div>
-        <button id="btn-login" onclick="loginGoogle()">Entrar com Google</button>
+        <div class="auth-buttons">
+            <div id="user-logged" style="display: none; align-items: center; gap: 10px;">
+                <img id="user-pic" class="user-pic" src="" alt="Foto">
+                <span id="user-name" style="font-weight: bold;"></span>
+                <button id="btn-logout" onclick="logout()">Sair</button>
+            </div>
+            <button id="btn-login" onclick="loginGoogle()" style="display: block;">Entrar com Google</button>
+        </div>
     </div>
 
     <div class="header">
-        <h1>🎮 BeLTA Games</h1>
+        <h1 style="font-size: 2.5em; margin: 20px 0 10px 0;">Portal de Jogos Educativos</h1>
+        <p style="font-size: 1.1em;">Aprenda brincando com nossos jogos incríveis!</p>
     </div>
 
-    <div class="games-grid" id="games-container"></div>
+    <div class="games-grid" id="games-container">
+        <!-- Os jogos serão carregados aqui -->
+    </div>
 
     <!-- Modal Nickname -->
     <div id="modal-nickname">
         <div class="modal-content">
-            <h2>Novo Herói!</h2>
-            <p>Escolha seu Nickname único:</p>
-            <input type="text" id="input-nickname" placeholder="Ex: SuperDino" maxlength="15">
-            <button onclick="confirmarNick()" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer;">Salvar e Começar</button>
+            <h2 style="color: #8e44ad; margin-bottom: 10px;">🎉 Bem-vindo(a) ao BeLTA Games!</h2>
+            <p>Escolha como quer ser chamado(a) nos rankings:</p>
+            <p><small style="color: #666;">(Seu nickname não poderá ser alterado depois!)</small></p>
+            <input type="text" id="input-nickname" placeholder="Ex: SuperDino, JogadorX, MathMaster" maxlength="15" autofocus>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="confirmarNick()" style="background: #27ae60; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+                    Salvar e Jogar
+                </button>
+            </div>
         </div>
     </div>
 
     <script type="module" src="firebase-config.js"></script>
     <script>
         const meusJogos = [
-            { titulo: "Tabuada Ninja", link: "tabuada.html", icone: "🥷" },
-            { titulo: "Mapa do Brasil", link: "mapa-brasil.html", icone: "🗺️" },
-            { titulo: "Memória Capitais", link: "memoria.html", icone: "🃏" },
-            { titulo: "Desafio Palavras", link: "palavras.html", icone: "🚀" },
-            { titulo: "Puzzle 15", link: "puzzle.html", icone: "🧩" },
-            { titulo: "Quiz Educativo", link: "quiz.html", icone: "🧠" }
+            { titulo: "Tabuada Ninja", link: "tabuada.html", icone: "🥷", descricao: "Acerte as contas e corte os balões!" },
+            { titulo: "Mapa do Brasil", link: "mapa-brasil.html", icone: "🗺️", descricao: "Aprenda os estados e capitais" },
+            { titulo: "Memória Capitais", link: "memoria.html", icone: "🃏", descricao: "Encontre os pares estado-capital" },
+            { titulo: "Desafio Palavras", link: "palavras.html", icone: "🚀", descricao: "Adivinhe palavras importantes" },
+            { titulo: "Puzzle 15", link: "puzzle.html", icone: "🧩", descricao: "Ordene as peças numéricas" },
+            { titulo: "Quiz Educativo", link: "quiz.html", icone: "🧠", descricao: "Teste seus conhecimentos" }
         ];
 
-        window.onload = () => {
+        // Carrega os jogos na tela
+        function carregarJogos() {
             const container = document.getElementById('games-container');
-            meusJogos.forEach(j => {
-                container.innerHTML += `
-                    <a href="${j.link}" class="game-card">
-                        <div style="font-size: 40px">${j.icone}</div>
-                        <h3>${j.titulo}</h3>
-                    </a>`;
+            container.innerHTML = '';
+            
+            meusJogos.forEach(jogo => {
+                const card = document.createElement('a');
+                card.href = jogo.link;
+                card.className = 'game-card disabled'; // Começa desabilitado
+                card.innerHTML = `
+                    <div style="font-size: 50px; margin-bottom: 10px;">${jogo.icone}</div>
+                    <h3 style="margin: 10px 0; color: #2c3e50;">${jogo.titulo}</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9em;">${jogo.descricao}</p>
+                `;
+                container.appendChild(card);
             });
+        }
 
-            window.observarUsuario(async (user) => {
-                const grid = document.getElementById('games-container');
-                if (user) {
-                    const perfil = await window.verificarOuCriarPerfil(user);
-                    if (!perfil) {
-                        document.getElementById('modal-nickname').style.display = 'flex';
-                        grid.style.opacity = "0.2";
-                    } else {
-                        document.getElementById('user-name').textContent = perfil.nickname;
-                        document.getElementById('user-pic').src = user.photoURL;
-                        document.getElementById('user-logged').style.display = 'block';
-                        document.getElementById('btn-login').style.display = 'none';
-                        grid.style.opacity = "1";
-                        grid.style.pointerEvents = "auto";
-                    }
+        // Observa mudanças no login
+        window.observarUsuario(async (estado) => {
+            const btnLogin = document.getElementById('btn-login');
+            const userLogged = document.getElementById('user-logged');
+            const modalNick = document.getElementById('modal-nickname');
+            const cards = document.querySelectorAll('.game-card');
+            
+            if (estado.autenticado) {
+                console.log("Usuário logado:", estado.user.email);
+                
+                // Esconde botão de login, mostra info do usuário
+                btnLogin.style.display = 'none';
+                userLogged.style.display = 'flex';
+                
+                // Se for novo usuário, mostra modal para nickname
+                if (estado.isNovoUsuario) {
+                    modalNick.style.display = 'flex';
+                    // Desabilita todos os jogos
+                    cards.forEach(card => card.classList.add('disabled'));
                 } else {
-                    document.getElementById('btn-login').style.display = 'block';
-                    document.getElementById('user-logged').style.display = 'none';
-                    grid.style.opacity = "0.2";
-                    grid.style.pointerEvents = "none";
+                    // Usuário já tem nickname, libera os jogos
+                    modalNick.style.display = 'none';
+                    document.getElementById('user-name').textContent = estado.perfil.nickname;
+                    document.getElementById('user-pic').src = estado.perfil.foto;
+                    
+                    // Habilita todos os jogos
+                    cards.forEach(card => {
+                        card.classList.remove('disabled');
+                        card.style.pointerEvents = 'auto';
+                        card.style.opacity = '1';
+                    });
                 }
-            });
+            } else {
+                console.log("Usuário deslogado");
+                // Mostra botão de login, esconde info do usuário
+                btnLogin.style.display = 'block';
+                userLogged.style.display = 'none';
+                modalNick.style.display = 'none';
+                
+                // Desabilita todos os jogos
+                cards.forEach(card => {
+                    card.classList.add('disabled');
+                    card.style.pointerEvents = 'none';
+                    card.style.opacity = '0.5';
+                });
+            }
+        });
+
+        // Função para salvar nickname
+        async function confirmarNick() {
+            const nickInput = document.getElementById('input-nickname');
+            const nickname = nickInput.value.trim();
+            
+            if (nickname.length < 3) {
+                alert("❌ O nickname precisa ter pelo menos 3 letras!");
+                nickInput.focus();
+                return;
+            }
+            
+            if (nickname.length > 15) {
+                alert("❌ O nickname não pode ter mais de 15 letras!");
+                nickInput.focus();
+                return;
+            }
+            
+            const sucesso = await window.salvarNovoNickname(nickname);
+            if (sucesso) {
+                // Fecha modal e recarrega para atualizar estado
+                document.getElementById('modal-nickname').style.display = 'none';
+                location.reload();
+            }
+        }
+
+        // Inicialização
+        window.onload = () => {
+            carregarJogos();
         };
 
-        async function confirmarNick() {
-            const nick = document.getElementById('input-nickname').value.trim();
-            if (nick.length < 3) return alert("Nick muito curto!");
-            await window.salvarNovoNickname(nick);
+        // Login direto (sem popup de confirmação extra)
+        async function loginGoogle() {
+            const user = await window.loginGoogle();
+            if (user) {
+                console.log("Login realizado com sucesso!");
+            } else {
+                alert("❌ Falha no login. Tente novamente.");
+            }
+        }
+
+        // Logout
+        async function logout() {
+            await window.logout();
             location.reload();
         }
     </script>
