@@ -1072,5 +1072,40 @@ DICA: Use os poderes estrategicamente e tente manter combos altos para maximizar
         // ===== INICIALIZAÇÃO =====
         window.onload = initQuiz;
     </script>
+    <script>
+    // Verifica se o arquivo perguntas.js já foi carregado
+    console.log('🔄 Verificando banco de perguntas...');
+    
+    if (typeof questionBank !== 'undefined' && questionBank.length > 0) {
+        console.log(`✅ Banco de perguntas já carregado: ${questionBank.length} perguntas`);
+        // Aguarda um pouco para garantir que o DOM esteja pronto
+        setTimeout(initQuiz, 100);
+    } else {
+        console.warn('⚠️ Banco de perguntas não encontrado. Carregando...');
+        
+        // Cria e adiciona o script dinamicamente
+        const script = document.createElement('script');
+        script.src = 'perguntas.js';
+        script.onload = function() {
+            console.log(`✅ Arquivo perguntas.js carregado com sucesso!`);
+            console.log(`📚 Total de perguntas: ${questionBank ? questionBank.length : 0}`);
+            
+            // Verifica novamente após carregar
+            if (typeof questionBank !== 'undefined' && questionBank.length >= 10) {
+                setTimeout(initQuiz, 100);
+            } else {
+                console.error('❌ questionBank ainda não está disponível após carregar');
+                alert('Erro: Banco de perguntas não carregado corretamente. Verifique o console (F12).');
+            }
+        };
+        script.onerror = function() {
+            console.error('❌ Falha ao carregar perguntas.js');
+            alert('Erro: Não foi possível carregar o arquivo perguntas.js.\nVerifique se ele está na mesma pasta.');
+        };
+        
+        // Adiciona o script ao documento
+        document.head.appendChild(script);
+    }
+</script>
 </body>
 </html>
