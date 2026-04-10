@@ -784,7 +784,7 @@
                     comboMultiplier = 1.5;
                 } else if (consecutiveCorrect >= 6 && consecutiveCorrect < 9) {
                     comboMultiplier = 2;
-                } else if (consecutiveQuest >= 9) {
+                } else if (consecutiveCorrect >= 9) {
                     comboMultiplier = 3;
                 }
                 
@@ -1067,8 +1067,7 @@ DICA: Use os poderes estrategicamente e tente manter combos altos para maximizar
         }
 
         // ===== INICIALIZAÇÃO =====
-        window.onload = initQuiz;
-    </script>
+     </script>
     <script>
     // Verifica se o arquivo perguntas.js já foi carregado
     console.log('🔄 Verificando banco de perguntas...');
