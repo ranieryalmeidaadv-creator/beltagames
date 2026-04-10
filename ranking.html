@@ -627,6 +627,16 @@
             }
         `;
         document.head.appendChild(style);
+   // Atualização automática a cada 30 segundos
+let autoRefreshInterval = setInterval(async () => {
+    console.log('🔄 Atualização automática do ranking...');
+    await loadAllRankings();
+}, 30000);
+
+// Limpar intervalo quando a página for fechada
+window.addEventListener('beforeunload', () => {
+    clearInterval(autoRefreshInterval);
+});
     </script>
-</body>
+    </body>
 </html>
