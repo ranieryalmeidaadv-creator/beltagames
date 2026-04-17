@@ -137,7 +137,7 @@
             <div id="user-logged" style="display: none; align-items: center; gap: 10px;">
                 <img id="user-pic" class="user-pic" src="" alt="Foto">
                 <span id="user-name" style="font-weight: bold;"></span>
-                <button onclick="abrirModalAlterarNick()" title="Alterar nickname" style="background: none; border: none; cursor: pointer; font-size: 1em; padding: 2px 5px;">✏️</button>
+                <button onclick="abrirModalAlterarNick()" title="Alterar nickname" style="background: rgba(255,255,255,0.2); border: none; cursor: pointer; font-size: 0.9em; padding: 4px 8px; border-radius: 5px;">✏️</button>
                 <button id="btn-logout" onclick="logout()" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     Sair
                 </button>
@@ -219,15 +219,13 @@
             });
         }
 
-        // Função de login - CRÍTICA: Recarrega a página após login
+        // Função de login — o observador de auth já atualiza a UI
         async function loginGoogle() {
             console.log("🔄 Iniciando login...");
             try {
                 const user = await window.loginGoogle();
                 if (user) {
-                    console.log("✅ Login realizado - recarregando página...");
-                    // Força a recarga da página para atualizar o estado
-                    setTimeout(() => location.reload(), 500);
+                    console.log("✅ Login realizado");
                 } else {
                     console.log("❌ Login falhou");
                 }
