@@ -138,7 +138,7 @@
             <div id="user-logged" style="display: none; align-items: center; gap: 10px;">
                 <img id="user-pic" class="user-pic" src="" alt="Foto">
                 <span id="user-name" style="font-weight: bold;"></span>
-                <button onclick="abrirModalAlterarNick()" title="Alterar nickname" style="background: rgba(255,255,255,0.2); border: none; cursor: pointer; font-size: 0.9em; padding: 4px 8px; border-radius: 5px;">✏️</button>
+                <!-- TODO: botão ✏️ para alterar nickname (requer regras Firestore) -->
                 <button id="btn-logout" onclick="logout()" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     Sair
                 </button>
@@ -157,35 +157,15 @@
 
     <div class="games-grid" id="games-container"></div>
 
-    <!-- Modal Nickname (primeiro acesso) -->
+    <!-- Modal Nickname -->
     <div id="modal-nickname">
         <div class="modal-content">
             <h2 style="color: #8e44ad; margin-bottom: 10px;">🎉 Bem-vindo(a) ao BeLTA Games!</h2>
             <p>Escolha como quer ser chamado(a) nos rankings:</p>
-            <p><small style="color: #666;">O nickname precisa ser único!</small></p>
             <input type="text" id="input-nickname" placeholder="Ex: SuperDino, JogadorX, MathMaster" maxlength="15" autofocus>
-            <p id="nick-feedback" style="color: #e74c3c; font-size: 0.9em; min-height: 1.2em; margin-bottom: 10px;"></p>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button onclick="confirmarNick()" style="background: #27ae60; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold;">
                     Salvar e Jogar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Alterar Nickname -->
-    <div id="modal-alterar-nick" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); align-items: center; justify-content: center;">
-        <div class="modal-content">
-            <h2 style="color: #8e44ad; margin-bottom: 10px;">✏️ Alterar Nickname</h2>
-            <p>Escolha um novo nickname:</p>
-            <input type="text" id="input-novo-nickname" placeholder="Novo nickname" maxlength="15" autofocus>
-            <p id="novo-nick-feedback" style="color: #e74c3c; font-size: 0.9em; min-height: 1.2em; margin-bottom: 10px;"></p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="confirmarNovoNick()" style="background: #27ae60; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    Salvar
-                </button>
-                <button onclick="fecharModalAlterarNick()" style="background: #e74c3c; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    Cancelar
                 </button>
             </div>
         </div>
@@ -254,40 +234,6 @@
             const sucesso = await window.salvarNovoNickname(nickname);
             if (sucesso) {
                 location.reload();
-            }
-        }
-
-        // Alterar nickname
-        function abrirModalAlterarNick() {
-            document.getElementById('modal-alterar-nick').style.display = 'flex';
-            document.getElementById('input-novo-nickname').value = '';
-            document.getElementById('novo-nick-feedback').textContent = '';
-        }
-
-        function fecharModalAlterarNick() {
-            document.getElementById('modal-alterar-nick').style.display = 'none';
-        }
-
-        async function confirmarNovoNick() {
-            const input = document.getElementById('input-novo-nickname');
-            const feedback = document.getElementById('novo-nick-feedback');
-            const nick = input.value.trim();
-
-            if (nick.length < 3) {
-                feedback.textContent = '❌ Mínimo 3 caracteres!';
-                return;
-            }
-
-            feedback.textContent = 'Verificando...';
-            feedback.style.color = '#666';
-
-            const resultado = await window.alterarNickname(nick);
-            if (resultado) {
-                fecharModalAlterarNick();
-                location.reload();
-            } else {
-                feedback.textContent = '❌ Nickname indisponível ou erro.';
-                feedback.style.color = '#e74c3c';
             }
         }
 

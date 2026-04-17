@@ -49,12 +49,10 @@ window.observarUsuario = (callback) => {
       const userSnap = await getDoc(userRef);
       
       if (userSnap.exists()) {
-        // Corrige nickname duplicado se necessário
-        const perfilCorrigido = await corrigirNicknameDuplicado(user.uid, userSnap.data());
         callback({
           autenticado: true,
           user,
-          perfil: perfilCorrigido,
+          perfil: userSnap.data(),
           isNovoUsuario: false
         });
       } else {
@@ -78,24 +76,38 @@ window.observarUsuario = (callback) => {
 
 // ===== FUNÇÕES DE PERFIL =====
 
-// Verifica se um nickname já está em uso (por outro usuário)
-async function nicknameEmUso(nickname, uidAtual) {
-  const q = query(
-    collection(db, "usuarios"),
-    where("nickname", "==", nickname.trim())
-  );
-  const snap = await getDocs(q);
-  return snap.docs.some(d => d.id !== uidAtual);
+// TODO: Quando houver acesso ao Firebase Console:
+// - Adicionar regra Firestore: allow read/write em /nicknames para auth != null
+// - corrigirNicknameDuplicado(): auto-renomear duplicatas existentes com sufixo
+// - alterarNickname(): trocar nickname com verificação de unicidade + UI (botão ✏️)
+
+// Verifica se nickname já está reservado (usa coleção "nicknames" com doc ID = nickname)
+async function nicknameReservado(nickname) {
+  try {
+    const nickRef = doc(db, "nicknames", nickname.toLowerCase());
+    const nickSnap = await getDoc(nickRef);
+    return nickSnap.exists();
+  } catch (error) {
+    // Se não tem permissão para ler "nicknames", ignora a verificação
+    console.warn("⚠️ Não foi possível verificar unicidade do nickname:", error.message);
+    return false;
+  }
 }
 
-// Expõe para o index.html poder verificar em tempo real
-window.verificarNickname = async (nickname) => {
-  const user = auth.currentUser;
-  if (!user) return false;
-  return await nicknameEmUso(nickname, user.uid);
-};
+// Reserva um nickname na coleção "nicknames"
+async function reservarNickname(nickname, uid) {
+  try {
+    await setDoc(doc(db, "nicknames", nickname.toLowerCase()), {
+      uid: uid,
+      nickname: nickname,
+      criadoEm: new Date().toISOString()
+    });
+  } catch (error) {
+    console.warn("⚠️ Não foi possível reservar nickname:", error.message);
+  }
+}
 
-// Salvar novo nickname (primeiro acesso) — rejeita duplicatas
+// Salvar novo nickname (primeiro acesso) — tenta impedir duplicatas
 window.salvarNovoNickname = async (nickname) => {
   try {
     const user = auth.currentUser;
@@ -105,7 +117,9 @@ window.salvarNovoNickname = async (nickname) => {
     }
 
     const nick = nickname.trim();
-    if (await nicknameEmUso(nick, user.uid)) {
+
+    // Tenta verificar unicidade (falha silenciosa se sem permissão)
+    if (await nicknameReservado(nick)) {
       alert("❌ Esse nickname já está em uso! Escolha outro.");
       return null;
     }
@@ -121,81 +135,15 @@ window.salvarNovoNickname = async (nickname) => {
     };
 
     await setDoc(doc(db, "usuarios", user.uid), dados);
+
+    // Tenta reservar o nickname (falha silenciosa se sem permissão)
+    await reservarNickname(nick, user.uid);
+
     console.log("✅ Nickname salvo para:", user.email);
     return dados;
   } catch (error) {
     console.error("❌ Erro ao salvar nickname:", error);
     alert("Erro ao salvar nickname. Tente novamente.");
-    return null;
-  }
-};
-
-// Corrige nicknames duplicados existentes (roda no login)
-async function corrigirNicknameDuplicado(uid, perfilAtual) {
-  const nick = perfilAtual.nickname;
-  const q = query(
-    collection(db, "usuarios"),
-    where("nickname", "==", nick)
-  );
-  const snap = await getDocs(q);
-
-  // Se só existe um, está tudo certo
-  if (snap.docs.length <= 1) return perfilAtual;
-
-  // Ordena por data de criação — o mais antigo mantém o nome original
-  const ordenados = snap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => (a.criadoEm || '').localeCompare(b.criadoEm || ''));
-
-  // Se este usuário é o mais antigo, não precisa mudar
-  if (ordenados[0].id === uid) return perfilAtual;
-
-  // Encontra um sufixo disponível
-  let sufixo = 2;
-  let novoNick = `${nick}${sufixo}`;
-  while (await nicknameEmUso(novoNick, uid)) {
-    sufixo++;
-    novoNick = `${nick}${sufixo}`;
-  }
-
-  // Atualiza no Firestore
-  const dadosAtualizados = { ...perfilAtual, nickname: novoNick };
-  await setDoc(doc(db, "usuarios", uid), dadosAtualizados);
-  console.log(`⚠️ Nickname duplicado corrigido: "${nick}" → "${novoNick}"`);
-  return dadosAtualizados;
-};
-
-// Alterar nickname (com verificação de unicidade)
-window.alterarNickname = async (novoNickname) => {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Erro: usuário não está logado!");
-      return null;
-    }
-
-    const nick = novoNickname.trim();
-    if (nick.length < 3) {
-      alert("❌ O nickname precisa ter pelo menos 3 letras!");
-      return null;
-    }
-
-    if (await nicknameEmUso(nick, user.uid)) {
-      alert("❌ Esse nickname já está em uso! Escolha outro.");
-      return null;
-    }
-
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) return null;
-
-    const dadosAtualizados = { ...userSnap.data(), nickname: nick };
-    await setDoc(userRef, dadosAtualizados);
-    console.log(`✅ Nickname alterado para: ${nick}`);
-    return dadosAtualizados;
-  } catch (error) {
-    console.error("❌ Erro ao alterar nickname:", error);
-    alert("Erro ao alterar nickname. Tente novamente.");
     return null;
   }
 };
