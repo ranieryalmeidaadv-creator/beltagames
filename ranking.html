@@ -382,10 +382,18 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 Iniciando página de ranking...');
-            
+
             // Configura filtros
             setupFilters();
-            
+
+            // Aguarda Firebase carregar (módulo é async)
+            await new Promise((resolve) => {
+                if (window.firebaseReady) return resolve();
+                const check = setInterval(() => {
+                    if (window.firebaseReady) { clearInterval(check); resolve(); }
+                }, 100);
+            });
+
             // Carrega todos os rankings
             await loadAllRankings();
             
@@ -488,39 +496,49 @@
             }
         }
 
+        // Escapa HTML para prevenir XSS
+        function escapeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         // Cria um card de ranking para um jogo específico
         function createRankingCard(gameName, rankingData) {
             const config = GAME_CONFIG[gameName] || { icon: '🎮', color: '#95a5a6' };
-            
+
             const card = document.createElement('div');
             card.className = 'ranking-card';
             card.style.borderTop = `5px solid ${config.color}`;
-            
+
             let playersHTML = '';
-            
+
             rankingData.forEach((player, index) => {
                 const positionClass = `position position-${index + 1}`;
                 const stars = index < 3 ? '<span class="stars">⭐</span>' : '';
-                
+                const safeNickname = escapeHTML(player.nickname);
+                const safeFoto = escapeHTML(player.foto) || 'https://via.placeholder.com/40';
+
                 playersHTML += `
                     <li class="ranking-item">
                         <div class="${positionClass}">
                             ${index + 1}
                         </div>
-                        <img src="${player.foto || 'https://via.placeholder.com/40'}" 
-                             alt="${player.nickname}" 
+                        <img src="${safeFoto}"
+                             alt="${safeNickname}"
                              class="player-photo"
                              onerror="this.src='https://via.placeholder.com/40'">
                         <div class="player-info">
                             <span class="player-name">
-                                ${player.nickname} ${stars}
+                                ${safeNickname} ${stars}
                             </span>
                             <span class="ranking-date">
                                 ${formatDate(player.data)}
                             </span>
                         </div>
                         <div class="player-score">
-                            ${player.pontos} pts
+                            ${Number(player.pontos) || 0} pts
                         </div>
                     </li>
                 `;
@@ -627,11 +645,11 @@
             }
         `;
         document.head.appendChild(style);
-   // Atualização automática a cada 30 segundos
+   // Atualização automática a cada 2 minutos
 let autoRefreshInterval = setInterval(async () => {
     console.log('🔄 Atualização automática do ranking...');
     await loadAllRankings();
-}, 30000);
+}, 120000);
 
 // Limpar intervalo quando a página for fechada
 window.addEventListener('beforeunload', () => {

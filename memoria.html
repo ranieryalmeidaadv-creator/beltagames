@@ -523,7 +523,8 @@
             highestCombo = 0;
             consecutiveMatches = 0;
             gameActive = true;
-            
+            pontuacaoJaSalva = false;
+
             // Atualizar UI
             document.getElementById('moves').textContent = '0';
             document.getElementById('timer').textContent = '00:00';
@@ -858,13 +859,17 @@
         }
 
         // ===== INTEGRAÇÃO COM FIREBASE =====
+        let pontuacaoJaSalva = false;
+
         async function salvarPontuacao(pontos) {
+            if (pontuacaoJaSalva) return;
             console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
-            
+
             try {
                 const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
-                
+
                 if (sucesso) {
+                    pontuacaoJaSalva = true;
                     showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
                     document.getElementById('btn-salvar').style.display = 'none';
                     return true;

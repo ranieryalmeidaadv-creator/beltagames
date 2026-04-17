@@ -379,6 +379,7 @@
             score = 0;
             lives = 3;
             gameActive = true;
+            pontuacaoJaSalva = false;
             gameTime = 0;
             combo = 1;
             currentCombo = 0;
@@ -473,21 +474,15 @@
             const currentDuration = Math.max(minDuration, startDuration - (score * speedIncrement));
             balloon.style.animationDuration = currentDuration + 's';
             
-            // Cor baseada no valor (dica visual)
-            if (val === currentAnswer) {
-                // Resposta correta - cor especial
-                balloon.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
-                balloon.style.border = '2px solid #f1c40f';
-            } else {
-                // Cores aleatórias para respostas erradas
-                const colors = [
-                    'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
-                    'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
-                    'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
-                    'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)'
-                ];
-                balloon.style.background = colors[Math.floor(Math.random() * colors.length)];
-            }
+            // Cores aleatórias para todos os balões (sem dica visual)
+            const colors = [
+                'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+                'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)'
+            ];
+            balloon.style.background = colors[Math.floor(Math.random() * colors.length)];
 
             balloon.onclick = () => handleBalloonClick(balloon, val);
             
@@ -772,13 +767,17 @@
         }
         
         // ===== INTEGRAÇÃO COM FIREBASE =====
+        let pontuacaoJaSalva = false;
+
         async function salvarPontuacao(pontos) {
+            if (pontuacaoJaSalva) return;
             console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
-            
+
             try {
                 const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
-                
+
                 if (sucesso) {
+                    pontuacaoJaSalva = true;
                     showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
                     console.log('✅ Pontuação salva com sucesso!');
                     return true;

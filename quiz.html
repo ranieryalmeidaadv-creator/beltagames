@@ -257,6 +257,7 @@
       highestCombo = 0;
       comboMultiplier = 1;
       gameActive = true;
+      pontuacaoJaSalva = false;
 
       resetPowerUps();
 
@@ -508,11 +509,15 @@
     }
 
     // ===== FIREBASE =====
+    let pontuacaoJaSalva = false;
+
     async function salvarPontuacaoQuiz(pontos) {
+      if (pontuacaoJaSalva) return;
       const msg = document.getElementById('feedback-message');
       try {
         const ok = await window.salvarPontos(NOME_DO_JOGO, pontos);
         if (ok) {
+          pontuacaoJaSalva = true;
           msg.textContent = '✅ Pontuação salva no ranking!';
           msg.className = 'feedback-success';
           msg.style.display = 'block';

@@ -467,6 +467,7 @@
             consecutiveCorrect = 0;
             highestConsecutive = 0;
             gameActive = true;
+            pontuacaoJaSalva = false;
             startTime = Date.now();
             
             // Inicializar tabuleiro
@@ -563,7 +564,7 @@
                 <div id="hint-display"></div>
                 
                 <div class="controls">
-                    <button class="btn btn-yellow" onclick="shufflePuzzle()">🔀 Embaralhar</button>
+                    <button class="btn btn-yellow" onclick="shufflePuzzle(); createPuzzleTiles(); updateProgressBar(); updateStatsDisplay();">🔀 Embaralhar</button>
                     <button class="btn btn-yellow" onclick="startPuzzle()">🔄 Reiniciar</button>
                     <button class="btn btn-purple" onclick="mostrarInstrucoes()">📖 Como Pontuar</button>
                     <br>
@@ -928,13 +929,17 @@
         }
         
         // ===== INTEGRAÇÃO COM FIREBASE =====
+        let pontuacaoJaSalva = false;
+
         async function salvarPontuacao(pontos) {
+            if (pontuacaoJaSalva) return;
             console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
-            
+
             try {
                 const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
-                
+
                 if (sucesso) {
+                    pontuacaoJaSalva = true;
                     showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
                     document.getElementById('btn-salvar').style.display = 'none';
                     return true;

@@ -308,6 +308,7 @@
       seconds = 0;
       score = 0;
       gameCompleted = false;
+      pontuacaoJaSalva = false;
       selectedPiece = null;
       tentativasPorSlot.fill(0);
       acertosPrimeiraTentativa = 0;
@@ -537,16 +538,20 @@
     }
     
     // ===== INTEGRAÇÃO COM FIREBASE =====
+    let pontuacaoJaSalva = false;
+
     async function salvarPontuacao(pontos) {
+      if (pontuacaoJaSalva) return;
       console.log(`💾 Tentando salvar pontuação: ${pontos} pontos`);
-      
+
       try {
         const sucesso = await window.salvarPontos(NOME_DO_JOGO, pontos);
-        
+
         if (sucesso) {
+          pontuacaoJaSalva = true;
           document.getElementById('salvar-mensagem').style.display = 'block';
           document.getElementById('btn-salvar-ranking').style.display = 'none';
-          
+
           console.log('✅ Pontuação salva no ranking!');
           return true;
         } else {
