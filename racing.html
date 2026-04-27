@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum=1.0, user-scalable=no" />
+  <!-- IMPORTANTE: Importar Firebase para ranking -->
+  <script type="module" src="firebase-config.js"></script>  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#07111f" />
   <title>Belta Racing — 30 níveis</title>
   <style>
@@ -541,7 +542,7 @@ body.compact-ui #touchControls {
           <div class="logo-badge" style="background:linear-gradient(135deg,#fb7185,#fbbf24)">!</div>
           <div>
             <h1>Fim da corrida</h1>
-            <p class="subtitle" id="gameoverSubtitle">Seu resultado será salvo automaticamente no ranking (se disponível).</p>
+            <p class="subtitle">Sua pontuação será salva no ranking "Belta Racing".</p>
           </div>
         </div>
       </div>  <div class="result-grid">
@@ -558,7 +559,7 @@ body.compact-ui #touchControls {
     <button id="btnReiniciar" class="btn">Tentar novamente</button>
     <button id="btnSalvarRanking" class="btn secondary">💾 Salvar no ranking</button>
     <button id="btnHomeGameOver" class="btn secondary">🏠 Página inicial</button>
-    <button id="btnRankingGameOver" class="btn secondary">🏆 Ranking</button>
+    <button id="btnRankingGameOver" class="btn secondary">🏆 Ver ranking</button>
   </div>
 </div>
   </div>  <div id="touchControls">
@@ -577,12 +578,12 @@ body.compact-ui #touchControls {
       const fmt = new Intl.NumberFormat('pt-BR');
       const PI2 = Math.PI * 2;
 
+      // Padrão Bemgames: nome do jogo + links relativos e ranking por jogo
+      const NOME_DO_JOGO = 'Belta Racing';
       const STORAGE_KEY = 'belta-racing-settings-v6';
       const BEST_KEY = 'belta-racing-best-v6';
-      const GAME_TITLE = 'Belta Racing';
-      // Ajuste de links para GitHub Pages: usar caminhos relativos
       const HOME_URL = './index.html';
-      const RANKING_URL = './ranking.html';
+      const RANKING_URL = './ranking.html?jogo=Belta Racing';
 
       const CONFIG = {
         lanes: 3,
@@ -724,8 +725,7 @@ body.compact-ui #touchControls {
         phaseText: $('#faseBigText'),
         mathBanner: $('#mathBanner'),
         mathKicker: $('#mathKicker'),
-        mathExpression: $('#mathExpression'),
-        gameoverSubtitle: $('#gameoverSubtitle')
+        mathExpression: $('#mathExpression')
       };
 
       const defaultSettings = {
@@ -862,9 +862,6 @@ body.compact-ui #touchControls {
       let downPressed = false;
       let pointerStart = null;
 
-      // Controle de autosave para evitar chamadas duplicadas
-      let autosaveStarted = false;
-
       function getLevelTarget(level) {
         return CONFIG.baseLevelTarget * Math.pow(2, level - 1);
       }
@@ -961,18 +958,14 @@ body.compact-ui #touchControls {
         if (modelo === 'f1') {
           ctx.fillStyle = bodyColor;
           roundRect(x - w / 2, y + 8, w, h - 14, 8); ctx.fill();
-          ctx.fillStyle = detailColor;
-          ctx.fillRect(x - w / 2 + 4, y + 2, w - 8, 6);
-          ctx.fillRect(x - w / 2 + 2, y + h - 10, w - 4, 8);
-          ctx.strokeStyle = '#aaa'; ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.arc(x, y + 12, w * 0.2, Math.PI * 0.8, Math.PI * 0.2, true);
-          ctx.stroke();
           ctx.fillStyle = '#fff';
           ctx.font = 'bold 16px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('F', x, y + h / 2 + 2);
+          ctx.fillStyle = detailColor;
+          ctx.fillRect(x - w / 2 + 4, y + 2, w - 8, 6);
+          ctx.fillRect(x - w / 2 + 2, y + h - 10, w - 4, 8);
         } else if (modelo === 'esportivo') {
           ctx.fillStyle = bodyColor;
           roundRect(x - w / 2, y + 6, w, h - 12, 12); ctx.fill();
@@ -1274,8 +1267,6 @@ body.compact-ui #touchControls {
         timers.saber = 5.5;
         timers.powerup = 8.5;
 
-        autosaveStarted = false;
-
         setGameScreen('playing');
         dom.levelBanner.classList.remove('show');
         dom.phaseText.textContent = 'FASE 1/30';
@@ -1299,14 +1290,10 @@ body.compact-ui #touchControls {
         updateMathBanner();
         refreshHUD();
         setGameScreen('gameover');
-        showToast('Fim de corrida! Salvando seu resultado...', 'info', 2.6);
+        showToast('Fim de corrida!', 'bad', 2.6);
 
-        // Autosave no padrão Bemgames (usa window.salvarPontos se existir)
-        if (!autosaveStarted) {
-          autosaveStarted = true;
-          // Pequeno atraso para a UI aparecer antes do salvamento
-          setTimeout(saveRanking, 500);
-        }
+        // Autosave no padrão Bemgames: chama salvarPontuacao com pequeno atraso
+        setTimeout(() => salvarPontuacao(state.score), 1500);
       }
 
       function showLevelBanner(level) {
@@ -1658,43 +1645,47 @@ body.compact-ui #touchControls {
         resetGame();
       }
 
-      function showFirebaseMsg(text, type) {
-        dom.firebaseMsg.textContent = text;
-        dom.firebaseMsg.className = `firebase-message ${type}`;
-        dom.firebaseMsg.style.display = 'block';
+      // Padrão de mensagens Firebase (igual ao Memória)
+      function showFirebaseMessage(text, type) {
+        const el = dom.firebaseMsg;
+        el.textContent = text;
+        el.className = `firebase-message ${type || ''}`.trim();
+        el.style.display = 'block';
       }
 
-      async function saveRanking() {
-        if (state.score <= 0) {
-          showFirebaseMsg('Nenhuma pontuação para salvar.', 'warning');
-          return;
+      // Padrão de salvamento: window.salvarPontos(NOME_DO_JOGO, pontos)
+      let salvando = false;
+      async function salvarPontuacao(pontos) {
+        if (salvando) return false;
+        if (pontos <= 0) {
+          showFirebaseMessage('Nenhuma pontuação para salvar.', 'warning');
+          return false;
         }
 
-        dom.firebaseMsg.style.display = 'block';
-        dom.firebaseMsg.textContent = 'Salvando...';
-        dom.firebaseMsg.className = 'firebase-message';
-        dom.gameoverSubtitle.textContent = 'Salvando seu resultado no ranking...';
+        salvando = true;
+        showFirebaseMessage('Salvando...', '');
 
         try {
           if (typeof window.salvarPontos === 'function') {
-            const ok = await window.salvarPontos(GAME_TITLE, state.score);
+            const ok = await window.salvarPontos(NOME_DO_JOGO, pontos);
             if (ok) {
-              showFirebaseMsg('✅ Pontuação salva no ranking! Redirecionando...', 'success');
-              dom.btnSave.disabled = true;
-              // Após salvar com sucesso, ir para a página de ranking (padrão Bemgames)
-              setTimeout(() => window.location.assign(RANKING_URL), 900);
+              showFirebaseMessage('✅ Pontuação salva no ranking!', 'success');
+              if (dom.btnSave) dom.btnSave.style.display = 'none';
+              return true;
             } else {
-              showFirebaseMsg('⚠️ Faça login para salvar no ranking.', 'warning');
-              dom.gameoverSubtitle.textContent = 'Entre na sua conta para salvar no ranking.';
+              showFirebaseMessage('⚠️ Faça login para salvar sua pontuação no ranking', 'warning');
+              return false;
             }
           } else {
-            showFirebaseMsg('⚠️ Ranking não configurado neste arquivo.', 'warning');
-            dom.gameoverSubtitle.textContent = 'Ranking não configurado neste arquivo.';
+            showFirebaseMessage('⚠️ Ranking não configurado neste arquivo', 'warning');
+            return false;
           }
         } catch (err) {
-          console.error(err);
-          showFirebaseMsg('❌ Erro ao salvar no ranking.', 'error');
-          dom.gameoverSubtitle.textContent = 'Erro ao salvar. Você pode tentar novamente.';
+            console.error('Erro ao salvar:', err);
+            showFirebaseMessage('❌ Erro ao salvar pontuação', 'error');
+            return false;
+        } finally {
+            salvando = false;
         }
       }
 
@@ -1757,7 +1748,7 @@ body.compact-ui #touchControls {
           for (const s of sabers) s.y += effectiveSpeed * dt;
           for (const p of powerups) p.y += effectiveSpeed * dt;
 
-          const layoutRect = playerRect(layout);
+          const pRect = playerRect(layout);
           let mathHitResolved = false;
 
           for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -1766,7 +1757,7 @@ body.compact-ui #touchControls {
 
             const rect = { x: o.x - o.w / 2, y: o.y, w: o.w, h: o.h };
 
-            if (rectHit(layoutRect, rect)) {
+            if (rectHit(pRect, rect)) {
               if (state.math && o.correct && o.number === state.math.result) {
                 const reward = 100 * state.streak;
                 let bonus = 0;
@@ -1797,7 +1788,7 @@ body.compact-ui #touchControls {
                   showToast('🛡️ Escudo usado!', 'info', 1.6);
                   obstacles.splice(i, 1);
                 } else {
-                  emitBurst(state.playerX, layoutRect.y + 10, '#e74c3c', 22, 1.2);
+                  emitBurst(state.playerX, pRect.y + 10, '#e74c3c', 22, 1.2);
                   state.shake = 18;
                   audio.crash();
                   endGame();
@@ -1824,7 +1815,7 @@ body.compact-ui #touchControls {
           for (let i = coins.length - 1; i >= 0; i--) {
             const c = coins[i];
             const cy = c.y + Math.sin(now * 0.006 + c.bob) * 2;
-            if (Math.abs(c.x - state.playerX) < magnetRange && cy > layoutRect.y && cy < layoutRect.y + layoutRect.h + 20) {
+            if (Math.abs(c.x - state.playerX) < magnetRange && cy > pRect.y && cy < pRect.y + pRect.h + 20) {
               state.moedas++;
               state.scoreFromItems += 10;
               emitBurst(c.x, cy, '#fbbf24', 8, 0.7);
@@ -1838,7 +1829,7 @@ body.compact-ui #touchControls {
           for (let i = sabers.length - 1; i >= 0; i--) {
             const s = sabers[i];
             const sy = s.y + Math.sin(now * 0.005 + s.pulse) * 2;
-            if (Math.abs(s.x - state.playerX) < 30 && sy > layoutRect.y && sy < layoutRect.y + layoutRect.h + 30) {
+            if (Math.abs(s.x - state.playerX) < 30 && sy > pRect.y && sy < pRect.y + pRect.h + 30) {
               state.saberes++;
               state.scoreFromItems += 150;
               emitBurst(s.x, sy, '#60a5fa', 12, 0.9);
@@ -1853,7 +1844,7 @@ body.compact-ui #touchControls {
           for (let i = powerups.length - 1; i >= 0; i--) {
             const p = powerups[i];
             const py = p.y + Math.sin(now * 0.005 + p.bob) * 2;
-            if (Math.abs(p.x - state.playerX) < 30 && py > layoutRect.y && py < layoutRect.y + layoutRect.h + 30) {
+            if (Math.abs(p.x - state.playerX) < 30 && py > pRect.y && py < pRect.y + pRect.h + 30) {
               if (p.type === 'shield') {
                 state.shield = true;
                 state.shieldUntil = now + 12000;
@@ -2071,7 +2062,7 @@ body.compact-ui #touchControls {
 
       dom.btnStart.addEventListener('click', startGame);
       dom.btnRestart.addEventListener('click', startGame);
-      dom.btnSave.addEventListener('click', saveRanking);
+      dom.btnSave.addEventListener('click', () => salvarPontuacao(state.score));
 
       dom.btnHome.addEventListener('click', () => window.location.assign(HOME_URL));
       dom.btnRanking.addEventListener('click', () => window.location.assign(RANKING_URL));
