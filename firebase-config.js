@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 
 // ATIVANDO O APP CHECK (Substitua pela sua CHAVE DO SITE do reCAPTCHA v3)
 const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('COLE_AQUI_SUA_CHAVE_DO_SITE'), 
+  provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'), 
   isTokenAutoRefreshEnabled: true
 });
 
