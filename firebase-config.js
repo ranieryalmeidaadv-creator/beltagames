@@ -1,7 +1,7 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// IMPORTANTE: Importando o App Check
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
 
 const firebaseConfig = {
@@ -14,14 +14,16 @@ const firebaseConfig = {
   measurementId: "G-5E5K3WM1VK"
 };
 
+// 1. Inicializa o App
 const app = initializeApp(firebaseConfig);
 
-// ATIVANDO O APP CHECK (Substitua pela sua CHAVE DO SITE do reCAPTCHA v3)
+// 2. ATIVA O SEGURANÇA IMEDIATAMENTE (Coloque sua Chave do Site aqui!)
 const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'), 
+  provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'),
   isTokenAutoRefreshEnabled: true
 });
 
+// 3. Inicializa os outros serviços
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
@@ -79,18 +81,21 @@ window.salvarNovoNickname = async (nickname) => {
   }
 };
 
-// ===== FUNÇÕES DE RANKING (MANTENDO GRAVAÇÃO DE TODAS AS PARTIDAS) =====
+// ===== FUNÇÃO DE SALVAR PONTOS =====
 window.salvarPontos = async (nomeJogo, pontos) => {
   try {
     const user = auth.currentUser;
-    if (!user) return false;
+    
+    // Se o código chegar aqui e o user for null, é porque a sessão caiu
+    if (!user) {
+      console.error("Usuário não detectado no salvamento.");
+      return false;
+    }
 
-    // Busca o nickname para salvar junto com o ponto
     const userRef = doc(db, "usuarios", user.uid);
     const userSnap = await getDoc(userRef);
     const nickname = userSnap.exists() ? userSnap.data().nickname : user.displayName;
 
-    // MANTIDO: addDoc cria um NOVO registro toda vez (ótimo para fase de teste)
     await addDoc(collection(db, "rankings"), {
       uid: user.uid,
       nickname: nickname,
@@ -100,9 +105,11 @@ window.salvarPontos = async (nomeJogo, pontos) => {
       data: new Date().toISOString()
     });
     
+    console.log("✅ Pontuação salva com sucesso!");
     return true;
   } catch (error) {
-    console.error("Erro ao salvar pontos:", error);
+    // Se der erro de permissão aqui, o problema é no App Check
+    console.error("❌ Erro ao salvar pontos:", error.code, error.message);
     return false;
   }
 };
