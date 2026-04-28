@@ -19,7 +19,7 @@ const app = initializeApp(firebaseConfig);
 
 // 2. Inicializa o Segurança (App Check) - COLE SUA CHAVE DO SITE ABAIXO
 const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('SUA_CHAVE_DO_SITE_AQUI'), 
+  provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'), 
   isTokenAutoRefreshEnabled: true
 });
 
