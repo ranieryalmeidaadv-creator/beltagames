@@ -687,7 +687,7 @@
       msg.classList.add('hidden');
 
       try {
-        const ok = await window.salvarPoints(NOME_DO_JOGO, pontos);
+        const ok = await window.salvarPontos(NOME_DO_JOGO, pontos);
 
         if (ok) {
           msg.textContent = '✅ Pontuação sincronizada e salva com sucesso no ranking oficial!';
