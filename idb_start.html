@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BeLTA Games - IDB START 2026</title>
     
-    <!-- Tailwind CSS para um design elegante e ágil -->
+    <!-- Tailwind CSS para um design elegante, limpo e profissional -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -13,8 +13,7 @@
                 extend: {
                     colors: {
                         startPink: '#FF007F',
-                        startDark: '#0D0814',
-                        capyGrey: '#4A5D6E',
+                        idbBlue: '#0F172A',
                     }
                 }
             }
@@ -22,91 +21,45 @@
     </script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at top, #1E0725 0%, #0D0814 100%);
-            min-height: 100vh;
+            background-color: #090D16; /* Fundo escuro sólido de alta legibilidade */
         }
 
-        .heading-font {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        /* Efeito de neon brilhante nos cards */
-        .neon-card-pink {
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.15);
-            border: 1px solid rgba(255, 0, 127, 0.2);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .neon-card-pink:hover {
-            box-shadow: 0 0 35px rgba(255, 0, 127, 0.45);
-            border-color: rgba(255, 0, 127, 0.6);
-            transform: translateY(-8px) scale(1.02);
-        }
-
-        .neon-card-blue {
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
-            border: 1px solid rgba(6, 182, 212, 0.2);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .neon-card-blue:hover {
-            box-shadow: 0 0 35px rgba(6, 182, 212, 0.45);
-            border-color: rgba(6, 182, 212, 0.6);
-            transform: translateY(-8px) scale(1.02);
-        }
-
-        /* Grid de fundo futurista */
-        .grid-bg {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
-
-        /* Animação suave de pulsação */
-        @keyframes pulse-soft {
-            0%, 100% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-        .pulse-element {
-            animation: pulse-soft 3s infinite ease-in-out;
-        }
-
-        /* Sombra de brilho no logo central */
-        .logo-glow {
-            filter: drop-shadow(0 0 25px rgba(255, 0, 127, 0.4));
+        /* Transições suaves e limpas, sem exageros */
+        .premium-transition {
+            transition: all 0.25s ease-in-out;
         }
     </style>
 </head>
-<body class="grid-bg text-white flex flex-col justify-between">
+<body class="text-slate-100 min-height-screen flex flex-col justify-between min-h-screen">
 
-    <!-- BARRA DE AUTENTICAÇÃO / TOPO -->
-    <header class="w-full bg-black/40 backdrop-blur-md border-b border-white/10 px-4 py-3 sm:px-8 flex flex-wrap gap-4 justify-between items-center z-50">
+    <!-- TOPO / CABEÇALHO INSTITUCIONAL -->
+    <header class="w-full bg-slate-950/80 border-b border-slate-800/80 px-4 py-4 sm:px-8 flex flex-wrap gap-4 justify-between items-center z-50">
         <div class="flex items-center gap-3">
-            <span class="text-xl sm:text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-startPink to-purple-400 heading-font">
+            <span class="text-lg sm:text-xl font-extrabold tracking-wider text-white">
                 🎮 BeLTA Games
             </span>
-            <span class="text-xs bg-startPink/20 text-startPink border border-startPink/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-widest">
-                IDB Start Edição
+            <span class="text-[10px] bg-startPink/10 text-startPink border border-startPink/30 px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">
+                IDB START 2026
             </span>
         </div>
         
         <div class="flex items-center gap-3 sm:gap-4">
             <!-- Link para Ranking -->
             <a href="ranking.html" 
-               class="flex items-center gap-2 bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/20 transition px-4 py-2 rounded-full font-bold text-sm">
-                🏆 <span class="hidden sm:inline">Ver</span> Ranking
+               class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 premium-transition px-4 py-2 rounded-lg font-bold text-xs sm:text-sm text-slate-200">
+                🏆 Ver Ranking
             </a>
             
-            <!-- Controle de Usuário -->
+            <!-- Controle de Usuário / Login -->
             <div id="auth-section">
                 <!-- Se deslogado -->
                 <button id="btn-login" onclick="loginGoogle()" 
-                        class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition px-5 py-2 rounded-full font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                        class="bg-white hover:bg-slate-200 text-slate-950 premium-transition px-5 py-2 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
@@ -117,12 +70,12 @@
 
                 <!-- Se logado -->
                 <div id="user-logged" class="hidden items-center gap-3">
-                    <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full py-1 pl-1 pr-3">
-                        <img id="user-pic" class="w-8 h-8 rounded-full border border-startPink" src="" alt="Foto">
-                        <span id="user-name" class="font-bold text-sm text-gray-200">Jogador</span>
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg py-1 pl-1 pr-3">
+                        <img id="user-pic" class="w-7 h-7 rounded-md border border-startPink/50" src="" alt="Foto">
+                        <span id="user-name" class="font-bold text-xs sm:text-sm text-slate-200">Jogador</span>
                     </div>
                     <button id="btn-logout" onclick="logout()" 
-                            class="text-xs font-semibold text-gray-400 hover:text-red-400 bg-transparent hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition border border-transparent hover:border-red-500/20">
+                            class="text-xs font-semibold text-slate-400 hover:text-red-400 bg-transparent hover:bg-red-500/10 px-3 py-1.5 rounded-lg border border-transparent hover:border-red-500/20 premium-transition">
                         Sair
                     </button>
                 </div>
@@ -130,226 +83,179 @@
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL / BANNER DE APRESENTAÇÃO -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 sm:py-12 max-w-7xl mx-auto w-full z-10">
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 sm:py-12 max-w-5xl mx-auto w-full z-10">
         
-        <!-- HEADER ESPECIAL IDB START 2026 -->
-        <div class="text-center w-full max-w-4xl mb-8 sm:mb-12">
+        <!-- PARCEIROS E REALIZAÇÃO (Alinhamento Simples e Limpo) -->
+        <div class="w-full flex flex-wrap justify-center items-center gap-8 sm:gap-12 mb-10 pb-6 border-b border-slate-900">
+            <!-- IDB -->
+            <div class="flex items-center gap-3">
+                <img src="https://ranieryalmeidaadv-creator.github.io/beltagames/logo-IDB.png" 
+                     alt="Logo IDB" 
+                     class="h-8 w-auto object-contain brightness-95"
+                     onerror="this.style.display='none'; document.getElementById('fb-idb').classList.remove('hidden')">
+                <span id="fb-idb" class="hidden text-xs font-bold text-slate-400">INSTITUTO DOM BARRETO</span>
+            </div>
+
+            <!-- Divider -->
+            <span class="hidden sm:inline text-slate-800">|</span>
+
+            <!-- JA Piauí -->
+            <div class="flex items-center gap-3">
+                <img src="https://raw.githubusercontent.com/ranieryalmeidaadv-creator/beltagames/main/logo-JA.png" 
+                     alt="Logo JA Piauí" 
+                     class="h-8 w-auto object-contain brightness-95"
+                     onerror="this.style.display='none'; document.getElementById('fb-ja').classList.remove('hidden')">
+                <span id="fb-ja" class="hidden text-xs font-bold text-slate-400">JA PIAUÍ</span>
+            </div>
+
+            <!-- Divider -->
+            <span class="hidden sm:inline text-slate-800">|</span>
+
+            <!-- Capybara Labs -->
+            <div class="flex items-center gap-3">
+                <img src="https://ranieryalmeidaadv-creator.github.io/beltagames/Logo%20Vetorizada.png" 
+                     alt="Logo Capybara Labs" 
+                     class="h-8 w-auto object-contain"
+                     onerror="this.style.display='none'; document.getElementById('fb-capy').classList.remove('hidden')">
+                <span id="fb-capy" class="hidden text-xs font-bold text-slate-400">CAPYBARA LABS</span>
+                <span class="text-xs font-medium text-slate-500">Capybara Labs</span>
+            </div>
+        </div>
+
+        <!-- LOGO OFICIAL CENTRALIZADO (IDB Start 2026) -->
+        <div class="text-center w-full max-w-2xl mb-12">
+            <img src="https://ranieryalmeidaadv-creator.github.io/beltagames/IDB%20Start%2026%20-%20Logo.png" 
+                 alt="IDB Start 2026 Logo" 
+                 class="w-48 sm:w-64 h-auto mx-auto object-contain mb-6"
+                 onerror="this.style.display='none'; document.getElementById('fallback-text-title').classList.remove('hidden')">
             
-            <!-- MARCAS PARCEIRAS / LOGOTIPOS INTEGRADOS -->
-            <div class="flex flex-wrap items-center justify-center gap-6 md:gap-8 mb-10 opacity-95">
-                
-                <!-- Escola Instituto Dom Barreto -->
-                <div class="flex items-center gap-2.5 bg-white/5 px-4 py-2 rounded-2xl border border-white/10 hover:bg-white/10 transition">
-                    <img src="https://ranieryalmeidaadv-creator.github.io/beltagames/logo-IDB.png" 
-                         alt="Logo Instituto Dom Barreto" 
-                         class="h-9 w-auto object-contain"
-                         onerror="this.style.display='none'; document.getElementById('fallback-idb').classList.remove('hidden')">
-                    
-                    <!-- Fallback SVG Caso a Imagem falhe -->
-                    <div id="fallback-idb" class="hidden w-9 h-9 rounded-full bg-blue-900 border-2 border-white/20 flex items-center justify-center font-black text-white text-xs heading-font">
-                        IDB
-                    </div>
-                    
-                    <div class="text-left leading-none">
-                        <span class="block text-[12px] font-extrabold tracking-widest text-sky-400">DOM BARRETO</span>
-                        <span class="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">Instituto</span>
-                    </div>
-                </div>
-
-                <!-- JA Piauí / Junior Achievement -->
-                <div class="flex items-center gap-2.5 bg-white/5 px-4 py-2 rounded-2xl border border-white/10 hover:bg-white/10 transition">
-                    <img src="https://raw.githubusercontent.com/ranieryalmeidaadv-creator/beltagames/main/logo-JA.png" 
-                         alt="Logo JA Piauí" 
-                         class="h-9 w-auto object-contain"
-                         onerror="this.style.display='none'; document.getElementById('fallback-ja').classList.remove('hidden')">
-                    
-                    <!-- Fallback SVG Caso a Imagem falhe -->
-                    <div id="fallback-ja" class="hidden flex items-center gap-1">
-                        <svg class="w-8 h-8" viewBox="0 0 100 87" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0 86.6L50 0L100 86.6H0Z" fill="#00969D"/>
-                        </svg>
-                    </div>
-
-                    <div class="text-left leading-none">
-                        <span class="block text-[12px] font-extrabold tracking-widest text-emerald-400">JA PIAUÍ</span>
-                        <span class="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">FINDINEXA</span>
-                    </div>
-                </div>
-
-                <!-- Capybara Labs -->
-                <div class="flex items-center gap-2.5 bg-white/5 px-4 py-2 rounded-2xl border border-white/10 hover:bg-white/10 transition">
-                    <img src="https://ranieryalmeidaadv-creator.github.io/beltagames/Logo%20Vetorizada.png" 
-                         alt="Logo Capybara Labs" 
-                         class="h-9 w-auto object-contain"
-                         onerror="this.style.display='none'; document.getElementById('fallback-capy').classList.remove('hidden')">
-                    
-                    <!-- Fallback SVG Caso a Imagem falhe -->
-                    <div id="fallback-capy" class="hidden">
-                        <svg class="w-8 h-8" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="64" height="64" rx="32" fill="#4B5C6E"/>
-                            <circle cx="41" cy="29" r="2.5" fill="#1E293B"/>
-                        </svg>
-                    </div>
-
-                    <div class="text-left leading-none">
-                        <span class="block text-[12px] font-extrabold tracking-widest text-blue-300">CAPYBARA</span>
-                        <span class="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">LABS</span>
-                    </div>
-                </div>
+            <div id="fallback-text-title" class="hidden">
+                <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white uppercase">IDB START 2026</h1>
             </div>
 
-            <!-- APRESENTAÇÃO CENTRAL: LOGO DO IDB START 2026 -->
-            <div class="flex flex-col items-center justify-center mb-6">
-                <div class="relative max-w-xs sm:max-w-md w-full px-4 mb-4 pulse-element">
-                    <!-- Glow rosa de fundo para destacar o logotipo -->
-                    <div class="absolute inset-0 bg-startPink/15 rounded-full filter blur-3xl"></div>
-                    <img src="https://ranieryalmeidaadv-creator.github.io/beltagames/IDB%20Start%2026%20-%20Logo.png" 
-                         alt="Logo IDB Start 2026" 
-                         class="w-full h-auto object-contain mx-auto relative z-10 logo-glow"
-                         onerror="this.style.display='none'; document.getElementById('fallback-start-title').classList.remove('hidden')">
-                </div>
-
-                <!-- Fallback de Título em Texto caso a imagem do IDB Start falhe -->
-                <div id="fallback-start-title" class="hidden text-center mb-4">
-                    <div class="text-xs tracking-[0.5em] text-startPink/80 uppercase font-black mb-1 heading-font">
-                        IDB START 2026
-                    </div>
-                    <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-tight uppercase heading-font text-white">
-                        Build <span class="text-transparent bg-clip-text bg-gradient-to-r from-startPink to-purple-500">the future</span>
-                    </h1>
-                </div>
-
-                <!-- Decoração Adicional do Evento -->
-                <div class="flex items-center gap-2 mt-2">
-                    <span class="text-cyan-400 text-sm">✦ Inovação</span>
-                    <span class="text-gray-600">•</span>
-                    <span class="text-startPink text-sm">✦ Tecnologia</span>
-                    <span class="text-gray-600">•</span>
-                    <span class="text-purple-400 text-sm">✦ Impacto</span>
-                </div>
-            </div>
-
-            <p class="text-gray-300 text-base sm:text-lg max-w-2xl mx-auto mt-6 font-medium leading-relaxed px-4">
-                Seja bem-vindo ao portal especial da <strong class="text-white">Belta Games</strong>! Hoje focado exclusivamente nos dois maiores desafios do <strong class="text-startPink">IDB START</strong>.
+            <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto font-medium leading-relaxed mt-2">
+                O portal de jogos educativos <span class="text-white">Belta Games</span> está temporariamente dedicado de forma exclusiva às atividades e competições de hoje. Escolha um dos quizzes abaixo para começar.
             </p>
         </div>
 
-        <!-- GRID DOS JOGOS AUTORIZADOS -->
-        <div class="w-full max-w-4xl px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="games-container">
-                <!-- Card 1: Educação Financeira -->
-                <a href="quiz-bolsa-valores.html" id="card-financas" class="game-card neon-card-blue bg-white/[0.03] backdrop-blur-md rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-all duration-500"></div>
+        <!-- GRID DE QUIZZES (Elegante, focado e de alta legibilidade) -->
+        <div class="w-full max-w-4xl px-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="games-container">
+                
+                <!-- CARD 1: EDUCAÇÃO FINANCEIRA -->
+                <a href="quiz-bolsa-valores.html" class="game-card bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-6 sm:p-8 flex flex-col justify-between premium-transition group relative">
                     <div>
-                        <div class="w-16 h-16 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-inner group-hover:scale-110 transition duration-300">
-                            📈
+                        <!-- Badge de Perguntas Prominente -->
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-3xl">📈</span>
+                            <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs font-extrabold uppercase px-3 py-1 rounded-md tracking-wider">
+                                30 Questões
+                            </span>
                         </div>
-                        <h3 class="text-2xl font-bold text-white mb-3 heading-font flex items-center gap-2">
-                            Quiz Finanças 
-                            <span class="text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full uppercase">IDB Start</span>
+                        <h3 class="text-xl sm:text-2xl font-bold text-white mb-3">
+                            Quiz - Educação Financeira
                         </h3>
-                        <p class="text-gray-400 text-sm leading-relaxed mb-8">
-                            Aprenda conceitos vitais de economia, controle de gastos, investimentos de forma imersiva e teste sua mente na Bolsa de Valores.
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Domine o mercado de ações, planeje orçamentos de projetos e teste suas habilidades financeiras no ambiente corporativo.
                         </p>
                     </div>
-                    <div class="flex items-center justify-between mt-auto">
-                        <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">10 Perguntas</span>
-                        <span class="btn-play bg-cyan-500 hover:bg-cyan-400 text-black px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg shadow-cyan-500/20">
-                            Jogar Agora
+                    <div class="flex items-center justify-between mt-4">
+                        <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Nível: Médio a Avançado</span>
+                        <span class="bg-slate-800 group-hover:bg-cyan-500 group-hover:text-slate-950 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-lg premium-transition">
+                            Iniciar Quiz
                         </span>
                     </div>
                 </a>
 
-                <!-- Card 2: Empreendedorismo -->
-                <a href="quiz-empreendedorismo.html" id="card-emp" class="game-card neon-card-pink bg-white/[0.03] backdrop-blur-md rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-startPink/10 rounded-full blur-3xl group-hover:bg-startPink/20 transition-all duration-500"></div>
+                <!-- CARD 2: EMPREENDEDORISMO -->
+                <a href="quiz-empreendedorismo.html" class="game-card bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-6 sm:p-8 flex flex-col justify-between premium-transition group relative">
                     <div>
-                        <div class="w-16 h-16 bg-startPink/10 border border-startPink/30 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-inner group-hover:scale-110 transition duration-300">
-                            🚀
+                        <!-- Badge de Perguntas Prominente -->
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-3xl">🚀</span>
+                            <span class="bg-startPink/10 text-startPink border border-startPink/20 text-xs font-extrabold uppercase px-3 py-1 rounded-md tracking-wider">
+                                30 Questões
+                            </span>
                         </div>
-                        <h3 class="text-2xl font-bold text-white mb-3 heading-font flex items-center gap-2">
-                            Quiz Empreendedorismo
-                            <span class="text-xs bg-startPink/20 text-startPink border border-startPink/30 px-2 py-0.5 rounded-full uppercase">IDB Start</span>
+                        <h3 class="text-xl sm:text-2xl font-bold text-white mb-3">
+                            Quiz - Empreendedorismo
                         </h3>
-                        <p class="text-gray-400 text-sm leading-relaxed mb-8">
-                            Você conhece as dores do mercado? Entende de MVP e ideias de impacto? Responda às perguntas e prove que é o próximo unicórnio do IDB.
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Descubra como validar dores de mercado, criar propostas de valor eficientes e estruturar um MVP de sucesso para sua startup.
                         </p>
                     </div>
-                    <div class="flex items-center justify-between mt-auto">
-                        <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">10 Perguntas</span>
-                        <span class="btn-play bg-startPink hover:bg-pink-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg shadow-startPink/20">
-                            Jogar Agora
+                    <div class="flex items-center justify-between mt-4">
+                        <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Nível: Médio a Avançado</span>
+                        <span class="bg-slate-800 group-hover:bg-startPink group-hover:text-white text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-lg premium-transition">
+                            Iniciar Quiz
                         </span>
                     </div>
                 </a>
+
             </div>
 
-            <!-- CARD DESABILITADO DE AVISO (Apenas para induzir o Login) -->
-            <div id="login-warning" class="mt-8 text-center bg-white/5 border border-white/10 rounded-2xl p-4 max-w-md mx-auto">
-                <span class="text-amber-400 mr-2">⚠️</span>
-                <span class="text-sm text-gray-300 font-medium">Faça login com sua conta do Google para liberar os jogos e registrar sua pontuação no Ranking!</span>
+            <!-- AVISO DE AUTENTICAÇÃO -->
+            <div id="login-warning" class="mt-8 text-center bg-slate-950 border border-slate-900 rounded-xl p-4 max-w-md mx-auto">
+                <p class="text-xs sm:text-sm text-slate-400 font-medium">
+                    <span class="text-amber-500 mr-1.5">⚠️</span> 
+                    Você precisa realizar o login com sua conta do Google para liberar os jogos e registrar sua pontuação.
+                </p>
             </div>
         </div>
 
     </main>
 
-    <!-- RODAPÉ COMPACTO -->
-    <footer class="w-full bg-black/60 border-t border-white/10 py-6 px-4 mt-12 text-center text-xs text-gray-500">
+    <!-- RODAPÉ CLEAN -->
+    <footer class="w-full bg-slate-950/40 border-t border-slate-900 py-6 px-4 mt-12 text-center text-xs text-slate-500">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-                © 2026 BeltaGames. Todos os direitos reservados.
-            </div>
-            <div class="flex items-center gap-1.5 text-gray-400">
-                Desenvolvido com orgulho por 
-                <span class="text-blue-400 font-bold">Capybara Labs 🐾</span> 
-                para o <span class="text-startPink font-bold">IDB START 2026</span>
-            </div>
+            <span>
+                © 2026 BeLTA Games. Edição IDB START.
+            </span>
+            <span class="text-slate-400">
+                Uma iniciativa da Escola <strong class="text-slate-300">Instituto Dom Barreto</strong>, <strong class="text-slate-300">FINDINEXA</strong> e desenvolvido pela <strong class="text-startPink">Capybara Labs</strong>.
+            </span>
         </div>
     </footer>
 
-    <!-- MODAL DE NICKNAME CUSTOMIZADO (LIVRE DE ALERT/CONFIRM DO NAVEGADOR) -->
-    <div id="modal-nickname" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="bg-gradient-to-br from-[#1b0a21] to-[#0a050f] border-2 border-startPink/30 rounded-3xl p-6 sm:p-10 text-center max-w-md w-full shadow-2xl relative">
-            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-startPink/10 border-2 border-startPink rounded-full flex items-center justify-center text-4xl shadow-lg shadow-startPink/30">
-                🎉
-            </div>
+    <!-- MODAL DE NICKNAME (LIMPO, CLARO E DE ALTA LEGIBILIDADE) -->
+    <div id="modal-nickname" class="fixed inset-0 bg-slate-950/95 z-[100] hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center max-w-sm w-full shadow-xl">
+            <span class="text-3xl block mb-4">🏆</span>
             
-            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white heading-font mt-6 mb-2">
-                Bem-vindo ao IDB START!
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">
+                Defina seu Apelido
             </h2>
-            <p class="text-gray-400 text-sm mb-6">
-                Como você quer ser exibido no ranking oficial do evento? Escolha um apelido marcante.
+            <p class="text-slate-400 text-xs sm:text-sm mb-6">
+                Como você quer aparecer no ranking oficial da escola durante o evento?
             </p>
             
             <div class="mb-6 text-left">
-                <label for="input-nickname" class="block text-xs font-bold text-startPink uppercase tracking-widest mb-2 pl-1">Seu Nickname</label>
-                <input type="text" id="input-nickname" placeholder="Ex: CapyMestre, DevDomBarreto" maxlength="15" 
-                       class="w-full bg-white/5 border-2 border-white/15 hover:border-white/20 focus:border-startPink focus:ring-1 focus:ring-startPink rounded-xl px-4 py-3 text-white text-lg font-bold placeholder-gray-600 outline-none transition">
-                <p id="error-message" class="text-red-400 text-xs mt-2 hidden font-semibold pl-1">
-                    ❌ O apelido deve ter no mínimo 3 caracteres!
+                <label for="input-nickname" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nickname do Jogador</label>
+                <input type="text" id="input-nickname" placeholder="Ex: DevIDB, CapyChampion" maxlength="15" 
+                       class="w-full bg-slate-950 border border-slate-800 focus:border-startPink focus:ring-1 focus:ring-startPink rounded-lg px-4 py-2.5 text-white text-base font-semibold placeholder-slate-700 outline-none premium-transition">
+                <p id="error-message" class="text-red-400 text-xs mt-2 hidden font-semibold">
+                    ❌ O apelido deve conter pelo menos 3 caracteres!
                 </p>
             </div>
             
             <button onclick="confirmarNick()" 
-                    class="w-full bg-gradient-to-r from-startPink to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-extrabold py-3.5 px-6 rounded-xl transition shadow-lg shadow-startPink/25 text-base uppercase tracking-wider">
-                Salvar apelido e Jogar!
+                    class="w-full bg-startPink hover:bg-pink-600 text-white font-bold py-3 px-4 rounded-lg premium-transition text-sm uppercase tracking-wider">
+                Salvar e Começar
             </button>
-            <p class="text-gray-500 text-[10px] mt-4 font-bold uppercase tracking-wider">
-                Não poderá ser alterado posteriormente.
+            <p class="text-[10px] text-slate-500 mt-3 uppercase tracking-wider">
+                Este nickname não poderá ser alterado depois.
             </p>
         </div>
     </div>
 
-    <!-- SCRIPT DE CONFIGURAÇÃO / FIREBASE DE PREPARAÇÃO -->
+    <!-- SCRIPT DE INTERAÇÃO E INTEGRAÇÃO -->
     <script type="module" src="firebase-config.js"></script>
     <script>
-        // Funções de mockup simuladas para o fluxo completo do portal de jogos em preview local.
-        // O firebase-config real as substituirá em produção.
+        // Mockup local para pré-visualização no navegador (Substituído automaticamente pelo Firebase real em produção)
         if (!window.loginGoogle) {
             window.loginGoogle = async () => {
-                console.log("Mock de Login acionado");
-                // Simulação local para fins de desenvolvimento do layout
+                console.log("Mock de Login Google");
                 const mockUser = {
                     email: "aluno@dombarreto.g12.br",
                     displayName: "Aluno IDB 2026",
@@ -357,7 +263,7 @@
                 };
                 localStorage.setItem("mock_user", JSON.stringify(mockUser));
                 localStorage.setItem("mock_perfil_novo", "true");
-                setTimeout(() => location.reload(), 500);
+                setTimeout(() => location.reload(), 400);
             };
         }
 
@@ -366,7 +272,7 @@
                 localStorage.removeItem("mock_user");
                 localStorage.removeItem("mock_perfil");
                 localStorage.removeItem("mock_perfil_novo");
-                setTimeout(() => location.reload(), 500);
+                setTimeout(() => location.reload(), 400);
             };
         }
 
@@ -375,7 +281,7 @@
                 const mockUser = JSON.parse(localStorage.getItem("mock_user"));
                 const novoPerfil = {
                     nickname: nickname,
-                    foto: mockUser?.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150"
+                    foto: mockUser?.photoURL || ""
                 };
                 localStorage.setItem("mock_perfil", JSON.stringify(novoPerfil));
                 localStorage.removeItem("mock_perfil_novo");
@@ -404,7 +310,7 @@
             };
         }
 
-        // CONFIRMAÇÃO DE NICKNAME
+        // Validação de apelido e salvamento
         async function confirmarNick() {
             const nickInput = document.getElementById('input-nickname');
             const nickname = nickInput.value.trim();
@@ -412,7 +318,6 @@
             
             if (nickname.length < 3) {
                 errDiv.classList.remove('hidden');
-                errDiv.innerText = "❌ O apelido deve conter pelo menos 3 caracteres.";
                 return;
             }
             
@@ -423,7 +328,7 @@
             }
         }
 
-        // CONTROLADOR DE ATIVAÇÃO DOS CARDS DOS JOGOS
+        // Estado inicial da página e bloqueios de jogo
         window.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.game-card');
             const warningBar = document.getElementById('login-warning');
@@ -439,7 +344,7 @@
                         modalNick.classList.remove('hidden');
                         modalNick.classList.add('flex');
                         
-                        // Mantém bloqueado até preencher nick
+                        // Trava interações temporariamente até definir nickname
                         cards.forEach(card => {
                             card.classList.add('opacity-40', 'pointer-events-none');
                         });
@@ -449,11 +354,13 @@
                         modalNick.classList.remove('flex');
                         
                         document.getElementById('user-name').textContent = estado.perfil.nickname;
-                        document.getElementById('user-pic').src = estado.perfil.foto;
+                        if (estado.perfil.foto) {
+                            document.getElementById('user-pic').src = estado.perfil.foto;
+                        }
                         userLogged.classList.remove('hidden');
                         userLogged.classList.add('flex');
                         
-                        // Libera os Cards para Jogar!
+                        // Libera os quizzes para jogar
                         cards.forEach(card => {
                             card.classList.remove('opacity-40', 'pointer-events-none');
                         });
@@ -464,7 +371,7 @@
                     userLogged.classList.add('hidden');
                     modalNick.classList.add('hidden');
                     
-                    // Usuário deslogado: Cards desativados
+                    // Exige Login para jogar
                     cards.forEach(card => {
                         card.classList.add('opacity-40', 'pointer-events-none');
                     });
