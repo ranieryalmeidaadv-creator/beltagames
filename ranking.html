@@ -1,111 +1,424 @@
-<!DOCTYPE html><html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking - BeLTA Games</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }    body {
-        font-family: 'Comic Sans MS', sans-serif;
-        background: linear-gradient(135deg, #8e44ad, #3498db);
-        color: white;
-        min-height: 100vh;
-        padding: 20px;
-    }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    .header {
-        text-align: center; margin-bottom: 30px; padding: 20px;
-        background: rgba(255, 255, 255, 0.1); border-radius: 20px; backdrop-filter: blur(10px);
-    }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .header h1 { font-size: 2.8rem; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; }
-    .header p { font-size: 1.2rem; opacity: 0.9; }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
 
-    /* Seleção de jogos */
-    .game-filters {
-        display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;
-    }
-    .game-filter-btn {
-        padding: 10px 20px; background: rgba(255,255,255,0.15);
-        border: 2px solid rgba(255,255,255,0.3); border-radius: 50px; color: white;
-        font-size: 1rem; cursor: pointer; transition: all 0.3s;
-        display: flex; align-items: center; gap: 8px;
-    }
-    .game-filter-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
-    .game-filter-btn.active { background: #f1c40f; color: #2c3e50; border-color: #f1c40f; font-weight: bold; }
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 #000;
+        }
 
-    /* Área de conteúdo do ranking selecionado */
-    .ranking-stage { margin-bottom: 40px; }
-    .loading-spinner { text-align: center; padding: 40px; }
-    .spinner {
-        width: 50px; height: 50px; border: 5px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%; border-top-color: white; animation: spin 1s linear infinite; margin: 0 auto 20px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
 
-    .ranking-card {
-        background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 25px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); transition: transform 0.3s; color: #2c3e50;
-    }
-    .ranking-card:hover { transform: translateY(-3px); }
+        /* Seleção de jogos */
+        .game-filters {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
 
-    .ranking-header {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #f1c40f;
-    }
-    .game-icon { font-size: 2.2rem; }
-    .game-title { font-size: 1.5rem; font-weight: bold; color: #2c3e50; }
-    .ranking-sub { font-size: 0.95rem; color: #7f8c8d; margin-top: 4px; }
+        .game-filter-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .ranking-list { list-style: none; }
-    .ranking-item {
-        display: flex; align-items: center; padding: 12px 15px; margin-bottom: 10px;
-        background: #f8f9fa; border-radius: 12px; transition: background 0.2s;
-    }
-    .ranking-item:hover { background: #e9ecef; }
+        .game-filter-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
 
-    .position {
-        width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-        background: #3498db; color: white; border-radius: 50%; font-weight: bold; margin-right: 15px; font-size: 1.2rem;
-    }
-    .position-1 { background: #f1c40f; color: #2c3e50; }
-    .position-2 { background: #95a5a6; }
-    .position-3 { background: #e67e22; }
+        .game-filter-btn.active {
+            background: #f1c40f;
+            color: #2c3e50;
+            border-color: #f1c40f;
+            font-weight: bold;
+        }
 
-    .player-photo {
-        width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; border: 2px solid #3498db;
-    }
-    .player-info { flex-grow: 1; display: flex; flex-direction: column; }
-    .player-name { font-weight: bold; font-size: 1.05rem; color: #2c3e50; }
-    .ranking-date { font-size: 0.9rem; color: #7f8c8d; margin-top: 3px; }
-    .player-score { font-weight: bold; color: #27ae60; font-size: 1.15rem; }
+        /* Área de conteúdo do ranking selecionado */
+        .ranking-stage {
+            margin-bottom: 40px;
+        }
 
-    .empty-ranking {
-        text-align: center; padding: 40px 20px; color: #2c3e50; background: rgba(255,255,255,0.95);
-        border-radius: 20px; border: 3px dashed #f1c40f;
-    }
-    .empty-ranking .big { font-size: 3rem; margin-bottom: 10px; }
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
 
-    /* Navegação */
-    .nav-buttons { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
-    .nav-btn {
-        padding: 15px 30px; background: #27ae60; color: white; text-decoration: none; border-radius: 15px;
-        font-weight: bold; font-size: 1.1rem; transition: all 0.3s; display: flex; align-items: center; gap: 10px;
-        border: none; cursor: pointer;
-    }
-    .nav-btn:hover { background: #219653; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .nav-btn-secondary { background: #34495e; }
-    .nav-btn-secondary:hover { background: #2c3e50; }
-    .nav-btn:disabled { opacity: .6; cursor: not-allowed; }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
 
-    /* Responsivo */
-    @media (max-width: 768px) {
-        .header h1 { font-size: 2rem; }
-        .game-filters { justify-content: flex-start; overflow-x: auto; padding-bottom: 10px; }
-        .game-filter-btn { flex-shrink: 0; }
-    }
-</style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .ranking-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+            color: #2c3e50;
+        }
+
+        .ranking-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .ranking-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f1c40f;
+            gap: 10px;
+        }
+
+        .game-icon {
+            font-size: 2.2rem;
+            flex-shrink: 0;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            line-height: 1.15;
+            word-break: break-word;
+        }
+
+        .ranking-sub {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+
+        .ranking-list {
+            list-style: none;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: background 0.2s;
+            gap: 10px;
+        }
+
+        .ranking-item:hover {
+            background: #e9ecef;
+        }
+
+        .position {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 5px;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .position-1 { background: #f1c40f; color: #2c3e50; }
+        .position-2 { background: #95a5a6; }
+        .position-3 { background: #e67e22; }
+
+        .player-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 5px;
+            border: 2px solid #3498db;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .player-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-weight: bold;
+            font-size: 1.05rem;
+            color: #2c3e50;
+            word-break: break-word;
+            line-height: 1.15;
+        }
+
+        .ranking-date {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+
+        .player-score {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.15rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .empty-ranking {
+            text-align: center;
+            padding: 40px 20px;
+            color: #2c3e50;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            border: 3px dashed #f1c40f;
+        }
+
+        .empty-ranking .big {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Navegação */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: #219653;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn-secondary {
+            background: #34495e;
+        }
+
+        .nav-btn-secondary:hover {
+            background: #2c3e50;
+        }
+
+        .nav-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .game-filters {
+                justify-content: flex-start;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                gap: 8px;
+                padding: 0 0 10px 0;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .game-filters::-webkit-scrollbar {
+                display: none;
+            }
+
+            .game-filter-btn {
+                flex-shrink: 0;
+                white-space: nowrap;
+                font-size: 0.92rem;
+                padding: 10px 16px;
+            }
+
+            .ranking-card {
+                padding: 16px;
+                border-radius: 18px;
+            }
+
+            .ranking-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .game-title {
+                font-size: 1.25rem;
+                line-height: 1.2;
+            }
+
+            .ranking-sub {
+                font-size: 0.85rem;
+            }
+
+            .ranking-item {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 12px 10px;
+            }
+
+            .position {
+                margin-right: 0;
+                flex-shrink: 0;
+            }
+
+            .player-photo {
+                width: 34px;
+                height: 34px;
+                margin-right: 0;
+                flex-shrink: 0;
+            }
+
+            .player-info {
+                min-width: 0;
+                flex: 1;
+            }
+
+            .player-name {
+                font-size: 0.95rem;
+                word-break: break-word;
+            }
+
+            .ranking-date {
+                font-size: 0.8rem;
+            }
+
+            .player-score {
+                width: 100%;
+                text-align: right;
+                font-size: 1rem;
+                margin-top: 4px;
+                word-break: break-word;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 14px 18px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.7rem;
+            }
+
+            .ranking-card {
+                padding: 14px;
+            }
+
+            .player-score {
+                font-size: 0.95rem;
+            }
+
+            .game-title {
+                font-size: 1.1rem;
+            }
+
+            .nav-btn {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -113,218 +426,229 @@
         <div class="header">
             <h1>🏆 Ranking BeLTA Games</h1>
             <p>Escolha um jogo para ver o ranking</p>
-        </div>    <!-- Seleção por jogo (carregamento on-demand) -->
-    <div class="game-filters" id="filters">
-        <button class="game-filter-btn" data-game="Tabuada Ninja"><span>🥷</span> Tabuada Ninja</button>
-        <button class="game-filter-btn" data-game="Mapa do Brasil"><span>🗺️</span> Mapa do Brasil</button>
-        <button class="game-filter-btn" data-game="Memória Capitais"><span>🃏</span> Memória Capitais</button>
-        <button class="game-filter-btn" data-game="Desafio Palavras"><span>🚀</span> Desafio Palavras</button>
-        <button class="game-filter-btn" data-game="Puzzle 15"><span>🧩</span> Puzzle 15</button>
-        <button class="game-filter-btn" data-game="Quiz Educativo"><span>🧠</span> Quiz Educativo</button>
-        <button class="game-filter-btn" data-game="Belta Racing"><span>🏎️</span> Belta Racing</button>
-        <button class="game-filter-btn" data-game="Quiz - Educação Financeira"><span>📈</span> Quiz - Educação Financeira</button>
-        <button class="game-filter-btn" data-game="Quiz - Empreendedorismo"><span>🚀</span> Quiz - Empreendedorismo</button>
-    </div>
+        </div>
 
-    <!-- Área que recebe o ranking do jogo selecionado -->
-    <div id="ranking-stage" class="ranking-stage">
-        <div class="empty-ranking">
-            <div class="big">🎮</div>
-            <h3>Nenhum jogo selecionado</h3>
-            <p>Toque ou clique em um dos jogos acima para carregar o ranking.</p>
+        <!-- Seleção por jogo -->
+        <div class="game-filters" id="filters">
+            <button class="game-filter-btn" data-game="Tabuada Ninja"><span>🥷</span> Tabuada Ninja</button>
+            <button class="game-filter-btn" data-game="Mapa do Brasil"><span>🗺️</span> Mapa do Brasil</button>
+            <button class="game-filter-btn" data-game="Memória Capitais"><span>🃏</span> Memória Capitais</button>
+            <button class="game-filter-btn" data-game="Desafio Palavras"><span>🚀</span> Desafio Palavras</button>
+            <button class="game-filter-btn" data-game="Puzzle 15"><span>🧩</span> Puzzle 15</button>
+            <button class="game-filter-btn" data-game="Quiz Educativo"><span>🧠</span> Quiz Educativo</button>
+            <button class="game-filter-btn" data-game="Belta Racing"><span>🏎️</span> Belta Racing</button>
+            <button class="game-filter-btn" data-game="Quiz - Educação Financeira"><span>📈</span> Quiz - Educação Financeira</button>
+            <button class="game-filter-btn" data-game="Quiz - Empreendedorismo"><span>🚀</span> Quiz - Empreendedorismo</button>
+        </div>
+
+        <!-- Área que recebe o ranking do jogo selecionado -->
+        <div id="ranking-stage" class="ranking-stage">
+            <div class="empty-ranking">
+                <div class="big">🎮</div>
+                <h3>Nenhum jogo selecionado</h3>
+                <p>Toque ou clique em um dos jogos acima para carregar o ranking.</p>
+            </div>
+        </div>
+
+        <!-- Navegação -->
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn nav-btn-secondary"><span>🏠</span> Voltar ao Portal</a>
+            <button id="btn-refresh" class="nav-btn" disabled><span>🔄</span> Atualizar jogo atual</button>
         </div>
     </div>
 
-    <!-- Navegação -->
-    <div class="nav-buttons">
-        <a href="index.html" class="nav-btn nav-btn-secondary"><span>🏠</span> Voltar ao Portal</a>
-        <button id="btn-refresh" class="nav-btn" disabled><span>🔄</span> Atualizar jogo atual</button>
-    </div>
-</div>
+    <!-- Import Firebase Config -->
+    <script type="module" src="firebase-config.js"></script>
 
-<!-- Import Firebase Config -->
-<script type="module" src="firebase-config.js"></script>
+    <script>
+        // Configuração visual por jogo (ícone/cor)
+        const GAME_CONFIG = {
+            'Tabuada Ninja': { icon: '🥷', color: '#e74c3c' },
+            'Mapa do Brasil': { icon: '🗺️', color: '#3498db' },
+            'Memória Capitais': { icon: '🃏', color: '#9b59b6' },
+            'Desafio Palavras': { icon: '🚀', color: '#e67e22' },
+            'Puzzle 15': { icon: '🧩', color: '#1abc9c' },
+            'Quiz Educativo': { icon: '🧠', color: '#f1c40f' },
+            'Belta Racing': { icon: '🏎️', color: '#e74c3c' },
+            'Quiz - Educação Financeira': { icon: '📈', color: '#f1c40f' },
+            'Quiz - Empreendedorismo': { icon: '🚀', color: '#e67e22' }
+        };
 
-<script>
-    // Configuração visual por jogo (ícone/cor)
-    const GAME_CONFIG = {
-        'Tabuada Ninja':   { icon: '🥷', color: '#e74c3c' },
-        'Mapa do Brasil':  { icon: '🗺️', color: '#3498db' },
-        'Memória Capitais':{ icon: '🃏', color: '#9b59b6' },
-        'Desafio Palavras':{ icon: '🚀', color: '#e67e22' },
-        'Puzzle 15':       { icon: '🧩', color: '#1abc9c' },
-        'Quiz Educativo':  { icon: '🧠', color: '#f1c40f' },
-        'Belta Racing':    { icon: '🏎️', color: '#e74c3c' },
-        'Quiz - Educação Financeira': { icon: '📈', color: '#f1c40f' },
-        'Quiz - Empreendedorismo': { icon: '🚀', color: '#e67e22' }
-    };
-    const GAMES_LIST = Object.keys(GAME_CONFIG);
+        const GAMES_LIST = Object.keys(GAME_CONFIG);
 
-    // Estado
-    let currentGame = null;
+        // Estado
+        let currentGame = null;
 
-    // Espera helpers do Firebase ficarem disponíveis
-    async function waitForFirebaseHelpers(timeoutMs = 5000) {
-        const start = Date.now();
-        while (Date.now() - start < timeoutMs) {
-            if (typeof window.obterRanking === 'function') return true;
-            await new Promise(r => setTimeout(r, 100));
-        }
-        return false;
-    }
-
-    function setActiveFilterButton(gameName) {
-        document.querySelectorAll('.game-filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.game === gameName);
-        });
-    }
-
-    function showStage(html) {
-        const stage = document.getElementById('ranking-stage');
-        stage.innerHTML = html;
-    }
-
-    function showLoading() {
-        showStage(`
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Carregando ranking...</p>
-            </div>
-        `);
-    }
-
-    function showHardError(msg) {
-        showStage(`
-            <div class="empty-ranking">
-                <div class="big">⚠️</div>
-                <h3>Não foi possível carregar o ranking</h3>
-                <p>${msg}</p>
-            </div>
-        `);
-    }
-
-    function createRankingCard(gameName, rankingData) {
-        const cfg = GAME_CONFIG[gameName] || { icon: '🎮', color: '#95a5a6' };
-
-        let playersHTML = '';
-        (rankingData || []).forEach((player, index) => {
-            const posClass = `position position-${index + 1}`;
-            playersHTML += `
-                <li class="ranking-item">
-                    <div class="${posClass}">${index + 1}</div>
-                    <img src="${(player && player.foto) ? player.foto : 'https://via.placeholder.com/40'}"
-                         alt="${(player && player.nickname) ? player.nickname : 'Jogador'}"
-                         class="player-photo"
-                         onerror="this.src='https://via.placeholder.com/40'">
-                    <div class="player-info">
-                        <span class="player-name">${(player && player.nickname) ? player.nickname : 'Jogador'}</span>
-                        <span class="ranking-date">${formatDate(player && player.data)}</span>
-                    </div>
-                    <div class="player-score">${(player && player.pontos != null) ? player.pontos : 0} pts</div>
-                </li>
-            `;
-        });
-
-        const card = document.createElement('div');
-        card.className = 'ranking-card';
-        card.style.borderTop = `5px solid ${cfg.color}`;
-        card.innerHTML = `
-            <div class="ranking-header">
-                <div>
-                    <div class="game-title">${cfg.icon} ${gameName}</div>
-                    <div class="ranking-sub">${(rankingData && rankingData.length) ? `${rankingData.length} jogadores no ranking` : 'Sem pontuações ainda'}</div>
-                </div>
-                <div class="game-icon">${cfg.icon}</div>
-            </div>
-
-            ${(rankingData && rankingData.length) ? `
-                <ul class="ranking-list">${playersHTML}</ul>
-            ` : `
-                <div class="empty-ranking" style="margin-top:10px;">
-                    <div class="big">📭</div>
-                    <h3>Nenhuma pontuação ainda</h3>
-                    <p>Seja o primeiro a jogar ${gameName}!</p>
-                </div>
-            `}
-        `;
-        return card;
-    }
-
-    function formatDate(dateString) {
-        if (!dateString) return 'Data desconhecida';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return 'Data desconhecida';
-        const now = new Date();
-        const diffMs = now - date;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        if (diffDays === 0) return 'Hoje';
-        if (diffDays === 1) return 'Ontem';
-        if (diffDays < 7) return `Há ${diffDays} dias`;
-        return date.toLocaleDateString('pt-BR');
-    }
-
-    async function loadRanking(gameName) {
-        // Ativa/desativa UI
-        setActiveFilterButton(gameName);
-        document.getElementById('btn-refresh').disabled = true;
-        currentGame = gameName;
-
-        // Loading
-        showLoading();
-
-        // Garante helpers do Firebase
-        const ready = await waitForFirebaseHelpers();
-        if (!ready || typeof window.obterRanking !== 'function') {
-            showHardError('Serviço de ranking indisponível. Tente novamente em alguns segundos.');
-            return;
+        // Espera helpers do Firebase ficarem disponíveis
+        async function waitForFirebaseHelpers(timeoutMs = 5000) {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+                if (typeof window.obterRanking === 'function') return true;
+                await new Promise(r => setTimeout(r, 100));
+            }
+            return false;
         }
 
-        try {
-            const data = await window.obterRanking(gameName);
-            const safeData = Array.isArray(data) ? data : [];
-            // Renderiza card único do jogo selecionado
+        function setActiveFilterButton(gameName) {
+            document.querySelectorAll('.game-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.game === gameName);
+            });
+        }
+
+        function showStage(html) {
             const stage = document.getElementById('ranking-stage');
-            stage.innerHTML = '';
-            stage.appendChild(createRankingCard(gameName, safeData));
-            document.getElementById('btn-refresh').disabled = false;
-        } catch (error) {
-            console.error('Erro ao carregar ranking:', error);
-            showHardError(error && error.message ? error.message : 'Erro desconhecido ao obter dados do ranking.');
+            stage.innerHTML = html;
         }
-    }
 
-    function setupFilters() {
-        document.querySelectorAll('.game-filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const gameName = btn.dataset.game;
-                if (GAMES_LIST.includes(gameName)) loadRanking(gameName);
+        function showLoading() {
+            showStage(`
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Carregando ranking...</p>
+                </div>
+            `);
+        }
+
+        function showHardError(msg) {
+            showStage(`
+                <div class="empty-ranking">
+                    <div class="big">⚠️</div>
+                    <h3>Não foi possível carregar o ranking</h3>
+                    <p>${msg}</p>
+                </div>
+            `);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Data desconhecida';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Data desconhecida';
+
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Hoje';
+            if (diffDays === 1) return 'Ontem';
+            if (diffDays < 7) return `Há ${diffDays} dias`;
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatPoints(points) {
+            const n = Math.round(Number(points) || 0);
+            return n.toLocaleString('pt-BR');
+        }
+
+        function createRankingCard(gameName, rankingData) {
+            const cfg = GAME_CONFIG[gameName] || { icon: '🎮', color: '#95a5a6' };
+
+            let playersHTML = '';
+            (rankingData || []).forEach((player, index) => {
+                const posClass = `position position-${index + 1}`;
+                const nickname = (player && player.nickname) ? player.nickname : 'Jogador';
+                const foto = (player && player.foto) ? player.foto : 'https://via.placeholder.com/40';
+
+                playersHTML += `
+                    <li class="ranking-item">
+                        <div class="${posClass}">${index + 1}</div>
+                        <img src="${foto}"
+                             alt="${nickname}"
+                             class="player-photo"
+                             onerror="this.src='https://via.placeholder.com/40'">
+                        <div class="player-info">
+                            <span class="player-name">${nickname}</span>
+                            <span class="ranking-date">${formatDate(player && player.data)}</span>
+                        </div>
+                        <div class="player-score">${formatPoints(player && player.pontos)} pts</div>
+                    </li>
+                `;
+            });
+
+            const card = document.createElement('div');
+            card.className = 'ranking-card';
+            card.style.borderTop = `5px solid ${cfg.color}`;
+            card.innerHTML = `
+                <div class="ranking-header">
+                    <div>
+                        <div class="game-title">${cfg.icon} ${gameName}</div>
+                        <div class="ranking-sub">
+                            ${(rankingData && rankingData.length) ? `${rankingData.length} jogadores no ranking` : 'Sem pontuações ainda'}
+                        </div>
+                    </div>
+                    <div class="game-icon">${cfg.icon}</div>
+                </div>
+
+                ${(rankingData && rankingData.length) ? `
+                    <ul class="ranking-list">${playersHTML}</ul>
+                ` : `
+                    <div class="empty-ranking" style="margin-top:10px;">
+                        <div class="big">📭</div>
+                        <h3>Nenhuma pontuação ainda</h3>
+                        <p>Seja o primeiro a jogar ${gameName}!</p>
+                    </div>
+                `}
+            `;
+            return card;
+        }
+
+        async function loadRanking(gameName) {
+            setActiveFilterButton(gameName);
+            document.getElementById('btn-refresh').disabled = true;
+            currentGame = gameName;
+
+            showLoading();
+
+            const ready = await waitForFirebaseHelpers();
+            if (!ready || typeof window.obterRanking !== 'function') {
+                showHardError('Serviço de ranking indisponível. Tente novamente em alguns segundos.');
+                return;
+            }
+
+            try {
+                const data = await window.obterRanking(gameName);
+                const safeData = Array.isArray(data) ? data : [];
+
+                const stage = document.getElementById('ranking-stage');
+                stage.innerHTML = '';
+                stage.appendChild(createRankingCard(gameName, safeData));
+
+                document.getElementById('btn-refresh').disabled = false;
+            } catch (error) {
+                console.error('Erro ao carregar ranking:', error);
+                showHardError(error && error.message ? error.message : 'Erro desconhecido ao obter dados do ranking.');
+            }
+        }
+
+        function setupFilters() {
+            document.querySelectorAll('.game-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const gameName = btn.dataset.game;
+                    if (GAMES_LIST.includes(gameName)) loadRanking(gameName);
+                });
+            });
+        }
+
+        function applyInitialFilterFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const jogoParam = params.get('jogo');
+
+            if (jogoParam && GAMES_LIST.includes(jogoParam)) {
+                loadRanking(jogoParam);
+            } else {
+                setActiveFilterButton(null);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupFilters();
+            applyInitialFilterFromURL();
+
+            document.getElementById('btn-refresh').addEventListener('click', async () => {
+                if (currentGame) {
+                    await loadRanking(currentGame);
+                }
             });
         });
-    }
-
-    function applyInitialFilterFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        const jogoParam = params.get('jogo');
-        // Tenta corresponder exatamente; se vier URL-encoded de outros jogos com espaço, ainda funciona
-        if (jogoParam && GAMES_LIST.includes(jogoParam)) {
-            loadRanking(jogoParam);
-        } else {
-            // Sem seleção inicial: mantém estado vazio/instrucional
-            setActiveFilterButton(null);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        setupFilters();
-        applyInitialFilterFromURL();
-
-        // Botão atualizar somente recarrega o jogo atual
-        document.getElementById('btn-refresh').addEventListener('click', async () => {
-            if (currentGame) {
-                await loadRanking(currentGame);
-            }
-        });
-    });
-</script>
+    </script>
 </body>
 </html>
