@@ -22,7 +22,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
 
-// Configuração do seu projeto
+// Configuração do projeto
 const firebaseConfig = {
   apiKey: "AIzaSyCERKownSh35zadwoGQR55HsNweLXMwMHQ",
   authDomain: "belta-games.firebaseapp.com",
@@ -33,16 +33,16 @@ const firebaseConfig = {
   measurementId: "G-5E5K3WM1VK"
 };
 
-// 1. Inicializa o App
+// Inicializa o App
 const app = initializeApp(firebaseConfig);
 
-// 2. Inicializa o App Check
+// App Check
 const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'),
   isTokenAutoRefreshEnabled: true
 });
 
-// 3. Inicializa os Serviços
+// Serviços
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
@@ -65,6 +65,15 @@ function getSaoPauloDateKey(date = new Date()) {
   return `${map.year}-${map.month}-${map.day}`;
 }
 
+function getDateKeyFromISO(isoString) {
+  if (!isoString) return null;
+
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return null;
+
+  return getSaoPauloDateKey(date);
+}
+
 function getSaoPauloNowText() {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIMEZONE_SP,
@@ -84,13 +93,15 @@ function slugifyGameName(nome) {
 
 async function waitForCurrentUser(timeoutMs = 5000) {
   const start = Date.now();
+
   while (!auth.currentUser && Date.now() - start < timeoutMs) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  return auth.currentUser;
+
+  return auth.currentUser || null;
 }
 
-// ===== FUNÇÕES DE AUTENTICAÇÃO =====
+// ===== AUTENTICAÇÃO =====
 
 window.loginGoogle = async () => {
   try {
@@ -142,7 +153,37 @@ window.observarUsuario = (callback) => {
   });
 };
 
-// ===== FUNÇÕES DE PERFIL =====
+// Helper para aguardar a sessão já existente
+window.aguardarUsuarioLogado = (timeoutMs = 5000) => {
+  return new Promise((resolve) => {
+    if (auth.currentUser) {
+      resolve(auth.currentUser);
+      return;
+    }
+
+    let resolved = false;
+    let unsubscribe = null;
+
+    const timer = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      if (unsubscribe) unsubscribe();
+      resolve(null);
+    }, timeoutMs);
+
+    unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (resolved) return;
+      if (user) {
+        resolved = true;
+        clearTimeout(timer);
+        if (unsubscribe) unsubscribe();
+        resolve(user);
+      }
+    });
+  });
+};
+
+// ===== PERFIL =====
 
 window.salvarNovoNickname = async (nickname) => {
   try {
@@ -169,42 +210,45 @@ window.salvarNovoNickname = async (nickname) => {
   }
 };
 
-// ===== FUNÇÃO PARA LIMITAR 1 JOGO POR DIA =====
-
-window.getSaoPauloNowText = getSaoPauloNowText;
-
-window.podeJogarHoje = async (nomeJogo) => {
+// ===== TRAVA SIMPLES: 1 VEZ POR DIA =====
+// Usa o próprio ranking salvo para verificar se o usuário já jogou hoje.
+window.jaJogouHoje = async (nomeJogo) => {
   try {
     const user = await waitForCurrentUser();
-    if (!user) {
-      return { ok: false, motivo: "nao-logado" };
-    }
+    if (!user) return false;
 
-    const dateSP = getSaoPauloDateKey();
-    const playId = `${user.uid}_${slugifyGameName(nomeJogo)}_${dateSP}`;
-    const playRef = doc(db, "dailyPlays", playId);
-    const snap = await getDoc(playRef);
+    const hojeSP = getSaoPauloDateKey();
 
-    if (snap.exists()) {
-      return { ok: false, motivo: "ja-jogou", dateSP };
-    }
+    // Puxa apenas os registros do usuário
+    const q = query(
+      collection(db, "rankings"),
+      where("uid", "==", user.uid)
+    );
 
-    await setDoc(playRef, {
-      uid: user.uid,
-      jogo: nomeJogo,
-      dateSP,
-      criadoEmSP: getSaoPauloNowText(),
-      createdAt: serverTimestamp()
+    const snap = await getDocs(q);
+
+    let jogouHoje = false;
+
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (!data) return;
+
+      if (data.jogo !== nomeJogo) return;
+
+      const dataSP = getDateKeyFromISO(data.data);
+      if (dataSP === hojeSP) {
+        jogouHoje = true;
+      }
     });
 
-    return { ok: true, dateSP };
+    return jogouHoje;
   } catch (error) {
-    console.error("Erro ao verificar jogo diário:", error);
-    return { ok: false, motivo: "erro" };
+    console.error("Erro ao verificar jogo do dia:", error);
+    return false;
   }
 };
 
-// ===== FUNÇÕES DE RANKING =====
+// ===== RANKING =====
 
 window.salvarPontos = async (nomeJogo, pontos) => {
   try {
@@ -254,3 +298,6 @@ window.obterRanking = async (nomeJogo) => {
     return [];
   }
 };
+
+window.getSaoPauloNowText = getSaoPauloNowText;
+window.getSaoPauloDateKey = getSaoPauloDateKey;
