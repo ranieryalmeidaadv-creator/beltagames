@@ -5,328 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ranking Geral - Quizzes - BeLTA Games</title>
 
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            startPink: '#FF007F',
+            idbCyan: '#06B6D4',
+            idbBlue: '#0F172A',
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     body {
-      font-family: 'Comic Sans MS', sans-serif;
-      background: linear-gradient(135deg, #8e44ad, #3498db);
-      color: white;
-      min-height: 100vh;
-      padding: 16px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #090D16;
     }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 8px;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 18px;
-      background: rgba(255,255,255,0.12);
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-
-    .header h1 {
-      font-size: 2.2rem;
-      margin-bottom: 8px;
-      text-shadow: 2px 2px 0 #000;
-    }
-
-    .header p {
-      opacity: 0.95;
-      font-size: 1rem;
-    }
-
-    .subtitle-card {
-      margin-bottom: 18px;
-      text-align: center;
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .subtitle-card strong {
-      color: #f1c40f;
-    }
-
-    .ranking-card {
-      background: rgba(255,255,255,0.96);
-      color: #2c3e50;
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.22);
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-
-    .ranking-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 14px;
-      margin-bottom: 16px;
-      border-bottom: 3px solid #f1c40f;
-    }
-
-    .ranking-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      line-height: 1.15;
-      word-break: break-word;
-    }
-
-    .ranking-subtitle {
-      margin-top: 6px;
-      font-size: 0.95rem;
-      color: #7f8c8d;
-    }
-
-    .ranking-icon {
-      font-size: 2rem;
-      flex-shrink: 0;
-    }
-
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 700px;
-    }
-
-    thead th {
-      text-align: left;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #7f8c8d;
-      padding: 12px 10px;
-      border-bottom: 2px solid #e5e7eb;
-    }
-
-    tbody td {
-      padding: 12px 10px;
-      border-bottom: 1px solid #edf2f7;
-      vertical-align: middle;
-    }
-
-    tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    .pos-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      color: white;
-      background: #3498db;
-    }
-
-    .pos-1 { background: #f1c40f; color: #2c3e50; }
-    .pos-2 { background: #95a5a6; }
-    .pos-3 { background: #e67e22; }
-
-    .user-cell {
-      font-weight: 800;
-      color: #2c3e50;
-      word-break: break-word;
-    }
-
-    .nick-cell {
-      color: #34495e;
-      word-break: break-word;
-    }
-
-    .score-cell {
-      font-weight: 900;
-      color: #27ae60;
-      white-space: nowrap;
-    }
-
-    .game-tag {
-      display: inline-block;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      font-weight: 800;
-      background: #eef2ff;
-      color: #4338ca;
-      white-space: nowrap;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 32px 16px;
-      color: #2c3e50;
-    }
-
-    .spinner {
-      width: 46px;
-      height: 46px;
-      margin: 0 auto 14px;
-      border-radius: 50%;
-      border: 5px solid rgba(52, 152, 219, 0.25);
-      border-top-color: #3498db;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .empty {
-      text-align: center;
-      padding: 30px 18px;
-      background: rgba(255,255,255,0.96);
-      color: #2c3e50;
-      border-radius: 20px;
-      border: 3px dashed #f1c40f;
-    }
-
-    .empty .big {
-      font-size: 2.8rem;
-      margin-bottom: 10px;
-    }
-
-    .nav-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    .nav-btn {
-      padding: 13px 20px;
-      border-radius: 14px;
-      text-decoration: none;
-      font-weight: 800;
-      color: white;
-      background: #34495e;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .nav-btn.primary {
-      background: #27ae60;
-    }
-
-    .nav-btn:hover {
-      filter: brightness(1.05);
-      transform: translateY(-1px);
-    }
-
-    .filters {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-
-    .filter-chip {
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: white;
-      font-size: 0.9rem;
-      font-weight: 800;
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-
-      .header h1 {
-        font-size: 1.7rem;
-      }
-
-      .header p {
-        font-size: 0.95rem;
-      }
-
-      .ranking-card {
-        padding: 14px;
-        border-radius: 18px;
-      }
-
-      .ranking-top {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .ranking-title {
-        font-size: 1.25rem;
-      }
-
-      .ranking-subtitle {
-        font-size: 0.88rem;
-      }
-
-      .nav-buttons {
-        flex-direction: column;
-      }
-
-      .nav-btn {
-        width: 100%;
-        justify-content: center;
-      }
+    .premium-transition {
+      transition: all 0.2s ease-in-out;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>🏆 Ranking Geral dos Quizzes</h1>
-      <p>Educação Financeira + Empreendedorismo</p>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <header class="w-full bg-slate-950/80 border-b border-slate-800/80 px-4 py-4 sm:px-8 flex justify-between items-center z-50">
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-extrabold tracking-wider text-white">
+        🎮 BeLTA Games
+      </span>
+      <span class="text-[10px] bg-startPink/10 text-startPink border border-startPink/30 px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">
+        Ranking Geral
+      </span>
+    </div>
+    <a href="index.html" class="text-xs sm:text-sm text-slate-400 hover:text-white premium-transition flex items-center gap-1.5">
+      🏠 Voltar ao Portal
+    </a>
+  </header>
+
+  <main class="flex-grow flex flex-col items-center justify-start px-4 py-8 sm:py-12 max-w-4xl mx-auto w-full z-10">
+
+    <div class="text-center mb-8 w-full">
+      <span class="text-3xl block mb-2">🏆</span>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Ranking Geral dos Quizzes</h1>
+      <p class="text-slate-400 text-xs sm:text-sm mt-1">
+        Educação Financeira + Empreendedorismo
+      </p>
     </div>
 
-    <div class="filters">
-      <span class="filter-chip">📈 Quiz - Educação Financeira</span>
-      <span class="filter-chip">🚀 Quiz - Empreendedorismo</span>
+    <div class="w-full flex flex-col sm:flex-row gap-3 justify-center mb-8">
+      <span class="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-idbCyan/20 bg-idbCyan/10 text-sm font-bold text-idbCyan w-full sm:w-auto">
+        📈 Quiz - Educação Financeira
+      </span>
+      <span class="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-startPink/20 bg-startPink/10 text-sm font-bold text-startPink w-full sm:w-auto">
+        🚀 Quiz - Empreendedorismo
+      </span>
     </div>
 
-    <div id="ranking-area">
-      <div class="loading">
-        <div class="spinner"></div>
-        <p>Carregando ranking...</p>
+    <div id="ranking-stage" class="w-full">
+      <div class="text-center py-12 px-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl">
+        <span class="text-4xl block mb-3">🎮</span>
+        <h3 class="text-lg font-bold text-white mb-1">Carregando ranking...</h3>
+        <p class="text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">
+          Aguarde enquanto buscamos as pontuações no Firebase.
+        </p>
       </div>
     </div>
 
-    <div class="nav-buttons">
-      <a class="nav-btn" href="index.html">🏠 Voltar ao Portal</a>
-      <button class="nav-btn primary" id="btn-refresh">🔄 Atualizar</button>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center mt-10 w-full">
+      <a href="index.html" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold px-6 py-3 rounded-xl premium-transition text-xs sm:text-sm flex items-center gap-2 justify-center">
+        <span>🏠</span> Menu Principal
+      </a>
+      <button id="btn-refresh" class="bg-slate-900 hover:bg-slate-800 disabled:opacity-40 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold px-6 py-3 rounded-xl premium-transition text-xs sm:text-sm flex items-center gap-2 justify-center">
+        <span>🔄</span> Atualizar Ranking
+      </button>
     </div>
-  </div>
+  </main>
+
+  <footer class="w-full bg-slate-950 border-t border-slate-900 py-4 text-center text-[11px] text-slate-500 px-4">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>© 2026 BeLTA Games. Edição Especial IDB START 2026.</span>
+      <span>Desenvolvido por Capybara Labs</span>
+    </div>
+  </footer>
 
   <script type="module" src="firebase-config.js"></script>
 
   <script>
+    function formatDate(dateString) {
+      if (!dateString) return 'Data desconhecida';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Data desconhecida';
+
+      const now = new Date();
+      const diffMs = now - date;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) return 'Hoje';
+      if (diffDays === 1) return 'Ontem';
+      if (diffDays < 7) return `Há ${diffDays} dias`;
+      return date.toLocaleDateString('pt-BR');
+    }
+
     function formatPoints(points) {
       const n = Math.round(Number(points) || 0);
       return n.toLocaleString('pt-BR');
@@ -341,102 +125,116 @@
         .replaceAll("'", "&#039;");
     }
 
-    function renderRanking(data) {
-      const area = document.getElementById('ranking-area');
+    function showLoading() {
+      const stage = document.getElementById('ranking-stage');
+      stage.innerHTML = `
+        <div class="text-center py-16 px-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 mx-auto mb-4"></div>
+          <p class="text-slate-400 text-sm font-medium">Buscando pontuações no servidor...</p>
+        </div>
+      `;
+    }
 
-      if (!Array.isArray(data) || data.length === 0) {
-        area.innerHTML = `
-          <div class="empty">
-            <div class="big">📭</div>
-            <h3>Nenhum resultado encontrado</h3>
-            <p>Não há pontuações registradas para os dois quizzes ainda.</p>
-          </div>
-        `;
-        return;
-      }
+    function showHardError(msg) {
+      const stage = document.getElementById('ranking-stage');
+      stage.innerHTML = `
+        <div class="text-center py-12 px-6 bg-slate-900/40 border border-red-500/10 rounded-2xl">
+          <span class="text-3xl block mb-3">⚠️</span>
+          <h3 class="text-red-400 font-bold mb-1">Não foi possível carregar</h3>
+          <p class="text-slate-400 text-xs sm:text-sm max-w-xs mx-auto leading-relaxed">${msg}</p>
+        </div>
+      `;
+    }
 
-      let rows = '';
-      data.forEach((item, index) => {
+    function createRankingCard(rankingData) {
+      let playersHTML = '';
+
+      (rankingData || []).forEach((player, index) => {
         const pos = index + 1;
-        const posClass = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
-        const user = escapeHtml(item.nomeReal || item.userName || item.email || 'Jogador');
-        const nick = escapeHtml(item.nickname || 'Sem nick');
-        const jogo = escapeHtml(item.jogo || 'Quiz');
-        const pontos = formatPoints(item.pontos);
+        const nickname = player?.nickname ? player.nickname : 'Jogador';
+        const userName = player?.nomeReal || player?.email || player?.uid || 'Usuário';
+        const pontos = formatPoints(player?.pontos);
 
-        rows += `
-          <tr>
-            <td><span class="pos-badge ${posClass}">${pos}</span></td>
-            <td class="user-cell">${user}</td>
-            <td class="nick-cell">${nick}</td>
-            <td><span class="game-tag">${jogo}</span></td>
-            <td class="score-cell">${pontos} pts</td>
-          </tr>
+        let posBadge = '';
+        if (pos === 1) {
+          posBadge = `<span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black text-sm">🥇</span>`;
+        } else if (pos === 2) {
+          posBadge = `<span class="w-8 h-8 rounded-lg bg-slate-400/20 text-slate-300 border border-slate-400/30 flex items-center justify-center font-black text-sm">🥈</span>`;
+        } else if (pos === 3) {
+          posBadge = `<span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center font-black text-sm">🥉</span>`;
+        } else {
+          posBadge = `<span class="w-8 h-8 rounded-lg bg-slate-950 text-slate-500 border border-slate-850 flex items-center justify-center font-bold text-xs">${pos}</span>`;
+        }
+
+        playersHTML += `
+          <li class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-950/40 border border-slate-850 rounded-xl hover:border-slate-800 hover:bg-slate-950 premium-transition">
+            <div class="flex-shrink-0">${posBadge}</div>
+
+            <div class="flex-grow min-w-0">
+              <span class="block font-bold text-sm sm:text-base text-white truncate">${escapeHtml(userName)}</span>
+              <span class="block text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-0.5">${escapeHtml(nickname)}</span>
+              <span class="block text-[10px] text-slate-600 font-semibold mt-0.5">${formatDate(player?.data)}</span>
+            </div>
+
+            <div class="text-right flex-shrink-0">
+              <span class="text-sm sm:text-base font-extrabold text-idbCyan">${pontos}</span>
+              <span class="block text-[8px] text-slate-600 font-black uppercase tracking-widest">pontos</span>
+            </div>
+          </li>
         `;
       });
 
-      area.innerHTML = `
-        <div class="ranking-card">
-          <div class="ranking-top">
+      return `
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-5 mb-5 gap-4">
             <div>
-              <div class="ranking-title">📊 Ranking Geral dos Quizzes</div>
-              <div class="ranking-subtitle">${data.length} registros no ranking combinado</div>
+              <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                <span>📊</span> Ranking Geral dos Quizzes
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">
+                ${rankingData.length} registros combinados
+              </p>
             </div>
-            <div class="ranking-icon">🏆</div>
+            <div class="text-2xl">🏆</div>
           </div>
 
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Classificação</th>
-                  <th>Usuário</th>
-                  <th>Nick</th>
-                  <th>Jogo</th>
-                  <th>Pontuação</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows}
-              </tbody>
-            </table>
-          </div>
+          <ul class="flex flex-col gap-2.5">
+            ${playersHTML}
+          </ul>
         </div>
       `;
     }
 
     async function carregarRanking() {
-      const area = document.getElementById('ranking-area');
-      area.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>Carregando ranking...</p>
-        </div>
-      `;
+      const stage = document.getElementById('ranking-stage');
+      showLoading();
 
       try {
         if (!window.obterRankingGeralQuizzes) {
-          area.innerHTML = `
-            <div class="empty">
-              <div class="big">⚠️</div>
-              <h3>Função de ranking não carregada</h3>
-              <p>Verifique se o firebase-config.js foi atualizado com a função obterRankingGeralQuizzes().</p>
+          showHardError('A função obterRankingGeralQuizzes() não foi carregada. Atualize o firebase-config.js.');
+          return;
+        }
+
+        const data = await window.obterRankingGeralQuizzes();
+        const safeData = Array.isArray(data) ? data : [];
+
+        if (!safeData.length) {
+          stage.innerHTML = `
+            <div class="text-center py-12 px-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl">
+              <span class="text-4xl block mb-3">📭</span>
+              <h3 class="text-lg font-bold text-white mb-1">Nenhuma pontuação registrada</h3>
+              <p class="text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">
+                Ainda não há resultados nos quizzes de Educação Financeira e Empreendedorismo.
+              </p>
             </div>
           `;
           return;
         }
 
-        const data = await window.obterRankingGeralQuizzes();
-        renderRanking(data);
+        stage.innerHTML = createRankingCard(safeData);
       } catch (error) {
         console.error(error);
-        area.innerHTML = `
-          <div class="empty">
-            <div class="big">⚠️</div>
-            <h3>Erro ao carregar ranking</h3>
-            <p>Não foi possível buscar os dados no Firebase.</p>
-          </div>
-        `;
+        showHardError('Erro ao buscar os dados no Firebase.');
       }
     }
 
