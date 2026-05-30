@@ -1,9 +1,28 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
 
-// Configuração do seu projeto (MANTIDA)
+// Configuração do seu projeto
 const firebaseConfig = {
   apiKey: "AIzaSyCERKownSh35zadwoGQR55HsNweLXMwMHQ",
   authDomain: "belta-games.firebaseapp.com",
@@ -17,9 +36,9 @@ const firebaseConfig = {
 // 1. Inicializa o App
 const app = initializeApp(firebaseConfig);
 
-// 2. Inicializa o Segurança (App Check) - COLE SUA CHAVE DO SITE ABAIXO
+// 2. Inicializa o App Check
 const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'), 
+  provider: new ReCaptchaV3Provider('6LevOM8sAAAAACcl4iWmw7Lk8SILH4z08YNd1CuE'),
   isTokenAutoRefreshEnabled: true
 });
 
@@ -27,6 +46,49 @@ const appCheck = initializeAppCheck(app, {
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+
+const TIMEZONE_SP = "America/Sao_Paulo";
+
+function getSaoPauloDateKey(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE_SP,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+
+  const map = {};
+  parts.forEach((p) => {
+    if (p.type !== "literal") map[p.type] = p.value;
+  });
+
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
+function getSaoPauloNowText() {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TIMEZONE_SP,
+    dateStyle: "full",
+    timeStyle: "medium"
+  }).format(new Date());
+}
+
+function slugifyGameName(nome) {
+  return String(nome || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function waitForCurrentUser(timeoutMs = 5000) {
+  const start = Date.now();
+  while (!auth.currentUser && Date.now() - start < timeoutMs) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return auth.currentUser;
+}
 
 // ===== FUNÇÕES DE AUTENTICAÇÃO =====
 
@@ -53,14 +115,29 @@ window.observarUsuario = (callback) => {
     if (user) {
       const userRef = doc(db, "usuarios", user.uid);
       const userSnap = await getDoc(userRef);
-      
+
       if (userSnap.exists()) {
-        callback({ autenticado: true, user, perfil: userSnap.data(), isNovoUsuario: false });
+        callback({
+          autenticado: true,
+          user,
+          perfil: userSnap.data(),
+          isNovoUsuario: false
+        });
       } else {
-        callback({ autenticado: true, user, perfil: null, isNovoUsuario: true });
+        callback({
+          autenticado: true,
+          user,
+          perfil: null,
+          isNovoUsuario: true
+        });
       }
     } else {
-      callback({ autenticado: false, user: null, perfil: null, isNovoUsuario: false });
+      callback({
+        autenticado: false,
+        user: null,
+        perfil: null,
+        isNovoUsuario: false
+      });
     }
   });
 };
@@ -69,7 +146,7 @@ window.observarUsuario = (callback) => {
 
 window.salvarNovoNickname = async (nickname) => {
   try {
-    const user = auth.currentUser;
+    const user = await waitForCurrentUser();
     if (!user) {
       alert("Usuário não logado!");
       return null;
@@ -83,7 +160,7 @@ window.salvarNovoNickname = async (nickname) => {
       foto: user.photoURL,
       criadoEm: new Date().toISOString()
     };
-    
+
     await setDoc(doc(db, "usuarios", user.uid), dados);
     return dados;
   } catch (error) {
@@ -92,27 +169,55 @@ window.salvarNovoNickname = async (nickname) => {
   }
 };
 
+// ===== FUNÇÃO PARA LIMITAR 1 JOGO POR DIA =====
+
+window.getSaoPauloNowText = getSaoPauloNowText;
+
+window.podeJogarHoje = async (nomeJogo) => {
+  try {
+    const user = await waitForCurrentUser();
+    if (!user) {
+      return { ok: false, motivo: "nao-logado" };
+    }
+
+    const dateSP = getSaoPauloDateKey();
+    const playId = `${user.uid}_${slugifyGameName(nomeJogo)}_${dateSP}`;
+    const playRef = doc(db, "dailyPlays", playId);
+    const snap = await getDoc(playRef);
+
+    if (snap.exists()) {
+      return { ok: false, motivo: "ja-jogou", dateSP };
+    }
+
+    await setDoc(playRef, {
+      uid: user.uid,
+      jogo: nomeJogo,
+      dateSP,
+      criadoEmSP: getSaoPauloNowText(),
+      createdAt: serverTimestamp()
+    });
+
+    return { ok: true, dateSP };
+  } catch (error) {
+    console.error("Erro ao verificar jogo diário:", error);
+    return { ok: false, motivo: "erro" };
+  }
+};
+
 // ===== FUNÇÕES DE RANKING =====
 
 window.salvarPontos = async (nomeJogo, pontos) => {
   try {
-    // Pequena espera para garantir que a sessão do usuário está ativa
-    if (!auth.currentUser) {
-      await new Promise(resolve => setTimeout(resolve, 600));
-    }
-
-    const user = auth.currentUser;
+    const user = await waitForCurrentUser();
     if (!user) {
       console.warn("⚠️ Falha ao detectar usuário no momento do salvamento.");
       return false;
     }
 
-    // Busca o nickname
     const userRef = doc(db, "usuarios", user.uid);
     const userSnap = await getDoc(userRef);
     const nickname = userSnap.exists() ? userSnap.data().nickname : user.displayName;
 
-    // Salva um NOVO documento para cada partida (conforme solicitado para testes)
     await addDoc(collection(db, "rankings"), {
       uid: user.uid,
       nickname: nickname,
@@ -121,7 +226,7 @@ window.salvarPontos = async (nomeJogo, pontos) => {
       pontos: pontos,
       data: new Date().toISOString()
     });
-    
+
     console.log("✅ Pontuação salva com sucesso!");
     return true;
   } catch (error) {
@@ -131,20 +236,21 @@ window.salvarPontos = async (nomeJogo, pontos) => {
 };
 
 window.obterRanking = async (nomeJogo) => {
-    try {
-        const q = query(
-            collection(db, "rankings"),
-            where("jogo", "==", nomeJogo),
-            orderBy("pontos", "desc"),
-            limit(10)
-        );
-        const snap = await getDocs(q);
-        return snap.docs.map((doc, index) => ({
-            posicao: index + 1,
-            ...doc.data()
-        }));
-    } catch (error) {
-        console.error("Erro ao buscar ranking:", error);
-        return [];
-    }
+  try {
+    const q = query(
+      collection(db, "rankings"),
+      where("jogo", "==", nomeJogo),
+      orderBy("pontos", "desc"),
+      limit(10)
+    );
+
+    const snap = await getDocs(q);
+    return snap.docs.map((doc, index) => ({
+      posicao: index + 1,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Erro ao buscar ranking:", error);
+    return [];
+  }
 };
