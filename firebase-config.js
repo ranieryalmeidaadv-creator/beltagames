@@ -285,7 +285,7 @@ window.obterRanking = async (nomeJogo) => {
       collection(db, "rankings"),
       where("jogo", "==", nomeJogo),
       orderBy("pontos", "desc"),
-      limit(10)
+      limit(20)
     );
 
     const snap = await getDocs(q);
