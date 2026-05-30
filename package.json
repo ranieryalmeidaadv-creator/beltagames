@@ -1,0 +1,12 @@
+{
+  "name": "beltagames-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scripts utilitários do BeLTA Games",
+  "scripts": {
+    "export": "node scripts/export-rankings.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.10.0"
+  }
+}

@@ -1,0 +1,11 @@
+# Service account / credenciais — NUNCA commitar
+scripts/serviceAccountKey.json
+serviceAccountKey.json
+*.serviceAccount.json
+
+# Saídas do export
+data/
+
+# Node
+node_modules/
+npm-debug.log*
