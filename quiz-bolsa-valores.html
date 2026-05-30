@@ -356,11 +356,7 @@
     <h2>📈 Quiz - Bolsa de Valores</h2>
     <p>Você pode jogar <strong>apenas 1 vez por dia</strong>.</p>
     <p>O horário usado é o de <strong>São Paulo</strong>.</p>
-
-    <div class="start-meta">
-      <div id="sp-now">Carregando horário de São Paulo...</div>
-    </div>
-
+    
     <button class="btn btn-yellow" id="btn-start" onclick="iniciarPartida()">
       ▶ Começar partida de hoje
     </button>
@@ -499,13 +495,6 @@
       el.style.display = 'none';
     }
 
-    function updateSaoPauloClock() {
-      const el = document.getElementById('sp-now');
-      if (el && typeof window.getSaoPauloNowText === 'function') {
-        el.textContent = `Agora em São Paulo: ${window.getSaoPauloNowText()}`;
-      }
-    }
-
     function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -522,9 +511,6 @@
         document.getElementById('btn-start').disabled = true;
         return;
       }
-
-      updateSaoPauloClock();
-      setInterval(updateSaoPauloClock, 1000);
 
       document.getElementById('game-container').style.display = 'none';
       document.getElementById('quiz-screen').style.display = 'none';
@@ -566,7 +552,7 @@
 
         if (jogouHoje) {
           setStartFeedback(
-            "⏳ Você já jogou hoje. Esse quiz libera apenas 1 partida por dia, seguindo o horário de São Paulo.",
+            "⏳ Você já jogou hoje. Esse quiz libera apenas 1 (uma) partida por dia.",
             "feedback-warning"
           );
           btn.disabled = false;
