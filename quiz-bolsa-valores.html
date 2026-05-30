@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <script type="module" src="firebase-config.js"></script>
+  <script src="perguntas-bolsa.js"></script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz - Bolsa de Valores - BeLTA Games</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background: linear-gradient(135deg, #3498db, #2c3e50);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 760px;
+      backdrop-filter: blur(10px);
+    }
+
+    .header h1 {
+      color: #f1c40f;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 8px;
+    }
+
+    .subtitle { color: #bdc3c7; }
+
+    #game-container {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      color: #2c3e50;
+      width: 100%;
+      max-width: 760px;
+      border-radius: 24px;
+      padding: 24px;
+      border: 4px solid #f1c40f;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+
+    .quiz-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      padding: 14px;
+      border-radius: 14px;
+      border: 3px solid #f1c40f;
+      color: white;
+    }
+
+    .stat-box {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #f1c40f;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #bdc3c7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 10px;
+      background: #ecf0f1;
+      border-radius: 5px;
+      margin: 14px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #2ecc71, #f1c40f);
+      width: 0%;
+      transition: width 0.4s;
+    }
+
+    .question-timer-container {
+      width: 100%;
+      height: 8px;
+      background: #ecf0f1;
+      border-radius: 4px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .question-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #2ecc71, #f1c40f);
+      transition: width 1s linear;
+      border-radius: 4px;
+    }
+
+    .question-text {
+      font-size: 1.4rem;
+      margin: 18px 0;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      color: #2c3e50;
+      border: 3px solid #2196f3;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .quiz-btn-option {
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      text-align: left;
+      background: linear-gradient(135deg, #f1c40f, #f39c12);
+      color: #7a3e00;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .quiz-btn-option:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    .quiz-btn-option.correct {
+      background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+      color: white !important;
+    }
+
+    .quiz-btn-option.wrong {
+      background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+      color: white !important;
+    }
+
+    .power-ups {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .power-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    }
+
+    .power-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #f1c40f, #f39c12);
+      color: #7a3e00;
+    }
+
+    .btn-blue {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    .combo-display {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4rem;
+      color: #f1c40f;
+      text-shadow: 0 0 25px #f1c40f;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #result-screen { display: none; }
+
+    .final-score {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #f1c40f;
+      text-shadow: 3px 3px 0 #000;
+      margin: 14px 0;
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 18px;
+      border: 4px solid #27ae60;
+      text-align: center;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .result-stat {
+      background: rgba(44,62,80,0.08);
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid #3498db;
+      text-align: center;
+    }
+
+    .result-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .result-label {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    #feedback-message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .feedback-success {
+      background: rgba(46, 204, 113, 0.2);
+      color: #27ae60;
+      border: 2px solid #27ae60;
+    }
+
+    .feedback-warning {
+      background: rgba(243, 156, 18, 0.2);
+      color: #f39c12;
+      border: 2px solid #f39c12;
+    }
+
+    .feedback-error {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 2px solid #e74c3c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>📈 Quiz - Bolsa de Valores</h1>
+    <p class="subtitle">Teste seus conhecimentos sobre educação financeira e mercado financeiro!</p>
+  </div>
+
+  <div id="combo-display" class="combo-display">COMBO!</div>
+
+  <div id="game-container">
+    <div id="quiz-screen">
+      <div class="quiz-stats">
+        <div class="stat-box">
+          <span class="stat-value" id="q-current">1</span>
+          <span class="stat-label">QUESTÃO</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value" id="score">0</span>
+          <span class="stat-label">PONTOS</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value" id="question-timer">30</span>
+          <span class="stat-label">SEGUNDOS</span>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="quiz-progress"></div>
+      </div>
+
+      <div class="question-timer-container">
+        <div class="question-timer-bar" id="question-timer-bar"></div>
+      </div>
+
+      <div class="question-text" id="q-text">Carregando...</div>
+
+      <div class="options-grid" id="options-box"></div>
+
+      <div class="power-ups">
+        <button class="power-btn" id="power-5050" onclick="usePowerUp('5050')">🎯 50/50 <span id="power-5050-count">1</span></button>
+        <button class="power-btn" id="power-time" onclick="usePowerUp('time')">⏱ +15s <span id="power-time-count">1</span></button>
+        <button class="power-btn" id="power-double" onclick="usePowerUp('double')">✨ 2x Pontos <span id="power-double-count">1</span></button>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-yellow" onclick="showInstructions()">📖 Como Pontuar</button>
+        <button class="btn btn-blue" onclick="location.reload()">🔄 Reiniciar</button>
+        <a class="btn btn-blue" href="index.html">🏠 Menu</a>
+      </div>
+    </div>
+
+    <div id="result-screen">
+      <div class="final-score" id="final-score">0</div>
+
+      <div class="stats-grid">
+        <div class="result-stat">
+          <span class="result-value" id="correct-answers">0/30</span>
+          <span class="result-label">ACERTOS</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="final-time">0s</span>
+          <span class="result-label">TEMPO MÉDIO</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="bonus-tempo">0</span>
+          <span class="result-label">BÔNUS TEMPO</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="bonus-combo">0</span>
+          <span class="result-label">BÔNUS COMBO</span>
+        </div>
+      </div>
+
+      <div id="feedback-message"></div>
+
+      <div class="controls">
+        <button class="btn btn-yellow" onclick="jogarNovamente()">🔄 Jogar Novamente</button>
+        <a class="btn btn-blue" href="ranking.html?jogo=Quiz%20-%20Bolsa%20de%20Valores">🏆 Ver Ranking</a>
+        <button id="btn-salvar" class="btn btn-blue" onclick="salvarPontuacaoQuiz(Number(document.getElementById('final-score').textContent))">💾 Salvar Pontuação</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const NOME_DO_JOGO = "Quiz - Bolsa de Valores";
+    const TOTAL_PERGUNTAS = 30;
+    const TEMPO_POR_PERGUNTA = 30;
+    const PONTOS_BASE_POR_ACERTO = 100;
+
+    let selectedQuestions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let timeLeft = TEMPO_POR_PERGUNTA;
+    let questionTimer = null;
+    let gameActive = false;
+
+    let correctAnswers = 0;
+    let totalTimeSpent = 0;
+    let averageTimePerQuestion = 0;
+    let consecutiveCorrect = 0;
+    let highestCombo = 0;
+    let comboMultiplier = 1;
+
+    let powerUps = {
+      '5050': { count: 1, used: false },
+      'time': { count: 1, used: false },
+      'double': { count: 1, used: false }
+    };
+
+    const comboDisplay = document.getElementById('combo-display');
+
+    window.addEventListener('load', () => {
+      if (typeof window.questionBank === 'undefined' || !Array.isArray(window.questionBank)) {
+        alert("⚠️ Erro: perguntas-bolsa.js não carregou ou está inválido.");
+        return;
+      }
+      if (questionBank.length < TOTAL_PERGUNTAS) {
+        alert(`⚠️ Apenas ${questionBank.length} perguntas disponíveis (mínimo: ${TOTAL_PERGUNTAS}).`);
+        return;
+      }
+
+      initQuiz();
+    });
+
+    function initQuiz() {
+      selectedQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, TOTAL_PERGUNTAS);
+
+      currentIdx = 0;
+      score = 0;
+      correctAnswers = 0;
+      totalTimeSpent = 0;
+      averageTimePerQuestion = 0;
+      consecutiveCorrect = 0;
+      highestCombo = 0;
+      comboMultiplier = 1;
+      gameActive = true;
+
+      resetPowerUps();
+
+      document.getElementById('quiz-screen').style.display = 'block';
+      document.getElementById('result-screen').style.display = 'none';
+      document.getElementById('q-current').textContent = '1';
+      document.getElementById('score').textContent = '0';
+      document.getElementById('question-timer').textContent = TEMPO_POR_PERGUNTA;
+      document.getElementById('quiz-progress').style.width = '0%';
+      document.getElementById('question-timer-bar').style.width = '100%';
+
+      renderQuestion();
+    }
+
+    function resetPowerUps() {
+      powerUps = {
+        '5050': { count: 1, used: false },
+        'time': { count: 1, used: false },
+        'double': { count: 1, used: false }
+      };
+
+      const map = [
+        ['power-5050', 'power-5050-count'],
+        ['power-time', 'power-time-count'],
+        ['power-double', 'power-double-count']
+      ];
+
+      map.forEach(([btnId, countId]) => {
+        const btn = document.getElementById(btnId);
+        const cnt = document.getElementById(countId);
+        if (btn) btn.disabled = false;
+        if (cnt) cnt.textContent = '1';
+      });
+    }
+
+    function renderQuestion() {
+      if (currentIdx >= selectedQuestions.length) {
+        endQuiz();
+        return;
+      }
+
+      const q = selectedQuestions[currentIdx];
+      document.getElementById('q-current').textContent = currentIdx + 1;
+      document.getElementById('score').textContent = score;
+      document.getElementById('q-text').textContent = q.q;
+
+      const progress = (currentIdx / TOTAL_PERGUNTAS) * 100;
+      document.getElementById('quiz-progress').style.width = `${progress}%`;
+
+      if (progress < 25) {
+        document.getElementById('quiz-progress').style.background = 'linear-gradient(90deg, #e74c3c, #f1c40f)';
+      } else if (progress < 75) {
+        document.getElementById('quiz-progress').style.background = 'linear-gradient(90deg, #f1c40f, #3498db)';
+      } else {
+        document.getElementById('quiz-progress').style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
+      }
+
+      const optionsBox = document.getElementById('options-box');
+      optionsBox.innerHTML = '';
+
+      const shuffledOptions = [...q.a].sort(() => Math.random() - 0.5);
+      shuffledOptions.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-btn-option';
+        btn.textContent = `${String.fromCharCode(65 + idx)}) ${opt}`;
+        btn.dataset.answer = opt;
+        btn.onclick = () => checkAnswer(opt, q.c);
+        optionsBox.appendChild(btn);
+      });
+
+      startQuestionTimer();
+    }
+
+    function startQuestionTimer() {
+      clearInterval(questionTimer);
+      timeLeft = TEMPO_POR_PERGUNTA;
+
+      document.getElementById('question-timer').textContent = timeLeft;
+      const bar = document.getElementById('question-timer-bar');
+      bar.style.width = '100%';
+      bar.style.background = 'linear-gradient(90deg, #2ecc71, #f1c40f)';
+
+      questionTimer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('question-timer').textContent = timeLeft;
+
+        const pct = (timeLeft / TEMPO_POR_PERGUNTA) * 100;
+        bar.style.width = `${pct}%`;
+
+        if (timeLeft <= 5) {
+          bar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+        } else if (timeLeft <= 15) {
+          bar.style.background = 'linear-gradient(90deg, #f1c40f, #e74c3c)';
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(questionTimer);
+          timeOutQuestion();
+        }
+      }, 1000);
+    }
+
+    function timeOutQuestion() {
+      const correct = selectedQuestions[currentIdx].c;
+      totalTimeSpent += TEMPO_POR_PERGUNTA;
+
+      const btns = document.querySelectorAll('.quiz-btn-option');
+      btns.forEach(b => {
+        b.disabled = true;
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else b.classList.add('wrong');
+      });
+
+      consecutiveCorrect = 0;
+      comboMultiplier = 1;
+
+      setTimeout(() => {
+        currentIdx++;
+        renderQuestion();
+      }, 1200);
+    }
+
+    function checkAnswer(selected, correct) {
+      if (!gameActive) return;
+
+      clearInterval(questionTimer);
+      const timeSpent = TEMPO_POR_PERGUNTA - timeLeft;
+      totalTimeSpent += timeSpent;
+
+      const btns = document.querySelectorAll('.quiz-btn-option');
+      btns.forEach(b => b.disabled = true);
+
+      const isCorrect = selected === correct;
+      let questionScore = 0;
+
+      if (isCorrect) {
+        correctAnswers++;
+        questionScore = PONTOS_BASE_POR_ACERTO;
+
+        const speedBonus = Math.max(0, (TEMPO_POR_PERGUNTA - timeSpent) * 3);
+        questionScore += speedBonus;
+
+        consecutiveCorrect++;
+        if (consecutiveCorrect > highestCombo) highestCombo = consecutiveCorrect;
+
+        if (consecutiveCorrect >= 3 && consecutiveCorrect < 6) comboMultiplier = 1.5;
+        else if (consecutiveCorrect >= 6 && consecutiveCorrect < 9) comboMultiplier = 2;
+        else if (consecutiveCorrect >= 9) comboMultiplier = 3;
+
+        questionScore = Math.floor(questionScore * comboMultiplier);
+
+        score += questionScore;
+        document.getElementById('score').textContent = score;
+
+        if (consecutiveCorrect >= 2) {
+          comboDisplay.textContent = `${consecutiveCorrect} COMBO!`;
+          comboDisplay.style.opacity = '1';
+          setTimeout(() => comboDisplay.style.opacity = '0', 700);
+        }
+      } else {
+        consecutiveCorrect = 0;
+        comboMultiplier = 1;
+      }
+
+      btns.forEach(b => {
+        if (b.dataset.answer === correct) b.classList.add('correct');
+        else if (b.dataset.answer === selected && !isCorrect) b.classList.add('wrong');
+        else b.style.opacity = '0.6';
+      });
+
+      setTimeout(() => {
+        currentIdx++;
+        renderQuestion();
+      }, 1200);
+    }
+
+    function usePowerUp(type) {
+      if (!powerUps[type] || powerUps[type].count <= 0 || powerUps[type].used) return;
+
+      if (type === '5050') {
+        const correct = selectedQuestions[currentIdx].c;
+        const btns = [...document.querySelectorAll('.quiz-btn-option')];
+        const wrongs = btns.filter(b => b.dataset.answer !== correct);
+
+        wrongs.sort(() => Math.random() - 0.5).slice(0, 2).forEach(b => {
+          b.style.opacity = '0.3';
+          b.style.pointerEvents = 'none';
+        });
+      }
+
+      if (type === 'time') {
+        timeLeft += 15;
+        document.getElementById('question-timer').textContent = timeLeft;
+        const bar = document.getElementById('question-timer-bar');
+        const pct = (timeLeft / (TEMPO_POR_PERGUNTA + 15)) * 100;
+        bar.style.width = `${pct}%`;
+      }
+
+      if (type === 'double') {
+        comboMultiplier = Math.max(comboMultiplier, 2);
+        alert('✨ 2x Pontos ativado para esta pergunta!');
+      }
+
+      powerUps[type].count--;
+      powerUps[type].used = true;
+
+      const btn = document.getElementById(`power-${type}`);
+      const cnt = document.getElementById(`power-${type}-count`);
+      if (btn) btn.disabled = true;
+      if (cnt) cnt.textContent = powerUps[type].count;
+    }
+
+    function endQuiz() {
+      gameActive = false;
+      clearInterval(questionTimer);
+
+      averageTimePerQuestion = totalTimeSpent / TOTAL_PERGUNTAS;
+      const final = calculateFinalScore();
+
+      document.getElementById('final-score').textContent = final.total;
+      document.getElementById('correct-answers').textContent = `${correctAnswers}/${TOTAL_PERGUNTAS}`;
+      document.getElementById('final-time').textContent = `${averageTimePerQuestion.toFixed(1)}s`;
+      document.getElementById('bonus-tempo').textContent = final.timeBonus;
+      document.getElementById('bonus-combo').textContent = final.comboBonus + final.perfectionBonus;
+
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'block';
+
+      setTimeout(() => salvarPontuacaoQuiz(final.total), 1500);
+    }
+
+    function calculateFinalScore() {
+      const baseScore = score;
+      const accuracy = (correctAnswers / TOTAL_PERGUNTAS) * 100;
+      const accuracyBonus = Math.floor(baseScore * (accuracy / 100) * 0.5);
+      const maxTimeBonus = 500;
+      const timeBonus = Math.max(0, maxTimeBonus - (averageTimePerQuestion * 10));
+      const comboBonus = highestCombo * 20;
+      const perfectionBonus = (correctAnswers === TOTAL_PERGUNTAS) ? 1000 : 0;
+      const unusedPowerBonus = Object.values(powerUps).reduce((t, p) => t + (p.count * 50), 0);
+
+      const total = baseScore + accuracyBonus + timeBonus + comboBonus + perfectionBonus + unusedPowerBonus;
+      return { total, timeBonus, comboBonus, perfectionBonus };
+    }
+
+    function jogarNovamente() {
+      document.getElementById('result-screen').style.display = 'none';
+      initQuiz();
+    }
+
+    function showInstructions() {
+      alert(`🏆 SISTEMA DE PONTUAÇÃO
+• 30 questões • 30s por questão
+• Acerto: 100 pts + (segundos restantes × 3)
+• Combo: 1.5x (3+), 2x (6+), 3x (9+)
+• Bônus final por precisão, tempo médio, combo máximo e perfeição
+• Poderes: 50/50, +15s, 2x pontos`);
+    }
+
+    async function salvarPontuacaoQuiz(pontos) {
+      const msg = document.getElementById('feedback-message');
+      try {
+        const ok = await window.salvarPontos(NOME_DO_JOGO, pontos);
+        if (ok) {
+          msg.textContent = '✅ Pontuação salva no ranking!';
+          msg.className = 'feedback-success';
+          msg.style.display = 'block';
+          const b = document.getElementById('btn-salvar');
+          if (b) b.style.display = 'none';
+        } else {
+          msg.textContent = '⚠️ Faça login para salvar no ranking.';
+          msg.className = 'feedback-warning';
+          msg.style.display = 'block';
+        }
+      } catch (e) {
+        console.error(e);
+        msg.textContent = '❌ Erro ao salvar pontuação.';
+        msg.className = 'feedback-error';
+        msg.style.display = 'block';
+      }
+    }
+
+    window.usePowerUp = usePowerUp;
+    window.jogarNovamente = jogarNovamente;
+    window.salvarPontuacaoQuiz = salvarPontuacaoQuiz;
+    window.showInstructions = showInstructions;
+  </script>
+</body>
+</html>
