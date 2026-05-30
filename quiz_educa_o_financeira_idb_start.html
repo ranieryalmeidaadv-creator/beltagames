@@ -7,7 +7,7 @@
   
   <script type="module" src="firebase-config.js"></script>
   <!-- Carrega as perguntas de Educação Financeira -->
-  <script src="perguntas-bolsa-valores.js"></script>
+  <script src="perguntas-bolsa.js"></script>
   
   <!-- Tailwind CSS para design ágil e de alto padrão -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -341,7 +341,7 @@
 
     window.addEventListener('load', () => {
       if (typeof window.questionBank === 'undefined' || !Array.isArray(window.questionBank)) {
-        setStartFeedback("⚠️ Erro crítico: perguntas-bolsa-valores.js não carregou ou está vazio.", true);
+        setStartFeedback("⚠️ Erro crítico: perguntas-bolsa.js não carregou ou está vazio.", true);
         document.getElementById('btn-start').disabled = true;
         return;
       }
