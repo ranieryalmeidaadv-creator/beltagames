@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking - BeLTA Games</title>
+    
+    <!-- Tailwind CSS para design moderno e responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        startPink: '#FF007F',
+                        idbCyan: '#06B6D4',
+                        idbBlue: '#0F172A',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #090D16;
+        }
+
+        .premium-transition {
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- CABEÇALHO -->
+    <header class="w-full bg-slate-950/80 border-b border-slate-800/80 px-4 py-4 sm:px-8 flex justify-between items-center z-50">
+        <div class="flex items-center gap-3">
+            <span class="text-lg font-extrabold tracking-wider text-white">
+                🎮 BeLTA Games
+            </span>
+            <span class="text-[10px] bg-startPink/10 text-startPink border border-startPink/30 px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">
+                IDB START 2026
+            </span>
+        </div>
+        <a href="index.html" class="text-xs sm:text-sm text-slate-400 hover:text-white premium-transition flex items-center gap-1.5">
+            🏠 Voltar ao Portal
+        </a>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-grow flex flex-col items-center justify-start px-4 py-8 sm:py-12 max-w-3xl mx-auto w-full z-10">
+        
+        <!-- TÍTULO DA SEÇÃO -->
+        <div class="text-center mb-8 w-full">
+            <span class="text-3xl block mb-2">🏆</span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Quadro de Líderes</h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Veja as melhores pontuações em tempo real do evento</p>
+        </div>
+
+        <!-- SELEÇÃO DE JOGOS (FILTROS) -->
+        <div class="w-full flex flex-col sm:flex-row gap-3 justify-center mb-8" id="filters">
+            <button class="game-filter-btn flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-sm font-bold text-slate-300 hover:text-white hover:border-slate-700 premium-transition w-full sm:w-auto" 
+                    data-game="Quiz - Educação Financeira">
+                <span>📈</span> Quiz - Educação Financeira
+            </button>
+            <button class="game-filter-btn flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-sm font-bold text-slate-300 hover:text-white hover:border-slate-700 premium-transition w-full sm:w-auto" 
+                    data-game="Quiz - Empreendedorismo">
+                <span>🚀</span> Quiz - Empreendedorismo
+            </button>
+        </div>
+
+        <!-- PALCO DINÂMICO DO RANKING -->
+        <div id="ranking-stage" class="w-full">
+            <div class="text-center py-12 px-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl">
+                <span class="text-4xl block mb-3">🎮</span>
+                <h3 class="text-lg font-bold text-white mb-1">Nenhum quiz selecionado</h3>
+                <p class="text-slate-400 text-sm max-w-xs mx-auto leading-relaxed">Selecione um dos desafios acima para carregar o ranking oficial.</p>
+            </div>
+        </div>
+
+        <!-- BOTÕES DE CONTROLE INFERIORES -->
+        <div class="flex gap-3 justify-center mt-10 w-full">
+            <a href="index.html" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold px-6 py-3 rounded-xl premium-transition text-xs sm:text-sm flex items-center gap-2">
+                <span>🏠</span> Menu Principal
+            </a>
+            <button id="btn-refresh" class="bg-slate-900 hover:bg-slate-800 disabled:opacity-40 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold px-6 py-3 rounded-xl premium-transition text-xs sm:text-sm flex items-center gap-2" disabled>
+                <span>🔄</span> Atualizar Ranking
+            </button>
+        </div>
+
+    </main>
+
+    <!-- RODAPÉ COMPACTO -->
+    <footer class="w-full bg-slate-950 border-t border-slate-900 py-4 text-center text-[11px] text-slate-500 px-4">
+        <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>© 2026 BeLTA Games. Edição Especial IDB START 2026.</span>
+            <span>Desenvolvido por Capybara Labs</span>
+        </div>
+    </footer>
+
+    <!-- Import Firebase Config -->
+    <script type="module" src="firebase-config.js"></script>
+
+    <script>
+        // Configuração visual por jogo para manter harmonia com as páginas anteriores
+        const GAME_CONFIG = {
+            'Quiz - Educação Financeira': { icon: '📈', color: '#06B6D4', textClass: 'text-idbCyan', bgClass: 'bg-idbCyan/10', borderClass: 'border-idbCyan/20' },
+            'Quiz - Empreendedorismo': { icon: '🚀', color: '#FF007F', textClass: 'text-startPink', bgClass: 'bg-startPink/10', borderClass: 'border-startPink/20' }
+        };
+
+        const GAMES_LIST = Object.keys(GAME_CONFIG);
+
+        // Estado local
+        let currentGame = null;
+
+        // Espera helpers do Firebase ficarem disponíveis de forma assíncrona
+        async function waitForFirebaseHelpers(timeoutMs = 5000) {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+                if (typeof window.obterRanking === 'function') return true;
+                await new Promise(r => setTimeout(r, 100));
+            }
+            return false;
+        }
+
+        // Define o botão ativo esteticamente de acordo com o padrão do jogo
+        function setActiveFilterButton(gameName) {
+            document.querySelectorAll('.game-filter-btn').forEach(btn => {
+                const isSelected = btn.dataset.game === gameName;
+                if (isSelected) {
+                    const cfg = GAME_CONFIG[gameName];
+                    btn.className = `game-filter-btn flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border ${cfg.borderClass} ${cfg.bgClass} text-sm font-extrabold ${cfg.textClass} premium-transition w-full sm:w-auto`;
+                } else {
+                    btn.className = `game-filter-btn flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-sm font-bold text-slate-300 hover:text-white hover:border-slate-700 premium-transition w-full sm:w-auto`;
+                }
+            });
+        }
+
+        function showStage(html) {
+            const stage = document.getElementById('ranking-stage');
+            stage.innerHTML = html;
+        }
+
+        function showLoading() {
+            showStage(`
+                <div class="text-center py-16 px-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 mx-auto mb-4"></div>
+                    <p class="text-slate-400 text-sm font-medium">Buscando pontuações no servidor...</p>
+                </div>
+            `);
+        }
+
+        function showHardError(msg) {
+            showStage(`
+                <div class="text-center py-12 px-6 bg-slate-900/40 border border-red-500/10 rounded-2xl">
+                    <span class="text-3xl block mb-3">⚠️</span>
+                    <h3 class="text-red-400 font-bold mb-1">Não foi possível carregar</h3>
+                    <p class="text-slate-400 text-xs sm:text-sm max-w-xs mx-auto leading-relaxed">${msg}</p>
+                </div>
+            `);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Data desconhecida';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Data desconhecida';
+
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Hoje';
+            if (diffDays === 1) return 'Ontem';
+            if (diffDays < 7) return `Há ${diffDays} dias`;
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatPoints(points) {
+            const n = Math.round(Number(points) || 0);
+            return n.toLocaleString('pt-BR');
+        }
+
+        function createRankingCard(gameName, rankingData) {
+            const cfg = GAME_CONFIG[gameName];
+
+            let playersHTML = '';
+            (rankingData || []).forEach((player, index) => {
+                const pos = index + 1;
+                const nickname = (player && player.nickname) ? player.nickname : 'Jogador';
+                const foto = (player && player.foto) ? player.foto : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150';
+
+                // Badges refinadas para o pódio de 3 lugares
+                let posBadge = '';
+                if (pos === 1) {
+                    posBadge = `<span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black text-sm">🥇</span>`;
+                } else if (pos === 2) {
+                    posBadge = `<span class="w-8 h-8 rounded-lg bg-slate-400/20 text-slate-300 border border-slate-400/30 flex items-center justify-center font-black text-sm">🥈</span>`;
+                } else if (pos === 3) {
+                    posBadge = `<span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center font-black text-sm">🥉</span>`;
+                } else {
+                    posBadge = `<span class="w-8 h-8 rounded-lg bg-slate-950 text-slate-500 border border-slate-850 flex items-center justify-center font-bold text-xs">${pos}</span>`;
+                }
+
+                playersHTML += `
+                    <li class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-950/40 border border-slate-850 rounded-xl hover:border-slate-800 hover:bg-slate-950 premium-transition">
+                        <!-- Posição -->
+                        <div class="flex-shrink-0">${posBadge}</div>
+                        
+                        <!-- Avatar -->
+                        <img src="${foto}" 
+                             alt="${nickname}" 
+                             class="w-9 h-9 rounded-lg border border-slate-800 object-cover flex-shrink-0"
+                             onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150'">
+                        
+                        <!-- Info Jogador -->
+                        <div class="flex-grow min-w-0">
+                            <span class="block font-bold text-sm sm:text-base text-white truncate">${nickname}</span>
+                            <span class="block text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-0.5">${formatDate(player && player.data)}</span>
+                        </div>
+
+                        <!-- Nota / Pontos -->
+                        <div class="text-right flex-shrink-0">
+                            <span class="text-sm sm:text-base font-extrabold ${cfg.textClass}">${formatPoints(player && player.pontos)}</span>
+                            <span class="block text-[8px] text-slate-600 font-black uppercase tracking-widest">pontos</span>
+                        </div>
+                    </li>
+                `;
+            });
+
+            const card = document.createElement('div');
+            card.className = 'bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl';
+            card.innerHTML = `
+                <!-- Topo Informativo do Card -->
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-5 mb-5 gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                            <span>${cfg.icon}</span> ${gameName}
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">
+                            ${(rankingData && rankingData.length) ? `Ranking oficial atualizado com ${rankingData.length} participantes.` : 'Sem pontuações salvas ainda hoje.'}
+                        </p>
+                    </div>
+                </div>
+
+                ${(rankingData && rankingData.length) ? `
+                    <ul class="flex flex-col gap-2.5">${playersHTML}</ul>
+                ` : `
+                    <div class="text-center py-10 px-4">
+                        <span class="text-3xl block mb-2">📭</span>
+                        <h3 class="text-sm font-bold text-slate-400">Nenhuma nota registrada</h3>
+                        <p class="text-slate-500 text-xs mt-1">Seja o primeiro a jogar e garanta o topo do pódio!</p>
+                    </div>
+                `}
+            `;
+            return card;
+        }
+
+        async function loadRanking(gameName) {
+            setActiveFilterButton(gameName);
+            document.getElementById('btn-refresh').disabled = true;
+            currentGame = gameName;
+
+            showLoading();
+
+            const ready = await waitForFirebaseHelpers();
+            if (!ready || typeof window.obterRanking !== 'function') {
+                showHardError('Servidor temporariamente ocupado ou indisponível. Aguarde um instante.');
+                return;
+            }
+
+            try {
+                const data = await window.obterRanking(gameName);
+                const safeData = Array.isArray(data) ? data : [];
+
+                const stage = document.getElementById('ranking-stage');
+                stage.innerHTML = '';
+                stage.appendChild(createRankingCard(gameName, safeData));
+
+                document.getElementById('btn-refresh').disabled = false;
+            } catch (error) {
+                console.error('Erro ao buscar notas:', error);
+                showHardError(error && error.message ? error.message : 'Erro ao processar registros de pontuações.');
+            }
+        }
+
+        function setupFilters() {
+            document.querySelectorAll('.game-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const gameName = btn.dataset.game;
+                    if (GAMES_LIST.includes(gameName)) loadRanking(gameName);
+                });
+            });
+        }
+
+        function applyInitialFilterFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const jogoParam = params.get('jogo');
+
+            if (jogoParam && GAMES_LIST.includes(jogoParam)) {
+                loadRanking(jogoParam);
+            } else {
+                // Inicia por padrão no de Educação Financeira para não exibir tela vazia
+                loadRanking('Quiz - Educação Financeira');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupFilters();
+            applyInitialFilterFromURL();
+
+            document.getElementById('btn-refresh').addEventListener('click', async () => {
+                if (currentGame) {
+                    await loadRanking(currentGame);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
