@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ranking Geral - Quizzes - BeLTA Games</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background: linear-gradient(135deg, #8e44ad, #3498db);
+      color: white;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 8px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 18px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .header p {
+      opacity: 0.95;
+      font-size: 1rem;
+    }
+
+    .subtitle-card {
+      margin-bottom: 18px;
+      text-align: center;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .subtitle-card strong {
+      color: #f1c40f;
+    }
+
+    .ranking-card {
+      background: rgba(255,255,255,0.96);
+      color: #2c3e50;
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .ranking-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 3px solid #f1c40f;
+    }
+
+    .ranking-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      line-height: 1.15;
+      word-break: break-word;
+    }
+
+    .ranking-subtitle {
+      margin-top: 6px;
+      font-size: 0.95rem;
+      color: #7f8c8d;
+    }
+
+    .ranking-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7f8c8d;
+      padding: 12px 10px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    tbody td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #edf2f7;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .pos-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: white;
+      background: #3498db;
+    }
+
+    .pos-1 { background: #f1c40f; color: #2c3e50; }
+    .pos-2 { background: #95a5a6; }
+    .pos-3 { background: #e67e22; }
+
+    .user-cell {
+      font-weight: 800;
+      color: #2c3e50;
+      word-break: break-word;
+    }
+
+    .nick-cell {
+      color: #34495e;
+      word-break: break-word;
+    }
+
+    .score-cell {
+      font-weight: 900;
+      color: #27ae60;
+      white-space: nowrap;
+    }
+
+    .game-tag {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #eef2ff;
+      color: #4338ca;
+      white-space: nowrap;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 32px 16px;
+      color: #2c3e50;
+    }
+
+    .spinner {
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      border: 5px solid rgba(52, 152, 219, 0.25);
+      border-top-color: #3498db;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 18px;
+      background: rgba(255,255,255,0.96);
+      color: #2c3e50;
+      border-radius: 20px;
+      border: 3px dashed #f1c40f;
+    }
+
+    .empty .big {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 13px 20px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 800;
+      color: white;
+      background: #34495e;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-btn.primary {
+      background: #27ae60;
+    }
+
+    .nav-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 1.7rem;
+      }
+
+      .header p {
+        font-size: 0.95rem;
+      }
+
+      .ranking-card {
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .ranking-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .ranking-title {
+        font-size: 1.25rem;
+      }
+
+      .ranking-subtitle {
+        font-size: 0.88rem;
+      }
+
+      .nav-buttons {
+        flex-direction: column;
+      }
+
+      .nav-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏆 Ranking Geral dos Quizzes</h1>
+      <p>Educação Financeira + Empreendedorismo</p>
+    </div>
+
+    <div class="filters">
+      <span class="filter-chip">📈 Quiz - Educação Financeira</span>
+      <span class="filter-chip">🚀 Quiz - Empreendedorismo</span>
+    </div>
+
+    <div id="ranking-area">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Carregando ranking...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <a class="nav-btn" href="index.html">🏠 Voltar ao Portal</a>
+      <button class="nav-btn primary" id="btn-refresh">🔄 Atualizar</button>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+
+  <script>
+    function formatPoints(points) {
+      const n = Math.round(Number(points) || 0);
+      return n.toLocaleString('pt-BR');
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderRanking(data) {
+      const area = document.getElementById('ranking-area');
+
+      if (!Array.isArray(data) || data.length === 0) {
+        area.innerHTML = `
+          <div class="empty">
+            <div class="big">📭</div>
+            <h3>Nenhum resultado encontrado</h3>
+            <p>Não há pontuações registradas para os dois quizzes ainda.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let rows = '';
+      data.forEach((item, index) => {
+        const pos = index + 1;
+        const posClass = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
+        const user = escapeHtml(item.nomeReal || item.userName || item.email || 'Jogador');
+        const nick = escapeHtml(item.nickname || 'Sem nick');
+        const jogo = escapeHtml(item.jogo || 'Quiz');
+        const pontos = formatPoints(item.pontos);
+
+        rows += `
+          <tr>
+            <td><span class="pos-badge ${posClass}">${pos}</span></td>
+            <td class="user-cell">${user}</td>
+            <td class="nick-cell">${nick}</td>
+            <td><span class="game-tag">${jogo}</span></td>
+            <td class="score-cell">${pontos} pts</td>
+          </tr>
+        `;
+      });
+
+      area.innerHTML = `
+        <div class="ranking-card">
+          <div class="ranking-top">
+            <div>
+              <div class="ranking-title">📊 Ranking Geral dos Quizzes</div>
+              <div class="ranking-subtitle">${data.length} registros no ranking combinado</div>
+            </div>
+            <div class="ranking-icon">🏆</div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Classificação</th>
+                  <th>Usuário</th>
+                  <th>Nick</th>
+                  <th>Jogo</th>
+                  <th>Pontuação</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    async function carregarRanking() {
+      const area = document.getElementById('ranking-area');
+      area.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Carregando ranking...</p>
+        </div>
+      `;
+
+      try {
+        if (!window.obterRankingGeralQuizzes) {
+          area.innerHTML = `
+            <div class="empty">
+              <div class="big">⚠️</div>
+              <h3>Função de ranking não carregada</h3>
+              <p>Verifique se o firebase-config.js foi atualizado com a função obterRankingGeralQuizzes().</p>
+            </div>
+          `;
+          return;
+        }
+
+        const data = await window.obterRankingGeralQuizzes();
+        renderRanking(data);
+      } catch (error) {
+        console.error(error);
+        area.innerHTML = `
+          <div class="empty">
+            <div class="big">⚠️</div>
+            <h3>Erro ao carregar ranking</h3>
+            <p>Não foi possível buscar os dados no Firebase.</p>
+          </div>
+        `;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarRanking();
+
+      document.getElementById('btn-refresh').addEventListener('click', () => {
+        carregarRanking();
+      });
+    });
+  </script>
+</body>
+</html>
